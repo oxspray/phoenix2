@@ -1,0 +1,83 @@
+@charset "UTF-8";
+/*/
+Phoenix2
+===
+Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
+Code by: Samuel Laeubli, University of Zurich
+Contact: samuel.laeubli@uzh.ch
+===
+File: boxes.css
+Description:
+CSS basic box definitions.
+---
+/*/
+
+/* WIDTH */
+.w100 { position: relative; width: 100%;  float: left; }
+.w80  { position: relative; width: 80%;   float: left; }
+.w75  { position: relative; width: 75%;   float: left; }
+.w66  { position: relative; width: 66.66%;float: left; }
+.w65  { position: relative; width: 65%;   float: left; }
+.w60  { position: relative; width: 60%;   float: left; }
+.w50  { position: relative; width: 50%;   float: left; }
+.w33  { position: relative; width: 33.33%;float: left; }
+.w25  { position: relative; width: 25%;   float: left; }
+.w20  { position: relative; width: 20%;   float: left; }
+
+/* WIDTH for modal windows */
+.modal-w400 { position: relative; width: 400px;  float: left; }
+.modal-w600 { position: relative; width: 600px;  float: left; }
+.modal-w800 { position: relative; width: 800px;  float: left; }
+
+
+/* PADDING */
+.inner0  { width: auto; padding: 0px; }
+.inner1  { width: auto; padding: 1px; }
+.inner2  { width: auto; padding: 2px; }
+.inner3  { width: auto; padding: 3px; }
+.inner5  { width: auto; padding: 5px; }
+.inner10 { width: auto; padding: 10px; }
+.inner15 { width: auto; padding: 15px; }
+.inner20 { width: auto; padding: 20px; }
+
+/* HEIGHT */
+/* static */
+.h50  { height:  50px; }
+.h100 { height: 100px; }
+.h150 { height: 150px; }
+.h200 { height: 200px; }
+.h250 { height: 250px; }
+.h300 { height: 300px; }
+.h400 { height: 400px; }
+.h500 { height: 500px; }
+
+/* min-height; hacked for IE6 etc. */
+.min-h50  { min-height:  50px; height: auto !important; height:  50px; }
+.min-h100 { min-height: 100px; height: auto !important; height: 100px; }
+.min-h150 { min-height: 150px; height: auto !important; height: 150px; }
+.min-h200 { min-height: 200px; height: auto !important; height: 200px; }
+.min-h250 { min-height: 250px; height: auto !important; height: 250px; }
+.min-h300 { min-height: 300px; height: auto !important; height: 300px; }
+.min-h400 { min-height: 400px; height: auto !important; height: 400px; }
+.min-h500 { min-height: 500px; height: auto !important; height: 500px; }
+
+/* float */
+.right { float: right; }
+.left  { float: left; }
+
+/* TEXT */
+/* alignment */
+.rightbound {
+	text-align: right;
+}
+
+/* OVERFLOW */
+.scrollbox {
+	/* an absolute height class (.hX) is always required; do not use a.min-h-class! */
+	overflow-y: scroll !important;
+}
+
+/* HORIZONTAL ALIGNMENT */
+.middle {
+	text-align: center;
+}

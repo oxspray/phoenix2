@@ -1,0 +1,2093 @@
+<ph2>
+    <filestructure>
+
+        <modules>
+
+            <module short="home" name="Home Screen">
+                <descr>The Phoenix2 dashboard which is loaded immediately after a user has logged
+                    in.</descr>
+            </module>
+
+            <module short="chg" name="Text Editing">
+                <descr>Gathers text creation, editing and removal modules.</descr>
+                <module short="new" name="Create Text">
+                    <descr>Create a new text and assign it to a corpus.</descr>
+                    <comment>editor implementation (grade) tbd</comment>
+                </module>
+                <module short="chg" name="Edit Text">
+                    <descr>Edit an actual text and its meta information.</descr>
+                </module>
+                <module short="del" name="Delete Text">
+                    <descr>Delete a text and remove all its assignments.</descr>
+                    <todo>define and include different handling options for affected
+                        occurrences</todo>
+                </module>
+            </module>
+
+            <module short="ann" name="Annotation">
+                <descr>Link word occurrences in texts to specific attributes or -groups.</descr>
+                <module short="gra" name="Graphematics">
+                    <descr>Graphematic annotations</descr>
+                    <module short="gra" name="Graphemes">
+                        <descr>Grapheme Head properties.</descr>
+                    </module>
+                    <module short="grp" name="Variants">
+                        <descr>Define grapheme variants (groups) and assign occurrences.</descr>
+                    </module>
+                </module>
+                <module short="lex" name="Lexicon">
+                    <descr>Annotate occurrences based on lemmata.</descr>
+                    <module short="lem" name="Lemma">
+                        <descr>Lexical Head properties.</descr>
+                    </module>
+                    <module short="sem" name="Semantics">
+                        <descr>Define semantic categories and assign occurences.</descr>
+                    </module>
+                    <module short="mrp" name="Morphology">
+                        <descr>Define morphological categories and assign occurrences.</descr>
+                    </module>
+                </module>
+                <module short="fnd" name="Search" flag="revise">
+                    <descr>Search texts using various strategies/methods and select a set of search
+                        results (= selected occurrences).</descr>
+                </module>
+                <module short="rst" name="Search Restrictions">
+                    <descr>Restrict the searches by metatext parameters.</descr>
+                </module>
+            </module>
+
+            <module short="exp" name="Export">
+                <descr>Publish project views (vairous formats).</descr>
+                <module short="xml" name="XML">
+                    <descr>Export reverse-engineered xml text with or w/o further information
+                        (various attribute export options).</descr>
+                </module>
+                <module short="prt" name="Print">
+                    <descr>Export to print formats (InDesign, LaTeX, ...).</descr>
+                </module>
+                <module short="web" name="Web">
+                    <descr>Export to web formats</descr>
+                    <comment>website and/or cms linkage foreseen</comment>
+                </module>
+                <module short="phx" name="Phoenix">
+                    <descr>Export specific entities or whole projects in a phoenix-characteristic
+                        format that can be re-imported into existing phoenix
+                        projects/environments.</descr>
+                </module>
+            </module>
+
+            <module short="prj" name="Project &amp; Corpus Management">
+                <descr>Manage project and corpus properties and their relation to texts.</descr>
+                <module short="prj" name="Projects">
+                    <descr>Create, edit and delete projects and edit their assignments.</descr>
+                </module>
+                <module short="crp" name="Corpora">
+                    <descr>Create, edit and delete corpora and edit their assignments.</descr>
+                </module>
+                <module short="dyc" name="Dynamic Corpora">
+                    <descr>Create, edit and delete dynamic corpora, i.e., corpora that contain texts acording to a set of metatext parameters.</descr>
+                </module>
+                <module short="exp" name="Exports">
+                    <descr>See Texts and Corpora that are currently checked out for external editing and delete checkouts.</descr>
+                </module>
+            </module>
+
+            <module short="sys" name="System Preferences">
+                <descr>Set system preferences and environment settings</descr>
+                <module short="usr" name="Users and Permissions">
+                    <descr>Manage user accounts and set read/write/remove permissions.</descr>
+                    <todo>define exact permission set</todo>
+                </module>
+                <module short="prf" name="System Preferences">
+                    <descr>Various system settings and preferences, e.g. e-mail
+                        notifications.</descr>
+                </module>
+            </module>
+
+        </modules>
+
+        <frameworks>
+            <framework lang="php" name="Phoenix2 PHP Framework" includeall="framework.php">
+                <descr>The Phoenix2 Framework (P2F) is a PHP library of classes, functions and
+                    constants providing basic functionalities for the further programming of
+                    specific program modules. It facilitates frequent tasks such as database access,
+                    string conversions, character encoding/escaping etc. Hence, the framework
+                    contains commonly needed functionality rather than idiosyncratic code to
+                    specific module operations.</descr>
+                <section short="core" name="Core Functionality">
+                    <descr>Basic functions that are not associated with specific PH2 entities (see
+                        DB Concept).</descr>
+                    <file short="auth" name="Authentication">
+                        <descr>User authentication routines (login, logout) including password
+                            encryption.</descr>
+                        <function name="encodePassword"> Generates an sh1-encrypted password hash
+                            alongside with a random salt and returns them for storage in a user
+                            table. <param name="pw" type="string">the password to be encoded</param>
+                            <return type="array">'pw_hash' => password hash value, 'salt_hash' =>
+                                salt hash value</return>
+                        </function>
+                        <function name="checkPassword"> Checks whether a submitted password ($pw)
+                            validates against a given pw- and salt-hash. <param name="pw"
+                                type="string">the password to check against the hashes</param>
+                            <param name="pw_hash" type="hash string (ph2 std encoding)">the password
+                                hash</param>
+                            <param name="salt_hash" type="hash string (ph2 std encoding)">the salt
+                                hash</param>
+                            <return type="bool">1 if the password validates, 0 otherwise</return>
+                        </function>
+                        <function name="composePasswordSalt"> Composes a password hash with a salt
+                            hash. <param name="pw_hash" type="hash string (ph2 std encoding)">the
+                                password hash</param>
+                            <param name="salt_hash" type="hash string (ph2 std encoding)">the salt
+                                hash</param>
+                            <return type="hash string (ph2 std encoding)">the hash string composed
+                                of the submitted password- and salt hash</return>
+                        </function>
+                    </file>
+                    <file short="dbcore" name="Database Core Functionality">
+                        <descr>Basic database object for handling mysql-queries</descr>
+                        <class name="Table">
+                            <ivar name="select"/>
+                            <ivar name="from"/>
+                            <ivar name="where"/>
+                            <ivar name="groupby"/>
+                            <ivar name="having"/>
+                            <ivar name="orderby"/>
+                            <ivar name="limit"/>
+                            <ivar name="_dbconnector" scope="private"/>
+                            <ivar name="_dbhost" scope="private"/>
+                            <ivar name="_dbusername" scope="private"/>
+                            <ivar name="_dbuserpass" scope="private"/>
+                            <ivar name="_dbname" scope="private"/>
+                            <ivar name="_tablename" scope="private"/>
+                            <ivar name="_fieldlist" scope="private"/>
+                            <ivar name="_hasCache" scope="private"/>
+                            <ivar name="_cache" scope="private"/>
+                            <ivar name="_latestCacheKey" scope="private"/>
+                            <constructor> A new Table object is constructed by referencing an
+                                existing table of the database. <param name="tablename"
+                                    type="string">the table to be selected from the database</param>
+                                <param name="hasCache" type="bool" default="FALSE">if TRUE, this
+                                    Table object will cache queries.</param>
+                            </constructor>
+                            <function name="_connect" scope="private"> Connect to the mysql server
+                                and select the relevant database (std settings). </function>
+                            <function name="_describeTable" scope="private"> Extract the schema of a
+                                given table. <param name="tablename" type="string" default="NULL"
+                                    >The table to be described. If left blank, the current table
+                                    will be described.</param>
+                                <return type="associative array (field/value-pairs)">the MySQL
+                                    description result</return>
+                            </function>
+                            <function name="_toSQLString" scope="private"> Converts an associative
+                                array of field=value-pairs to an SQL string like (Field='Value' AND
+                                Field2='Value2' ...) and escapes all values with
+                                mysql_real_escape_string(). <param name="field_value_pairs"
+                                    type="associative array (field/value-pairs)"/>
+                                <param name="sep" type="string" default="' AND '">the keyword
+                                    linking the field/value-statements</param>
+                                <param name="link" type="string" default="'='">the operator between
+                                    a field and its value (field[$link]value)</param>
+                                <return type="string">the escaped sql (part) string</return>
+                            </function>
+                            <function name="_removeUnknownFields" scope="private"> Removes all
+                                key/value-pairs in $record where no corresponding key exists in
+                                $this->_fieldlist. <param name="record"
+                                    type="associative array (field/value-pairs)">the fieldset from
+                                    which unknown fields should be removed</param>
+                                <param name="removePrimaryKeyFields" type="bool" default="FALSE"
+                                    >true if primary key fields (altough not unknown) should be
+                                    removed, false otherwise</param>
+                                <return type="associative array (field/value-pairs)">$record with
+                                    all unknown fields (and optionally all primary key fields)
+                                    removed</return>
+                            </function>
+                            <function name="_removeLatestCacheEntry" scope="private"> Removes the
+                                latest cache entry </function>
+                            <function name="query"> Querries the database with the submitted query
+                                string (no composition; all instance variables are ignored). <param
+                                    name="query" type="string">the MySQL query</param>
+                                <param name="cache" type="bool" default="FALSE">if caching is
+                                    activated for this Table, FALSE will prevent the submitted query
+                                    from being added to the cache.</param>
+                                <return type="assiciative array (field/value-pairs)">the MySQL
+                                    result; NULL if the resultset is empty</return>
+                            </function>
+                            <function name="get"> Selects database entries. Any submitted $where
+                                string replaces $this->where. a) if $this->where is of type string,
+                                it is literally used as WHERE-clause b) if $this->where is of type
+                                array, a WHERE-clause is constructed (KEY1='VAL1' AND KEY2='VAL2'
+                                ...) <param name="where" type="string" default="NULL">the WHERE part
+                                    of the mysql query</param>
+                                <return type="associative array (field/value-pairs)">the MySQL
+                                    result; NULL if the rsultset is empty</return>
+                            </function>
+                            <function name="insert"> Adds a new record to this instance's table.
+                                Array keys that do not correspond to a $_fieldlist entry are
+                                ignored. <todo>Create (cached)
+                                    InsertIfNotExistsElseReturnID-Function(s)</todo>
+                                <param name="new_record"
+                                    type="associative array (field/value-pairs)">the new row to be
+                                    inserted</param>
+                            </function>
+                            <function name="insertRowsAtLowestPossibleID">
+                                Inserts the given row such that its ID is the lowest possible ID that is currently not used in this table. This is helpful to overcome large "spare blocks" in case a range of entries has been deleted.
+                                <param name="primary_key" type="string">the name of the primary key field</param>
+                                <param name="new_rows" type="associative array of (field/value-pairs)">the new rows to be inserted, excluding the primary key field</param>
+                                <return type="array(int)">an array containing the IDs used for the insertions</return>
+                            </function>
+                            <function name="_getLowestUnusedID">
+                                returns the lowest unused ID of this table, given its primary key.
+                                <param name="primary_key" type="string">the name of the primary key</param>
+                                <return type="int">the lowest unused ID</return>
+                            </function>
+                            <function name="checkAdd"> Takes an array of fields/values and checks
+                                whether it allready exists in this Table. If so, the corresponding
+                                ID is returned; otherwise, the a new entry will be created and its
+                                ID will be returned. <param name="entry"
+                                    type="associative array (field/value-pairs)">the row (data) that
+                                    should be checked or created</param>
+                                <return type="int">the ID of the existing or created entry</return>
+                            </function>
+                            <function name="update"> Updates a row in the database. Primary key
+                                fields and all fields that are not part of this table's
+                                $this->_fieldlist are ignored. Note that a WHERE-Clause must
+                                previously be stored in this instance's $this->where field. <param
+                                    name="update_record" type="associative array (key/value-pairs)"
+                                    >the new values (paired with existing fields)</param>
+                            </function>
+                            <function name="delete"> Deletes rows matching the key/value-pairs
+                                provided in $where. $where cannot be empty; to delete all records
+                                from a table, refer to $this->clear(). <param name="where"
+                                    type="assiciative array (key/value-pairs)">the WHERE
+                                    identification: matching rows are deleted</param>
+                                <param name="ignore" type="bool" default="FALSE">if TRUE, the
+                                    IGNORE-flag will be added to the query (overriding foreign key
+                                    constraints etc.)</param>
+                            </function>
+                            <function name="clear"> Deletes all rows from this instance's table.
+                                    <param name="ignore" type="bool" default="FALSE">if TRUE, the
+                                    IGNORE-flag will be added to the query (overriding foreign key
+                                    constraints etc.)</param>
+                            </function>
+                            <function name="getLastID"> Returns the last auto-generated
+                                auto_increment value (LAST_INSERT_ID()). <return type="int">the last
+                                    inserted ID (whole database!)</return>
+                            </function>
+                        </class>
+                    </file>
+                    <file short="dbextended" name="Database Extended Functionality">
+                        <descr>Functions using the basic database object (Table) to perform
+                            higher-level operations.</descr>
+                    </file>
+                    <file short="xml" name="Functions for dealing with XML input">
+                        <descr>Various functions to handle XML parsing/transformation</descr>
+                        <function name="getNodeText"> Takes (a node of) an XML DomDocument and
+                            returns its text content. If $clean is set to TRUE, all xml-tags inside
+                            the child will be removed. <param name="xml_node"
+                                type="XML DomDocument Node">the node from which the text should be
+                                extracted</param>
+                            <param name="clean" type="bool" default="TRUE">if TRUE, all xml-tags
+                                (including their content) inside the text will be removed</param>
+                        </function>
+                        <function name="stripOutermostTag">
+                            strips the outermost tag from an xml string
+                            <param name="xml_string" type="string">the xml string</param>
+                            <return type="string">the xml string without its outermost tag-pair</return>
+                        </function>
+                        <function name="xmlpp">
+                            Prettifies an XML string into a human-readable and indented work of art. Proposed by http://www.thedeveloperday.com/xml-beautifier-tool/.
+                            <param name="xml" type="string">The XML as a string</param>
+                            <param name="as_html_output" type="bool" default="FALSE">True if the output should be escaped (for use in HTML)</param>
+                        </function>
+                        <function name="printXML">
+                            Takes an XML string and optional styling parameters. Prints an HTML representation of the XML string.
+                            <param name="xml_string" type="string">the xml to be prettified and printed</param>
+                            <param name="id" type="int">the ID that the printet html code element shall receive</param>
+                            <param name="pretty_print" type="bool" default="TRUE">if TRUE, the XML will be indented by xmlpp()</param>
+                            <param name="tags" type="bool" default="TRUE">whether to include the XML tags. If FALSE, only the text of the xml nodes will be returned.</param>
+                            <param name="compact" type="bool" default="FALSE">if TRUE, all new lines, tabs and whitespaces outside of the tags will be removed</param>
+                            <param name="colors" type="bool" default="FALSE">if TRUE, syntax highlighting will be enabled (via gcp)</param>
+                            <param name="part" type="bool" default="'ALL'">the name of the root tag to take from the submitted xml. Default ALL selects the whole xml.</param>
+                        </function>
+                    </file>
+                    <file short="dbresultsettransformer" name="Database Resultset Transformer">
+                        <descr>This class handles result sets retrieved by a get()-call on a TABLE.
+                            For example, results can be converted to a dropbox selection, a table
+                            body or similar.</descr>
+                        <class name="ResultSetTransformer">
+                            <descr>A ResultSetTransformer takes a result set yielded by TABLE->get()
+                                and produces various outputs</descr>
+                            <ivar name="_result_set" type="array" scope="protected"/>
+                            <ivar name="_is_empty" type="bool" scope="private"/>
+                            <constructor> A ResultSetTransformer is constructed with a result set.
+                                    <param name="resultset" type="array">the resultset yielded by
+                                    TABLE->get()</param>
+                            </constructor>
+                            <function name="toDropdownSelection"> Produces a dropdown selection body
+                                (name/value) with two specified columns of the resultset. <param
+                                    name="names" type="string">the name of the column where the
+                                    names should be extracted</param>
+                                <param name="values" type="string">the name of the column where the
+                                    values should be extracted</param>
+                                <param name="preselection" type="string" default="FALSE">if
+                                    provided, the default selection is applied to the item where
+                                    value==preselection</param>
+                                <param name="none_selection" type="bool" default="FALSE">if TRUE, a 'none'-option will be included at first place.</param>
+                                <return type="string">the dorpdown body (list of
+                                    option-tags)</return>
+                            </function>
+                            <function name="toHTMLTable"> Produces a whole HTML table element with a
+                                dedicated header, optionally equipped with checkboxes for each row.
+                                    <param name="columns" type="array/string">the columns that
+                                    should be used of the given resultset. the format is array
+                                    ('nameInResultset' => 'Name in Table'). if 'all' is submitted,
+                                    all columns are extracted from the result sets first
+                                    row.</param>
+                                <param name="selectorCol" type="string" default="NULL">the name of
+                                    the row (out of the resultset) that should serve as checkbox ID.
+                                    If Null, no selectors will be attached.</param>
+                                <param name="selectorName" type="string" default="'id'">the name of
+                                    the selector (form element)</param>
+                                <param name="id" type="string" default="''">the id to be assigned to
+                                    the table</param>
+                                <param name="classes" type="array" default="array()">additional
+                                    classes to add to the table element. format: array ('class1',
+                                    'class2', ...)</param>
+                                <param name="hidden_columns" type="array(int)" default="NULL">the index 0..n of the columns that should be hidden via display:none.</param>
+                                <param name="select_all" type="bool" default="FALSE">TRUE if a select all checkbox should be inserted; FALSE otherwise.</param>
+                                <return type="string">the html code of the table</return>
+                            </function>
+                            <function name="toSelectableHTMLTable"> wrapper for toHTMLTable with
+                                additional class 'clickable' for overall table element. <param
+                                    name="columns" type="array">the columns that should be used of
+                                    the given resultset. the format is array ('nameInResultset' =>
+                                    'Name in Table')</param>
+                                <param name="selectorCol" type="string" default="NULL">the name of
+                                    the row (out of the resultset) that should serve as checkbox ID.
+                                    If Null, no selectors will be attached.</param>
+                                <param name="selectorName" type="string" default="'id'">the name of
+                                    the selector (form element)</param>
+                                <param name="id" type="string" default="''">the id to be assigned to
+                                    the table</param>
+                                <param name="classes" type="array" default="array()">additional
+                                    classes to add to the table element. format: array ('class1',
+                                    'class2', ...)</param>
+                                <param name="hidden_columns" type="array(int)" default="NULL">the index 0..n of the columns that should be hidden via display:none.</param>
+                                <param name="select_all" type="bool" default="FALSE">TRUE if a select all checkbox should be inserted; FALSE otherwise.</param>
+                                <return type="string">the html code of the table</return>
+                            </function>
+                        </class>
+                    </file>
+                    <file short="misc" name="Miscellaneus Helper Functions">
+                        <descr>Common helpers aiming at routine simplifications</descr>
+                        <function name="expandArray"> Converts an array to a string by expanding all
+                            its values and connecting them with a seperator, optionally concluded by
+                            a last element. <param name="arr" type="array">the array to be
+                                converted</param>
+                            <param name="sep" type="string">the string to be placed between the
+                                array elements</param>
+                            <param name="last" type="string" default="''">the string to be placed at
+                                the end of the expanded array string</param>
+                            <return type="string">the string representation of the submitted
+                                array</return>
+                        </function>
+                        <function name="now"> Returns a string containing a current timestamp.
+                            Format: YYYY-MM-DD HH:MM:SS <return type="string">string representation
+                                of current time</return>
+                        </function>
+                        <function name="writeFile"> Takes a full path (incl. filename) and a string
+                            and writes the string into that file. <param name="path" type="string"
+                                >the path to write to</param>
+                            <param name="content" type="string">the content to be wirtten to the
+                                file</param>
+                            <param name="overwrite" type="bool" default="FALSE">whether to overwrite an existing file or not</param>
+                            <return type="bool">1 on success, 0 otherwise</return>
+                        </function>
+                        <function name="getVersionInfo"> Returns the current version/status/build
+                            signature from the database (sys_META). <return type="array"
+                                >array(version => version, status => status, build =>
+                                build)</return>
+                        </function>
+                        <function name="getPathFromSignature"> Transforms a (module) signature into
+                            a relative file path. The prefix 'com.ph2.modules' must NOT be handed to
+                            the function. <param name="signature" type="string">the module signature
+                                without prefix</param>
+                            <return type="string">the relative path pointing to the corresponding
+                                module.php-file</return>
+                        </function>
+                        <function name="savedSuccessfullyMsg">
+                            Adds a notification like 'Changes saved successfully' to the Session's notifications array.
+                        </function>
+                        <function name="fixBoolArray">
+                            Iterates over an array. For each Key/Value-pair, the value is transformed into a valid boolean (TRUE or FALSE) if it is in javascript-style (true/false).
+                            <param name="array" type="array">the array to be converted</param>
+                            <return type="array">the array with real boolean values</return>
+                        </function>
+                        <function name="removeEmptyArrayFields">
+                            Removes all empty fields from an array
+                            <param name="array" type="array">the input array from which empty fields should be removed</param>
+                            <return type="array">the input array with all empty fields removed</return>
+                        </function>
+                        <function name="startsWith">
+                            Checks whether a string starts with a given substring
+                            <param name="haystack" type="string">the string to be checked</param>
+                            <param name="needle" type="string">the string that should be contained in $haystack's beginning</param>
+                            <return type="bool">TRUE if $needle matches the start of $haystack, FALSE otherwise</return>
+                        </function>
+                        <function name="generateCheckoutHash">
+                            Generates a 32-character string to serve as Identifier in the CHECKOUT table. It is calculated by retrieving an md5-hash from TextID/CorpusID + the system's microtime().
+                            <param name="text_or_corpus_id" type="int">the TextID or CorpusID of the item to be checked out</param>
+                            <return type="string">32-character hash</return>
+                        </function>
+                        
+                    </file>
+                    <file short="session" name="PH2 Session Object">
+                        <descr>This is the overall class for a PH2 user session. A corresponding
+                            object should be created upon every first page load of the phoenix login
+                            site (or any site, as they will redirect towards that site in case no
+                            user is logged in). The PH2Session object is created or unpacked on each
+                            site just after loading the framework. At the very end of each page
+                            script, it is then serialized and stored in a predefined regular php
+                            session.</descr>
+                        <sample>a sample site call (php): - 1. load framework 2. if session exists:
+                            unserialize session object (run ->eachPage method or similar) else:
+                            create session object - code: session_start();
+                            isset($_SESSION[PH2_SESSION_KEY]) ? $ps =
+                            unserialize($_SESSION[PH2_SESSION_KEY]) : $ps = new PH2Session(); - 3.
+                            [do the rest] 4. serialize the object and store it in a regular php
+                            session code: $ps->save(); ---</sample>
+                        <class name="PH2Session">
+                            <ivar name="notifications" scope="public"/>
+                            <ivar name="_user" scope="protected"/>
+                            <ivar name="_timestamp_start" scope="protected"/>
+                            <ivar name="_timestamp_login" scope="protected"/>
+                            <ivar name="_current_module" scope="protected"/>
+                            <ivar name="_active_project" scope="protected"/>
+                            <ivar name="_active_corpus" scope="protected"/>
+                            <ivar name="_active_lemma" scope="protected" />
+                            <ivar name="_active_grapheme" scope="protected" />
+                            <ivar name="_gui_show_header" scope="protected"/>
+                            <ivar name="_is_logged_in" scope="private"/>
+                            <ivar name="_filters" scope="private" />
+                            <ivar name="_filter_is_active" scope="private" />
+                            <todo>$_GET-Implementations (?)</todo>
+                            <todo>Messages, errors and various params could be stored in
+                                corresponding session arrays. The init-method could then unpack them
+                                when a page is loaded and handle relevant html serializations. (Ev.
+                                seperate Classes/Objects for Messages?)</todo>
+                            <constructor/>
+                            <function name="logIn"> Attempts to find an entry in the USER table
+                                matching the given nickname and password (resp. its hash). In case
+                                of success, a USER object is stored in this session and a
+                                redirection to $PH2_STD_PAGE_LOGGEDIN is triggered. Otherwise, FALSE
+                                is returned (meaning $pw and $nick do not match an existing user
+                                entry). <param name="nick" type="string">the user's nickname</param>
+                                <param name="pw" type="string">the user's password</param>
+                            </function>
+                            <function name="logout"> Destroys this session (thus logging out the
+                                current user) and redirects to the login page. </function>
+                            <function name="save"> Serializes this object and saves it in $_SESSION
+                                in order to be reloaded on another page. </function>
+                            <function name="redirect"> Sends HTTP headers to redirect the browser to
+                                another page (url = $location). Redirects should ALWAYS be performed
+                                by calling this function as it is important to first serialize the
+                                session object etc. <todo>function redirectOnNextPageLoad for
+                                    delayed redirects when page content has allready been loaded.
+                                    The init-Function of this object should then immediately
+                                    redirect without performing other actions (?).</todo>
+                                <param name="location" type="string">the target page</param>
+                            </function>
+                            <function name="updateUser">
+                                updates the user information of the session
+                            </function>
+                            <function name="getUserID"> getter <return type="string">this user's
+                                    ID</return>
+                            </function>
+                            <function name="getNickname"> getter <return type="string">this user's
+                                    nickname</return>
+                            </function>
+                            <function name="getFullname"> getter <return type="string">this user's
+                                    full name</return>
+                            </function>
+                            <function name="getPrivilege"> getter <return type="string">this user's
+                                    privilege type</return>
+                            </function>
+                            <function name="getMail"> getter <return type="string">this user's mail
+                                    address</return>
+                            </function>
+                            <function name="setCurrentModule"> setter <param name="signature"
+                                    type="string">the new signature</param>
+                            </function>
+                            <function name="getCurrentModule"> getter <return type="string">returns
+                                    the signature of the currently loaded module</return>
+                            </function>
+                            <function name="getCurrentModulePath"> getter <return type="string"
+                                    >returns the relative path of the currently loaded
+                                    module</return>
+                            </function>
+                            <function name="setActiveProject"> setter <param name="project_id"
+                                    type="int">the project id of the active project</param>
+                            </function>
+                            <function name="getActiveProject"> getter <return type="string">returns
+                                    the ID of the active project</return>
+                            </function>
+                            <function name="setActiveCorpus"> setter <param name="corpus_id"
+                                type="int">the project id of the active corpus</param>
+                            </function>
+                            <function name="getActiveCorpus"> getter <return type="string">returns
+                                the ID of the active corpus</return>
+                            </function>
+                            <function name="setActiveLemma">
+                                setter
+                                <param name="lemma_id" type="int">the LemmaID of the active lemma</param>
+                            </function>
+                            <function name="getActiveLemma">
+                                getter
+                                <return type="int">returns the ID of the active lemma</return>
+                            </function>
+                            <function name="setActiveGrapheme">
+                                setter
+                                <param name="graph_id" type="int">the GraphID of the active Grapheme</param>
+                            </function>
+                            <function name="getActiveGrapheme">
+                                getter
+                                <return type="int">returns the ID of the active Grapheme</return>
+                            </function>
+                            <function name="setGUIShowHeader"> setter <param name="value"
+                                    type="bool">whether the header is visible or not</param>
+                            </function>
+                            <function name="getGUIShowHeader"> getter <return type="bool">whether
+                                    the header is visible or not</return>
+                            </function>
+                            <function name="isLoggedIn"> getter <return type="bool">true if a user
+                                    is logged into the current session, false otherwise</return>
+                            </function>
+                            <function name="filterIsEmpty">
+                                returns true if no filter is stored in the session
+                                <return type="bool">whether any filter is stored in the session or not</return>
+                            </function>
+                            <function name="addFilter">
+                                adds a filter to the session. The corresponding TextIDs are automatically computed
+                                <param name="filter_name" type="string">the filter's name</param>
+                                <param name="filter_value" type="string">the filter's value (collects criteria that MUST BE MET, i.e., only return texts that have that value)</param>
+                            </function>
+                            <function name="removeFilter">
+                                removes a filter from the session
+                                <param name="filter_name" type="string">the filter's name</param>
+                                <param name="filter_value" type="string" default="NULL">the filter's value</param>
+                            </function>
+                            <function name="getActiveFilterIDs">
+                                returns the IDs (=names) of all active filters
+                                <return type="array(str)">the active filters</return>
+                            </function>
+                            <function name="getFilterIncludedTexts">
+                                returns all TextIDs that are currently included, i.e., it iterates to all subfilters and creates a unique list of TextIDs
+                                <return type="array(int)">the TextIDs included by the filter</return>
+                            </function>
+                            <function name="getFilterValues">
+                                returns all values that are currently included in a filter
+                                <param name="filter" type="string">the name of the filter</param>
+                                <return type="array(str)">the values that are activated for @param filter</return>
+                            </function>
+                            <function name="filterIsActive">
+                                getter
+                                <return type="bool">whether the filter is actiavted in the session</return>
+                            </function>
+                            <function name="setFilterIsActive">
+                                setter
+                                <param name="active" type="bool">true/false</param>
+                            </function>
+                        </class>
+                    </file>
+                </section>
+
+                <section short="entities" name="Entity-specific Functionality">
+                    <descr>Basic functions related to specific PH2 entities</descr>
+                    
+                    <file short="misc_entity_functions" name="Miscellaneus Entity Functions">
+                        <descr>handles functions for entities that are not assigned a dedicated class</descr>
+                        <function name="getTextsections">
+                            returns all Descriptors stored in the DESCRIPTION table
+                            <return type="array">array(DescriptorID => Name)</return>
+                        </function>
+                        <function name="checkAddToken">
+                            takes a surface and type string and checks whether a corresponding entity allready exists in TOKEN / TOKENTYPE. If not so, it is created. After all, the function returns the corresponding TokenID.
+                            <param name="surface" type="string"></param>
+                            <param name="type" type="string"></param>
+                            <param name="token_dao" type="Table" default="NULL">dao with enabled caching</param>
+                            <param name="tokentype_dao" type="Table" default="NULL">dao with enabled caching</param>
+                            <return type="int">the TokenID referencing the TOKEN table</return>
+                        </function>
+                        <function name="findOccurrences">
+                            queries a given set of corpora for occurrences that match against various criteria (see parameters).
+                            <param name="corpus_list" type="array(int)">The IDs of the corpora to include in the search</param>
+                            <param name="query" type="string" default="NULL">the REGEX query that constraints the occurrence surface</param>
+                            <param name="has_lemma" type="array(int)" default="NULL">the LemmaIDs that the occurrences MUST be connected to</param>
+                            <param name="not_lemma" type="array(int)" default="NULL">the LemmaIDs that the occurrences MUST NOT be connected to</param>
+                            <param name="has_graph" type="array(int)" default="NULL">the GraphIDs that the occurrences MUST be connected to</param>
+                            <param name="not_graph" type="array(int)" default="NULL">the GraphIDs that the occurrences MUST NOT be connected to</param>
+                            <param name="has_type"  type="array(int)" default="NULL">the TokenIDs that the occurrences MUST be connected to. Note: has_type refers to the table/entity TOKEN.</param>
+                            <param name="not_type"  type="array(int)" default="NULL">the TokenIDs that the occurrences MUST NOT be connected to. Note: has_type refers to the table/entity TOKEN.</param>
+                            <return type="array(int)">the OccurrenceIDs of occurrences that match all given criteria</return>
+                        </function>
+                        <function name="getOccurrenceContext">
+                            returns the left and right text context of an occurrence, as well as its metadata
+                            <param name="occurrence_id" type="int">the ID of the Occurrence</param>
+                            <return type="array">two sub-arrays containing 1) the context variables and 2) the meta variables of the given Occurrence</return>
+                        </function>
+                        <function name="getTypes">
+                            returns an array containing all Types (=Token entries) of any type.
+                            <return type="array(array(TokenID, Surface, Count))">the Type ID, Surface and total number of associated Occurrences</return>
+                        </function>
+                        <function name="getOccTypes">
+                            returns an array containing all Types (=Token entries) of type 'occ'.
+                            <return type="array(array(TokenID, Surface, Count))">the Type ID, Surface and total number of associated Occurrences</return>
+                        </function>
+                        <function name="getOccTypesDemo">
+                            DEMO-SPECIFIC FOR PRESENTATION ON 2011-12-01
+                            returns an array containing all Types (=Token entries) of type 'occ'.
+                            <return type="array(array(TokenID, Surface, Count))">the Type ID, Surface and total number of associated Occurrences</return>
+                        </function>
+                        <function name="addTextFromXMLInput">
+                            Creates a new Text on the System, according to a given XML serialization of a text
+                            <param name="xml" type="string">The XML representation of the Text</param>
+                            <param name="corpus_id" type="int">The ID of the Corpus the new Text should be assigned to</param>
+                            <param name="migrate" type="bool">Whether to migrate the XML into the new scheam via XMLMigraionParser</param>
+                            <param name="tokenize" type="bool">Whether the txt section should be automatically tokenized</param>
+                        </function>
+                        <function name="analyseXMLFile">
+                            Analyses an XML file and checks (a) whether it is a corpus or a single text and (b) what format it is stored in, i.e., which XSD applies for validating it (ENTRY, STORAGE, EDIT). If the file validates against the according XSD, parameters (a) and (b) are returned; an error message (str) is returned otherwise.
+                            <param name="filepath" type="string">The path to the file to be analysed</param>
+                            <return type="array(str)">is_corpus => /0: single file, 1: corpus/, xsd_type = /entry, storage, edit/ OR error string</return>
+                        </function>
+                        <function name="checkoutTextOrCorpus">
+                            Checks out a Text or Corpus and returns the corresponding Identifier (hash). Earlier checkouts of the same entity are marked as invalid.
+                            <param name="type" type="string">the type of the entity to be checked out: /text, corpus/</param>
+                            <param name="id" type="int">the ID of the entity to be checked out, i.e., a valid TextID or CorpusID</param>
+                            <param name="text_node" type="DOMDocument" default="0">The DOMDocument representation of the text to be checked out. Needed to calculate the checksums of its normalized an and txt section.</param>
+                            <param name="user_id" type="int" default="NULL">the ID of the user who checks out the entity</param>
+                            <return type="string">the 32-character hash to server as check-out identifier</return>
+                        </function>
+                        <function name="getSectionChecksums">
+                            Calculates a hash sum for the an and txt sections of a Text.
+                            <param name="text_node" type="DOMDocument">the text node</param>
+                            <return type="array(an_checksum,txt_checksum)">the checksum of the submitted text's an and txt section</return>
+                        </function>
+                        <function name="checkinTextOrCorpus">
+                            Takes a check-out identifier hash and checks the concerned entity back in. Returns the ID of the checked-in entity.
+                            <param name="identifier" type="string">the 32-character check-out identifier</param>
+                            <return type="id">the ID of the checked-in entity OR FALSE if the check-out identifier is invalid (outdated)</return>
+                        </function>
+                        <function name="validateCheckoutIdentifier">
+                            Checks if the submitted checkout identifier is valid, i.e., there is no newer checked-out version of the corresponding entity.
+                            <param name="checkout_id" type="string">the checkout id to validate (32-character string)</param>
+                            <return type="bool">whether the submitted checkout id is valid</return>
+                        </function>
+                    </file>
+                    
+                    <file short="user" name="User">
+                        <descr>Class for modeling PH2 users.</descr>
+                        <class name="User">
+                            <descr>A PH2 user is represented as an instance of this class. Both
+                                existing and tbc users can be instantiated.</descr>
+                            <ivar name="_dbFields" scope="private"/>
+                            <constructor>
+                                <param name="meta" type="int/array"> int: the UserID of an existing
+                                    user. All DB information is fetched and and assigned to the
+                                    object. array: the DB fields array containing values for a new
+                                    user to be created. NOT NUdLL fields must be provided.</param>
+                            </constructor>
+                            <function name="getID"> accessor <return type="string">this user's
+                                    ID</return>
+                            </function>
+                            <function name="getNickname"> accessor <return type="string">this user's
+                                    nickname</return>
+                            </function>
+                            <function name="getFullname"> accessor <return type="string">this user's
+                                    full name</return>
+                            </function>
+                            <function name="getPrivilege"> accessor <return type="string">this
+                                    user's privilege type</return>
+                            </function>
+                            <function name="getMail"> accessor <return type="string">this user's
+                                    mail address</return>
+                            </function>
+                            <function name="checkPassword">
+                                Checks whether @param password is this user's valid password
+                                <param name="password" type="string">the password to be checked</param>
+                                <return type="bool">TRUE if the password is valid, FALSE otherwise</return>
+                            </function>
+                            <function name="setPassword">
+                                Sets this User's password to @param password
+                                <param name="password" type="string">The user's new password</param>
+                            </function>
+                            <function name="change"> mutator Takes an array of field/value pairs and
+                                updates this instance and the coresponding db entry. <param
+                                    name="fields" type="associative array (field/value-pairs)">the
+                                    new user information to replace existing entries</param>
+                            </function>
+                            <function name="delete">
+                                Deletes this user from the database. This also deletes checkout-markings for checked-out texts and/or corpora of this user.
+                            </function>
+                        </class>
+                    </file>
+                    <file short="text" name="Text">
+                        <descr>Class for modelling Text representations.</descr>
+                        <class name="Text">
+                            <descr>A PH2 text represents all its information stored on the system
+                                (!) and provides a link to the static xml file.</descr>
+                            <ivar name="_id" scope="private"/>
+                            <ivar name="_corpus_id" scope="private"/>
+                            <ivar name="_cite_id" scope="private"/>
+                            <ivar name="_filepath" scope="private"/>
+                            <ivar name="_order_number" scope="private"/>
+                            <ivar name="_text_descriptors" scope="private"/>
+                            <ivar name="_n_occurrence" scope="private"/>
+                            <ivar name="_n_lemma" scope="private"/>
+                            <constructor> A Text can be constructed with an ID. In this case, it is loaded from the database. If it is constructed with a CiteID and a CorpusID, it is created in the database.
+                                <param name="id_or_citeid" type="int/string" default="NULL">the id of the TEXT database table entry / the CiteID for the new text in the database</param>
+                                <param name="corpus_id" type="int" default="NULL">the corpusID the new text should be assigned to</param>
+                                <param name="description" type="string" default="NULL">the optional description for the text (only affects system/database, not xml)</param>
+                            </constructor>
+                            <!-- accessors -->
+                            <function name="getID"> getter <return type="int">this Text's
+                                    ID</return>
+                            </function>
+                            <function name="getCorpusID"> getter <return type="int">the ID of the
+                                    Corpus that this Text is assigned to</return>
+                            </function>
+                            <function name="getFilepath"> getter <return type="string">the path on
+                                    the filesystem to this Text's xml representation</return>
+                            </function>
+                            <function name="getCiteID">
+                                getter
+                                <return type="string">the ZITF of the text</return>
+                            </function>
+                            <function name="getOrderNumber">
+                                getter
+                                <return type="string">the order number of the text</return>
+                            </function>
+                            <function name="getName"> #OUTDATED: REMOVE <return type="string">this Text's
+                                    name</return>
+                            </function>
+                            <function name="getDescription"> #OUTDATED: REMOVE <return type="string">this
+                                    Text's description</return>
+                            </function>
+                            <function name="setCiteID">
+                                setter
+                                <param name="citeid" type="string">the CiteID of the text</param>
+                            </function>
+                            <function name="setOrderNumber">
+                                setter
+                                <param name="order_number" type="int">the new order number</param>
+                            </function>
+                            <function name="setFilepath"> setter <param
+                                    name="filepath" type="string">the new filepath pointing to the
+                                    xml representation of this text on the filesystem</param>
+                            </function>
+                            <function name="setName"> #OUTDATED: REMOVE <param name="name" type="string">the
+                                    new name of the Text</param>
+                            </function>
+                            <function name="setDescription"> #OUTDATED: REMOVE <param name="description"
+                                    type="string">the new description of the Text</param>
+                            </function>
+                            <function name="setCorpusID"> setter <param name="corpus_id" type="int"
+                                    >the ID of the new Corpus that this Text should be assigned
+                                    to</param>
+                            </function>
+                            <function name="isCheckedOut">
+                                setter
+                                <return type="bool">whether the text is currently checked out</return>
+                            </function>
+                            <!-- functions: public -->
+                            <function name="getXML">
+                                Returns the XML representation of the text (STORRAGE format).
+                                <param name="as_DOM" type="bool" default="0">if TRUE, the text will be returned as a DOMDocument rather than a string</param>
+                                <return type="string/DOMDocument">the Text xml</return>
+                            </function>
+                            <function name="getTextDescriptors"> returns an array of key/value-pairs
+                                with meta information on the Text, derived from the xml an-Section.
+                                If a filter is provided, the function only returns the
+                                text_descriptors whose name is provided in the filter array. <param
+                                    name="filter" type="array(str)" default="NULL">the filter. If
+                                    provided, only text_descriptors whose name is contained in this
+                                    array will be returned</param>
+                                <return type="array(str => str)">the key/value pairs: descriptor
+                                    name => value</return>
+                            </function>
+                            <function name="getNumberOfOccurrences"> returns the total number of
+                                Occurrences (= wn-tags) of this Text. <return type="int">the number
+                                    of Occurrences assigned to this Text</return>
+                            </function>
+                            <function name="getNumberOfLemmata"> returns the total number of Lemmata
+                                connected to Occurrences of this Text. <return type="int">the number
+                                    of Lemmata connected to Occurrences of this Text</return>
+                            </function>
+                            <function name="checkout">
+                                Returns a DOMNode representation of the Text according to the PH2 EDIT XSD and marks the text as checked out.
+                                <param name="user_id" type="int" default="NULL">the ID of the user who checks out the text</param>
+                                <return type="DOMNode">the string representation of the current TEXT in EDIT format</return>
+                            </function>
+                            <function name="checkin">
+                                Updates this Text according to an edited DOMNode in PH2 EDIT XSD. The CHECKOUT mark is removed for this text upon success.
+                                <param name="edited_text" type="string/DOMNode">The text to be imported. If a strign is provided, it is converted to a DOMNode (valid EDIT XML assumed).</param>
+                                <param name="overwrite_annotations" type="bool" default="0">Whether existing annotations in the database should be kept (0) or replaced by those given in the text to be imported (1).</param>
+                            </function>
+                            <function name="delete">
+                                Deletes this text. All assignments (Graphgroup, Lemma, Morph) are also deleted. Deleting a text cannot be undone.
+                            </function>
+                            <!-- functions: private -->
+                            <function name="_loadFromDB" scope="private"> selects all information on
+                                this Text from the database (by $this->_id) and writes it into this
+                                object's instance variables. </function>
+                            <function name="_writeToDB" scope="private"> writes all information on
+                                this Text from this instance into the database. If this Project
+                                instance allready has an ID, the corresponding DB-entry is updated.
+                                Otherwise, a new entry is created in the database and the new ID is
+                                stored in this objects _id variable. </function>
+                            <function name="_loadTextDescriptors" scope="private"> loads all text descriptors from
+                                the DB and stores them into this Text's _text_descriptors instance
+                                variable. </function>
+                            <function name="_loadNumberOfOccurrences" scope="private"> loads the number of
+                                Occurrences assigned to this Text from the DB and stores it into
+                                this Text's _n_occurrence instance variable. </function>
+                            <function name="_loadNumberOfLemmata" scope="private"> loads the number of Lemmata
+                                assigned to Occurrences of this Text and stores it into this Text's
+                                _n_lemma instance variable. </function>
+                            <function name="_deleteFromDatabase" scope="private"> Deletes this text
+                                from the database. <return type="bool">1 on success, 0
+                                    otherwise</return>
+                            </function>
+                            <function name="_deleteFromFilesystem" scope="private"> Deletes this
+                                text from the filesystem. <return type="bool">1 on success, 0
+                                    otherwise</return>
+                            </function>
+                            <function name="_getCheckoutAnnotations" scope="private">
+                                Collects all annotations relevant for checking out the text in EDIT format (via Text->checkout()).
+                                Returns a datastructure like:
+                                            Attr. Name               Order Value          ...
+                                    array( "lemma"   => array( array(13,   "abbe"), array(14, "por"), ...),
+                                           "concept" => array( array(13, "c"), array(14, "c"), ...),
+                                           "morph"   => array( array(17, "s.m."), ...)
+                                         )
+                                <return type="array">the annotation categories with their Token-Order/Value-pairs</return>
+                            </function>
+                            <function name="_getEditXML" scope="private">
+                                Creates a DOMDocument representation with all export annotations (via Text->_getCheckoutAnnotations()) of this Text.
+                                <return type="DOMDocument">the DOMDocument EDIT XSD representation of this Text</return>
+                            </function>
+                            <function name="_updateHeaderSection">
+                                Takes a complete DOMNode representing an updated version of the text and updates the an section entries stored in TEXT_DESCRIPTOR. All existing entries are overwritten.
+                                <param name="new_gl_node" type="DOMNode">the DOMNode representation of the updated version, including the an section</param>
+                            </function>
+                            <function name="_updateTextSection">
+                                Updates the current text in the database according to an updated version.
+                                <param name="new_gl_node" type="DOMNode">the DOMNode representation of the updated version, including the txt section</param>
+                                <param name="overwrite_annotations" type="bool">whether existing annotations linked to occurrences of the old version should be transfered to the new version (0) or overwritten (1)</param>
+                            </function>
+                        </class>
+                    </file>
+                    <file short="project" name="Project">
+                        <descr>Class for modelling Project represenations.</descr>
+                        <class name="Project">
+                            <descr>A PH2 Project represents a Project entity in the system and its
+                                corresponding representation in the database.</descr>
+                            <ivar name="_id" scope="private">the project's id</ivar>
+                            <ivar name="_name" scope="private">the project's name</ivar>
+                            <ivar name="_descr" scope="private">the project's description</ivar>
+                            <ivar name="_created" scope="private">the project's creation date</ivar>
+                            <ivar name="_corpora" scope="private">the Corpus instances assigned to
+                                this Project</ivar>
+                            <ivar name="_n_corpus" scope="private">the number of Corpora assigned to
+                                this Project</ivar>
+                            <constructor> A Project can be constructed with an existing ID. In this
+                                case, it is loaded from the databse. Otherwise, a new Project with a
+                                given name is instantiated and written to the Database. The assigned
+                                corpora are not automatically retrieved from the database (into
+                                _corpora) for better performance. However, calling the method
+                                getAssignedCorpora() will store them in this instance (and return
+                                them). <param name="id_or_name" type="int/string">the id of the
+                                    PROJECT database table entry / the name of the new project to be
+                                    created</param>
+                                <param name="description" type="string" default="''">the description
+                                    of the project. Only relevant if this object is newly created
+                                    with a name in the first argument.</param>
+                            </constructor>
+                            <!-- accessors -->
+                            <function name="getID"> getter <return type="string">this Project's
+                                    ID</return>
+                            </function>
+                            <function name="getName"> getter <return type="string">this Project's
+                                    name</return>
+                            </function>
+                            <function name="getDescription"> getter <return type="string">this
+                                    Project's Description</return>
+                            </function>
+                            <function name="getCreationDate"> getter <return type="string">this
+                                    Project's creation date</return>
+                            </function>
+                            <function name="setName"> setter <param name="name" type="string">the
+                                    new name of the Project</param>
+                            </function>
+                            <function name="setDescription"> setter <param name="description"
+                                    type="string">the new description of the Project</param>
+                            </function>
+                            <!-- functions: private, protected -->
+                            <function name="_getAssignedCorporaIDs" scope="private"> returns the ids
+                                of all corpora that are assigned to this Project by querying the
+                                CORPUS table in the database <return type="array(int)">the ids af
+                                    all assigned corpora</return>
+                            </function>
+                            <function name="_loadNumberOfCorpora"> loads the number of Corpora
+                                assigned to this Project and stores it into this Project's _n_corpus
+                                instance variable. </function>
+                            <function name="_loadFromDB" scope="private"> selects all information on
+                                this Project from the database (by $this->_id) and writes it into
+                                this object's instance variables. </function>
+                            <function name="_writeToDB" scope="private"> writes all information on
+                                this Project from this instance into the database. If this Project
+                                instance allready has an ID, the corresponding DB-entry is updated.
+                                Otherwise, a new entry is created in the database and the new ID is
+                                stored in this objects _id variable. </function>
+                            <!-- functions: public -->
+                            <function name="assignCorpus"> takes a Corpus instance or ID and adds it
+                                (as Corpus instance) to this Project. If the Corpus is allready
+                                assigned to another corpus, this assignement will be overwritten (as
+                                each Corpus must be assigned to exactly one Project). <param
+                                    name="corpus" type="Corpus/int">the Corpus instance or
+                                    ID</param>
+                            </function>
+                            <function name="getAssignedCorpora"> returns the assigned Corpora
+                                instances of this Project. <param name="as_resultset" type="bool"
+                                    default="FALSE">if TRUE, the Corpora are returned row-wise to be
+                                    passed to a ResultSetTransformer</param>
+                                <return type="array(Corpus)">the Corpus instances</return>
+                            </function>
+                            <function name="getAssignedCorporaIDs">
+                                returns the ID of all Corpora assigned to this Project.
+                                <return type="array(int)">the Corpus IDs</return>
+                            </function>
+                            <function name="getNumberOfCorpora"> returns the number of Corpora
+                                currently assigned to this Project <return type="int">the number of
+                                    corpora currently assigned to this Project</return>
+                            </function>
+                        </class>
+                    </file>
+                    
+                    <file short="occurrence" name="Occurrence">
+                        <descr>Class for modelling Occurrence representations.</descr>
+                        <class name="Occurrence">
+                            <descr>A PH2 Occurrence represents an Occurrence entity in the system and points to a single, specific token in an XML text.</descr>
+                            <ivar name="_id" scope="private">this Occurrence's ID</ivar>
+                            <ivar name="_token_id" scope="private">this Occurrence's Token ID (pointing to the actual textual surface, i.e. its type)</ivar>
+                            <ivar name="_token_type" scope="private">this Occurrence's Token type (occ or punct)</ivar>
+                            <ivar name="_text_id" scope="private">the ID of the Text this Occurrence is assigned to</ivar>
+                            <ivar name="_order" scope="private">the order number of this occurrence relative to its Text</ivar>
+                            <ivar name="_div" scope="private">the div this occurrence is assigned to</ivar>
+                            <ivar name="_comment" scope="private">a comment on this Occurrence (does not affect the xml!)</ivar>
+                            <constructor>
+                                a new constructor can be constructed with an ID or a (Token Surface, Token Type, Text ID, Order [, Div assignment] [, array(TextsectionIDs)]. In the latter case, it is constructed as a new Entity in the database. Otherwise, an existing Occurrence is loaded.
+                                <param name="id" type="int">the Occurrence OR (!) tokenID; the latter case is assumed if the other parameters are not NULL</param>
+                                <param name="text_id" type="int" default="NULL"></param>
+                                <param name="order" type="int" default="NULL"></param>
+                                <param name="div" type="int" default="NULL"></param>
+                                <param name="comment" type="string" default="NULL"></param>
+                                <param name="textsection_ids" type="array(int)" default="NULL"></param>
+                            </constructor>
+                            <!-- public functions -->
+                            <function name="getID">
+                                accessor
+                                <return type="int">the ID</return>
+                            </function>
+                            <function name="getTokenID">
+                                accessor
+                                <return type="int">the TokenID</return>
+                            </function>
+                            <function name="getTokenType">
+                                accessor
+                                <return type="string">the Token's type</return>
+                            </function>
+                            <function name="getTextID">
+                                accessor
+                                <return type="int">the TextID</return>
+                            </function>
+                            <function name="getOrder">
+                                accessor
+                                <return type="int">the Order number relative to the assigned Text</return>
+                            </function>
+                            <function name="getDiv">
+                                accessor
+                                <return type="int">the Div number</return>
+                            </function>
+                            <function name="getTextsectionIDs">
+                                accessor
+                                <return type="array(int)">the IDs of the covering textsections</return>
+                            </function>
+                            <function name="getTextsectionNames">
+                                returns the names of the Textsections this Occurrence is assigned to
+                                <return type="array(array(name, descr))">the names of the Textsections</return>
+                            </function>
+                            <function name="getComment">
+                                accessor
+                                <return type="string">the comment</return>
+                            </function>
+                            <function name="getLemmaID">
+                                Returns the ID of the Lemma this Occurrence is assigned to
+                            </function>
+                            <function name="getLemma">
+                                Returns the Lemma object that this Occurrence is assigned to
+                            </function>
+                            <function name="getMorphAttributes">
+                                returns all morphological category/value-pairs that are assigned to this Occurrence
+                                <return type="array">array( 'pos' => 'OUT', 'gen' = ... )</return>
+                            </function>
+                            <function name="setComment">
+                                setter
+                                <param name="comment" type="string">the new comment on this Occurrence</param>
+                            </function>
+                            <function name="getSurface">
+                                returns the actual Occurrence surface, i.e. its type
+                                <return type="string">the surface of the Occurrence</return>
+                            </function>
+                            <function name="getType">
+                                returns the type of the Occurrence (via Token), e.g. 'occ' or 'punct'
+                                <return type="string">the type of the Occurrence</return>
+                            </function>
+                            <function name="getContext">
+                                returns a string of words occurring before and after this Occurrence. The result is returned as an array (left/right).
+                                <param name="ratio" type="int" default="100">specifies how many occurrences should be included in the text string on each side</param>
+                                <return type="array(string left, string right)">the array containing (0) the left- and (1) right-hand-side context</return>
+                            </function>
+                            <function name="getAssignedCorpusID">
+                                returns the ID of the Corpus this Occurrence is assigned to (via TEXT)
+                                <return type="int">the ID of the Corpus this Occurrence is assigned to</return>
+                            </function>
+                            <function name="setLemma">
+                                Assigns this Occurrence to a Lemma. If the Lemma does not exist allready, it is created in the Database. If the Occurrence is currently assigned to another lemma, the old association is replaced by the new one.
+                                <param name="surface" type="string">the surface string of the Lemma</param>
+                                <param name="concept" type="string" default="NULL">the short name of the Concept</param>
+                                <param name="project_id" type="int" default="NULL">the ID of the relevant Project</param>
+                            </function>
+                            <function name="setLemmaID">
+                                Assigns this Occurrence to a Lemma, given the Lemma's ID. If the Occurrence is currently assigned to another lemma, the old association is replaced by the new one.
+                                <param name="lemma_id" type="int">the ID of the Lemma that this Occurrence should be assigned to.</param>
+                            </function>
+                            <function name="setMorphAttribute">
+                                Adds a morphological attirbute (category, value) to this Occurrence. If there is an existing entry for the category given, this value will be overwritten.
+                                <param name="category" type="string">the category of the new morphological annotation</param>
+                                <param name="value" type="string">the value of the new morphological annotation</param>
+                            </function>
+                            <function name="removeMorphAttribute">
+                                Removes a morphological attribute with a given category.
+                                <param name="category" type="string">the category of the morphological attribute to be removed</param>
+                            </function>
+                            <function name="removeMorphAttributes">
+                                Removes all morphological attributes that are currently assigned to this Occurrence.
+                            </function>
+                            <function name="removeLemma">
+                                De-assigns this Occurrence from the Lemma it is currently assigned to.
+                            </function>
+                            <!-- private functions -->
+                            <function name="_loadFromDB" scope="private">
+                                loads an existing occurrence from the database
+                            </function>
+                            <function name="_writeToDB" scope="private">
+                                writes this occurrence to the database
+                            </function>
+                            <function name="_addTextsectionID" scope="private">
+                                connects this Occurrence to a Textsection by it's corresponding ID
+                                <param name="textsection_id" type="int"></param>
+                            </function>
+                        </class>
+                    </file>
+                    
+                    <file short="corpus" name="Corpus">
+                        <descr>Class for modelling Corpus representations.</descr>
+                        <class name="Corpus">
+                            <descr>A PH2 Corpus represents a Corpus entity in the system and its
+                                corresponding representation in the database.</descr>
+                            <ivar name="_id" scope="private">the Corpus id</ivar>
+                            <ivar name="_project_id" scope="private">the ID of the Project this
+                                Corpus is assigned to</ivar>
+                            <ivar name="_name" scope="private">the Corpus name</ivar>
+                            <ivar name="_descr" scope="private">the Corpus description</ivar>
+                            <ivar name="_texts" scope="private">the Text instances assigned to this
+                                Corpus</ivar>
+                            <ivar name="_n_text" scope="private">the number of Text instances
+                                assigned to this Corpus</ivar>
+                            <constructor> A Corpus can be constructed with an existing ID. In this
+                                case, it is loaded from the databse. Otherwise, a new Corpus with a
+                                given name is instantiated and written to the Database. The assigned
+                                Texts are not automatically retrieved from the database (into
+                                _texts) for better performance. However, calling the method
+                                getAssignedTexts() will store them in this instance (and return
+                                them). <param name="id_or_name" type="int/string">the id of the
+                                    CORPUS database table entry / the name of the new Corpus to be
+                                    created</param>
+                                <param name="project_id" type="int" default="NULL">the ID of the
+                                    Project that this Corpus shall be assigned to</param>
+                                <param name="description" type="string" default="''">the description
+                                    of the Corpus. Only relevant if this object is newly created
+                                    with a name in the first argument.</param>
+                            </constructor>
+                            <!-- accessors -->
+                            <function name="getID"> getter <return type="string">this Corpus'
+                                    ID</return>
+                            </function>
+                            <function name="getProjectID"> getter <return type="string">the ID of
+                                    this Corpus' Project assignment</return>
+                            </function>
+                            <function name="getName"> getter <return type="string">this Corpus'
+                                    name</return>
+                            </function>
+                            <function name="getDescription"> getter <return type="string">this
+                                    Corpus' Description</return>
+                            </function>
+                            <function name="setName"> setter <param name="name" type="string">the
+                                    new name of the Corpus</param>
+                            </function>
+                            <function name="setDescription"> setter <param name="description"
+                                    type="string">the new description of the Corpus</param>
+                            </function>
+                            <function name="getXML">
+                                Returns the XML representation of the Corpus (STORAGE format).
+                                <param name="as_DOM" type="bool" default="0">if TRUE, the Corpus will be returned as a DOMDocument rather than a string</param>
+                                <return type="string/DOMDocument">the Corpus XML</return>
+                            </function>
+                            <function name="isCheckedOut">
+                                getter
+                                <return type="bool">whether the Corpus is currently checked out for editing</return>
+                            </function>
+                            <!-- functions: private, protected -->
+                            <function name="_getAssignedTextIDs" scope="private"> returns the ids of
+                                all Texts that are assigned to this Project by querying the TEXT
+                                table in the database <return type="array(int)">the ids af all
+                                    assigned corpora</return>
+                            </function>
+                            <function name="_loadNumberOfTexts" scope="private"> loads the number of
+                                Texts assigned to this Corpus and stores it into this Corpus'
+                                _n_text instance variable. </function>
+                            <function name="_loadFromDB" scope="private"> selects all information on
+                                this Corpus from the database (by $this->_id) and writes it into
+                                this object's instance variables. </function>
+                            <function name="_writeToDB" scope="private"> writes all information on
+                                this Corpus from this instance into the database. If this Corpus
+                                instance allready has an ID, the corresponding DB-entry is updated.
+                                Otherwise, a new entry is created in the database and the new ID is
+                                stored in this objects _id variable. </function>
+                            <!-- functions: public -->
+                            <function name="assignText"> takes a Text instance or ID and adds it (as
+                                Text instance) to this Project. If the Text is allready assigned to
+                                another corpus, this assignement will be overwritten (as each Text
+                                must be assigned to exactly one Corpus). <param name="text"
+                                    type="Text/int">the Corpus instance or ID</param>
+                            </function>
+                            <function name="getAssignedTexts"> 
+                                returns the assigned Text instances of this Project.
+                                <param name="as_resultset" type="bool" default="FALSE">if TRUE, the Texts are returned row-wise to be passed to a ResultSetTransformer</param>
+                                <param name="include_links" type="bool" default="FALSE">if TRUE, the name and description fields will be wrapped by links pointing to the detail view of each text. Only applicable if the texts are returned as resultest.</param>
+                                <return type="array(Text)">the Text instances</return>
+                            </function>
+                            <function name="getNumberOfTexts"> returns the number of Texts currently
+                                assigned to this Corpus <return type="int">the number of Texts
+                                    currently assigned to this Corpus</return>
+                            </function>
+                            <function name="checkout">
+                                Checks out a whole corpus.
+                                1.) the checkout()-method is applied to all Texts assigned to this Corpus
+                                2.) the DOM-Node representations of the assigned Texts are combined into a Corpus-Document (DOM-Node) which satisfies the PH2 EDIT_CORPUS XSD
+                                3.) the Corpus is marked as checked out on the system
+                                4.) the Corpus DOM-Node is returned
+                                <param name="user_id" type="int" default="NULL">the ID of the user who checks out the corpus</param>
+                                <return type="DOMNode">the DOM-Node of the whole corpus ready for editing</return>
+                            </function>
+                            <function name="checkin">
+                                Checks if the submitted EDIT-XML contains all Texts that have been exportet. If so, the CHECKOUT mark is removed for this Corpus. Note that the texts contained in the EDIT-XML are NOT checked-in; they need to be checked-in via a TEXT object.
+                                <param name="edited_corpus" type="string/DOMNode">The Corpus to be imported. If a strign is provided, it is converted to a DOMNode (valid EDIT XML assumed).</param>
+                            </function>
+                            <function name="delete">
+                                Removes this corpus from the database. All assigned texts (and thus occurrences, etc.) are also deleted.
+                            </function>
+                        </class>
+                    </file>
+                    
+                    <file short="xmltextparser" name="XML Text Parser">
+                        <descr>Class for Parsing XML documents and import translate their content to the Phoenix2 relational database schema.</descr>
+                        <class name="XMLTextParser">
+                            <descr>A XMLTextParser takes an XML string as input and, while the text is parsed, creates the corresponding entities (= database entreis) in the system. The result of the parsing hence is the new entries in the database tables, alongside with a new xml document to be stored on the filesystem, a log file, and further meta information. The parser tries for each XML node to find a function named after its own name. If this succeeds, the corresponding function creates the neccessary entities in the database and translates the current node into the new document if applicable. Otherwise, the node is not altered and directly added to the new document.</descr>
+                            <ivar name="input_xml" scope="public">the xml string of the document to be parsed</ivar>
+                            <ivar name="text_corpusID" scope="public">the ID of the corpus that the new text should be assigned to (will not affect xml!)</ivar>
+                            <ivar name="convert_punctuation">whether untagged punctuation marks should be wrapped by a punct-type token (see _parse_txt for details)</ivar>
+                            <ivar name="_mode" scope="protected">if set to 'update', this parser will re-import a text in EDIT format</ivar>
+                            <ivar name="_import_db_entries" scope="protected">stores the rows for new entries to be inserted in exchange for their old equivalent when an EDIT text is imported</ivar>
+                            <ivar name="_import_token_order_mappings" scope="protected">stores which token number (Order) of the old text (key) corresponds to which token number of the new text (value)</ivar>
+                            <ivar name="_output_xml" scope="protected">the DOM Document containing the new xml representation out of _input_xml</ivar>
+                            <ivar name="_xsd_path" scope="protected">the path pointing to the XSD file on the filesystem. If specified, the _input_xml is validated against it.</ivar>
+                            <ivar name="_log" scope="protected">the log string</ivar>
+                            <ivar name="_unknown_tags" scope="protected">array of tags in the document that could not be parsed with a dedicated function. Also mentioned in the log.</ivar>
+                            <ivar name="_document_descriptors" scope="protected">array of meta tags for this document, e.g. "translated" if old wn-tags were translated to token-tags etc.</ivar>
+                            <ivar name="_created_text_entity">the Text entity that was created during the parsing</ivar>
+                            <ivar name="_parse_function_prefix" scope="protected">the prefix of all functions associated with parsing a node with a specific name</ivar>
+                            <ivar name="_paranthese_open" scope="protected">boolean indicating whether a [-paranthese was opened previously. See _parse_token-implementation for details on its use.</ivar>
+                            <ivar name="__sectionIDs" scope="protected">the array containing all active sectionIDs at the current step of parsing</ivar>
+                            <ivar name="__div" scope="protected">the text division (div) number at the current step of parsing</ivar>
+                            <ivar name="__token_counter" scope="protected">the token counter that is increased with every token</ivar>
+                            <!-- statics and DAOs -->
+                            <ivar name="_cached_dao_OCCURRENCE">the cached data access object to the OCCURRENCE table</ivar>
+                            <ivar name="_cached_dao_mig_OCCURRENCE">the cached data access object to the translation table for word OCCURRENCEs (XMLSchemaMigration)</ivar>
+                            <ivar name="_cached_dao_TOKEN">the cached data access object to the TOKEN table</ivar>
+                            <ivar name="_cached_dao_TOKENTYPE">the cached data access object to the TOKENTYPE table</ivar>
+                            <ivar name="_cached_dao_DESCRIPTOR">the cached data access object to the DESCRIPTOR table</ivar>
+                            <ivar name="_cached_dao_TEXT_DESCRIPTOR">the cached data access object to the TEXT_DESCRIPTOR table</ivar>
+                            <ivar name="_STATIC_textsection_starters">the tag names that start a textsection</ivar>
+                            <ivar name="_STATIC_textsection_terminators">the tag names that terminate a textsection</ivar>
+                            <constructor>
+                                <param name="input_xml" type="string" default="NULL">the xml string that should be parsed</param>
+                                <param name="xsd_path" type="string" default="NULL">the path pointing to the xsd file that the input_xml should be validated against.</param>
+                            </constructor>
+                            <!-- public functions -->
+                            <function name="getOutputXML">
+                                returns the output xml generated by a successful parsing.
+                                <return type="DOMDocument">the output xml</return>
+                            </function>
+                            <function name="getLog">
+                                returns the log of the current parser state
+                                <return type="array">the log lines</return>
+                            </function>
+                            <function name="getUnknownTags">
+                                returns the tags that no specific parser was defined for; they were only copied, but have no effect on the PH2 database.
+                                <return type="array(string">the unknown tags</return>
+                            </function>
+                            <function name="parse">
+                                Parses the input_xml (string) in STORAGE format and returns the output_xml (DOMDocument). The input xml string must be stored in this object in order to call this method.
+                                <return type="DOMDocument">the output_xml</return>
+                            </function>
+                            <function name="import">
+                                Parses the input_xml (string) in EDIT format and returns the output_xml (DOMDocument). The original Text that input_xml belongs to is deleted after the import, both in the DB and on the filesystem.
+                            </function>
+                            <function name="reset">
+                                Resets the parser by re-calling the constructor. If an input_xml (and, optionally, an xsd path) is provided, it is parsed immediately as upon construction.
+                                <param name="input_xml" type="string" default="NULL">the xml string that should be parsed</param>
+                                <param name="xsd_path" type="string" default="NULL">the path pointing to the xsd file that the input_xml should be validated against.</param>
+                            </function>
+                            <!-- private functions -->
+                            <function name="_log">
+                                adds an entry to the log file.
+                                <param name="message" type="string">the log message</param>
+                                <param name="type" type="int" default="1">the type of this log line. 1: standard (OK), 2: warning (but the parsing proceeds), 3: error (parsing is aborted)</param>
+                                <param name="affected_node" type="string" default="NULL">the name of the affected node that raised the log line. may be empty if the message does not concern a specific node type.</param>
+                                <param name="timestamp" type="string" default="NULL">the current timestamp</param>
+                            </function>
+                            <function name="_prepare_input_xml" scope="protected">
+                                Converts the input xml string to a DOMDocument and checks it against the xsd if applicable.
+                                <return type="DOMDocument">the DOMDocument-representation of the input xml</return>
+                            </function>
+                            <function name="_write_output_xml_to_file">
+                                writes the output xml into the data folder on the filesystem specified in the settings. The filepath is stored in the Text entity on the database.
+                            </function>
+                            <function name="_parse_loop" scope="protected">
+                                Iterates over each node of the DOMDocument-representation of the input xml (converted by _prepare_xml_input) and passes it to the respective parser.
+                                <param name="input_node" type="DOMNode">the DOMDocument-representation of the input node to parse</param>
+                                <param name="root" type="DOMNode">the node where the result of the input_node parsing should be appended to</param>
+                            </function>
+                            <function name="_abort" scope="protected">
+                                Aborts the parsing and deletes all created entites from the database (rollback). Returns the false. The parser is not automatically reset, thus $this->getLog() may be called in order to access the log file. Use $this->reset to reset the parser.
+                                <return type="bool">returns FALSE, indicating that the parsing process was not successful</return>
+                            </function>
+                            <function name="_getNextTokenOrderNumber" scope="protected">
+                                increases the __token_counter by one and returns its current number
+                                <return type="int">the occurrence order number</return>
+                            </function>
+                            <function name="_getTextContentOfNode" scope="protected">
+                                Returns the text content of the given node.
+                                <param name="node" type="DOMNode">The input node</param>
+                                <param name="stripTags" type="bool">If TRUE, the tags inside the node text will be ommitted</param>
+                                <return type="string">the text content of the input node</return>
+                            </function>
+                            <!-- parsing functions. their prefix must match $this->_parse_function_prefix -->
+                            <function name="_default_parse" scope="protected">
+                                If there is no specific parser function for a document node, it is passed to this function. It delegates specific routines to dedicated agregation functions and specifies a standard routine for all other nodes.
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_default_parse_textdescriptor">
+                                Handles all text descriptors inside an an-node. It is 'additive': all node names are added to the database if they don't exist yet.
+                                <param name="node" type="DOMNode">the node to be parsed</param>
+                            </function>
+                            <function name="_default_parse_textsection">
+                                Handles all textsections. They are static: only nodes named after entries provided in the TEXTSECTION table are considered. E.g. 'int.s'/'int.e' is considered if 'int' exists as a TEXTSECTION.
+                                <param name="node" type="DOMNode">the node to be parsed</param>
+                            </function>
+                            <function name="_copy_node" scope="protected">
+                                Takes a DOMNode and creates a copy based in the output_xml.
+                                <param name="input_node" type="DOMNode">the node to be copied</param>
+                                <param name="include_children" type="bool" default="FALSE">whether to recursively include all children or just the node itself</param>
+                                <return type="DOMNode">the copy the input node</return>
+                            </function>
+                            <function name="_parse_gl" scope="protected">
+                                parser for gl-tag
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_an" scope="protected">
+                                parser for an-tag
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_txt" scope="protected">
+                                parser for txt-tag
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_div" scope="protected">
+                                parser for div-tag
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_lat" scope="protected">
+                                parser for lat-tag
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_vid" scope="protected">
+                                parser for vid-tag
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_token" scope="protected">
+                                parser for token-tag
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_fue" scope="protected">
+                                parser for fue-tag. The comment will be appended to the Occurrence proceeding it.
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                        </class>
+                    </file>
+                    
+                    <file short="z_xmlmigrationparser" name="XML Migration Parser">
+                        <descr>Class for Migrating and Parsing XML documents (old format) and import their content to the Phoenix2 relational database schema.</descr>
+                        <class name="XMLMigrationParser" extends="XMLTextParser">
+                            <ivar name="_zitf" scope="protected">the CiteID of the text to be appended to the root node in the new format</ivar>
+                            <ivar name="_prev_node" scope="protected">the previously parsed DOM Node (= direct preceeding sibling)</ivar>
+                            <ivar name="_current_num" scope="protected">the currently active DOM Node of a number conversion (i.e. reordering of wn- and token[numpart]-tags to a signle token[num] node) </ivar>
+                            <ivar name="_tokenizer" scope="protected">the Tokenizer to use for tokenization (if constroctor->tokenize == TRUE)</ivar>
+                            
+                            <constructor>
+                                <param name="input_xml" type="string" default="NULL">the xml string that should be parsed</param>
+                                <param name="xsd_path" type="string" default="NULL">the path pointing to the xsd file that the input_xml should be validated against.</param>
+                                <param name="convert_punctuation" type="bool" default="FALSE">if true, the parser searches for unbound punctuation marks (see function body for details) and converts them into a token tag with type=punct.</param>
+                                <param name="tokenize" type="bool" default="FALSE">Whether to automatically tokenize the input_xml</param>
+                            </constructor>
+                            
+                            <function name="parse">
+                                This migration parser does not automatically write the converted XML document to the filesystem. Instead, it returns the XML DOM representation of the output XML.
+                                <return type="DOMDocument">the output_xml DOM representation</return>
+                            </function>
+                            <function name="_parse_loop" scope="protected">
+                                Identical to superclass; only for redirecting the recursive routine.
+                                <param name="input_node" type="DOMNode">the DOMDocument-representation of the input node to parse</param>
+                                <param name="root" type="DOMNode">the node where the result of the input_node parsing should be appended to</param>
+                            </function>
+                            
+                            <function name="_default_parse" scope="protected">
+                                Identical to superclass; only for redirecting the recursive routine.
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_default_parse_textdescriptor">
+                                SKIP DB
+                                <param name="node" type="DOMNode">the node to be parsed</param>
+                            </function>
+                            <function name="_default_parse_textsection">
+                                SKIP DB
+                                <param name="node" type="DOMNode">the node to be parsed</param>
+                            </function>
+                            <function name="_parse_gl" scope="protected">
+                                SKIP DB
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_txt" scope="protected">
+                                REMOVE ASTERISK, TOKENIZE INTERPUNCTION (NOT REPAIR YET)
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_id" scope="protected">
+                                Remove the id-tag as it is not part of the STORAGE XSD
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_zitf" scope="protected">
+                                Remove the zitf-tag and add its content as an attribute to the root node (gl)
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_token" scope="protected">
+                                Only punctuation is represented as token-tags so far. Correct wrong interpunctuation here.
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_wn" scope="protected">
+                                CONVERT TAG NAME wn->token, MARK ][-PARANTHESES (TEXT SURFACE)
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_fue" scope="protected">
+                                parser for fue-tag. Subsequent whitespaces will be deleted.
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_parse_ful" scope="protected">
+                                parser for ful-tag. Subsequent whitespaces will be deleted.
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <return type="DOMNode">the result of the parsing (new node)</return>
+                            </function>
+                            <function name="_copyTrimNode" scope="protected">
+                                returns a copy of the node with all 2+ whitespaces merged to 1 and without trailing whitespaces, tabs etc.
+                                <param name="input_node" type="DOMNode">the node to be parsed</param>
+                                <param name="new_node_name" type="string">the name of the new node. caution: the old nodeName will be replaced!</param>
+                                <return type="DOMNode">the new node without the whitespaces</return>
+                            </function>
+                            <function name="_isNumberSurface" scope="protected">
+                                Takes a string and checks if it is a roman number
+                                <param name="string" type="string">The string to be checked</param>
+                                <return type="bool">TRUE if the string is a number; FALSE otherwise.</return>
+                            </function>
+                            <function name="_isNumberInterpunctuation" scope="protected">
+                                Takes a string and checks if it is a punctuation sequence that can start or terminate numbers
+                                <param name="string" type="string">The string to be checked</param>
+                                <return type="bool">TRUE if the string is a matching punctuation sequence; FALSE otherwise.</return>
+                            </function>
+                            <function name="_mergeInto" scope="protected">
+                                Merges a subject DOM Node into a target DOM Node.
+                                The Structure of the target node is thouroughly preserved; only its text content is appended the whole text content of the subject node.
+                                <param name="node_to_be_merged" type="DOMNode">The node to be merged into $target_node</param>
+                                <param name="target_node" type="DOMNode">The node whose text content will be appended the text content of $node_to_be_merged</param>
+                                <return type="DOMNode">the target node (that $node_to_be_merged has been merged into)</return>
+                            </function>
+                            <function name="_getNewNumNode" scope="protected">
+                                Returns a new node of type token[num] with an empty text content
+                                <return type="DOMNode">the new number node</return>
+                            </function>
+                            <function name="_checkNumber" scope="protected">
+                                Takes a node and checks whether it is an end point of a number. If so, a number conversion routine is invoked.
+                                <param name="candidate_node" type="DOMNode">The node to be checked</param>
+                            </function>
+                            <function name="_checkNumberLookback" scope="protected">
+                                Takes a number node and checks whether it is preceeded by other number or interpunctuation fragments that make up a whole number
+                                <param name="candidate_number_node" type="DOMNode">The number node (token[num]) to be checked</param>
+                            </function>
+                            <function name="_checkNumberLookbackLoop" scope="protected">
+                                Recursively looks for token[occ] number fragments preceeding an existing token[num] element
+                                <param name="candidate_number_node" type="DOMNode">The number node to check for preceeding fragments</param>
+                                <return type="DOMNode">The final node with no preceeding number fragments (excluding interpunctuation)</return>
+                            </function>
+                        </class>
+                    </file>
+                    
+                    <file short="xmltexttokenizer" name="XML Text Tokenizer">
+                        <descr>Class for tokenizing txt-sections of gl-deeds (xml texts). Allows definition of in-token- (will be part of a token) and off-token-stream- (text inside those will not be tokenized)  xml-tags.</descr>
+                        <class name="XMLTextTokenizer">
+                            
+                            <ivar name="INTERPUNCTUATION_CHARS" scope="protected" />
+                            <ivar name="IN_TOKEN_TAGS" scope="protected" />
+                            <ivar name="OFF_STREAM_MARKERS" scope="protected" />
+                            <ivar name="INTER_WORD_SEPARATOR_CHARS" scope="protected" />
+                            <ivar name="REPLACEMENTS" scope="protected" />
+                            <ivar name="off_token_stream" />
+                            
+                            <constructor />
+                            
+                            <function name="_preprocess" scope="protected">
+                                Runs a number of preprocessing routines on the input text. Assembles _pre_-functions of this class. The preprocessing steps result in a text that is splittable by whitespaces and thus passable to the _tokenize-function.
+                                <param name="text" type="string">the input text</param>
+                                <return type="string">the output text</return>
+                            </function>
+                            
+                            <function name="_add_replacements" scope="protected">
+                                replaces whitespaces inside xml tags with a given character sequence to avoid splitting
+                                <param name="text" type="string">the input text</param>
+                                <return type="string">the output text</return>
+                            </function>
+                            
+                            <function name="_remove_replacements" scope="protected">
+                                reverses the replacements made by $this->_add_replacements
+                                <param name="text" type="string">the input text</param>
+                                <return type="string">the output text</return>
+                            </function>
+                            
+                            <function name="_pre_replacements" scope="protected">
+                                Replaces given character sequences with their provided substitutes (regex; according to REPLACEMENTS).
+                                <param name="text" type="string">the input text</param>
+                                <return type="string">the output text</return>
+                            </function>
+                            
+                            <function name="_pre_seperate_tags" scope="protected">
+                                Splits word candidates from xml-tags by inserting a whitespace character. Exceptions according to IN_TOKEN_TAGS.
+                                E.g. abbe(fue) => abbe (fue); (maj)a(/maj)bbe => (maj)a(/maj)bbe (=exception; no change)
+                                <param name="text" type="string">the input text</param>
+                                <return type="string">the output text</return>
+                            </function>
+                            
+                            <function name="_seperate_word" scope="protected">
+                                Splits word candidates if they contain seperators (according to INTER_WORD_SEPARATOR_CHARS).
+                                E.g. l'abbe => l ' abbe
+                                <param name="word" type="string">the input text</param>
+                                <return type="string">the output text</return>
+                            </function>
+                            
+                            <function name="_seperate_interpunction" scope="protected">
+                                Seperates punctuation signs from words by inserting a whitespace character.
+                                E.g. abbe,/. => abbe ,/.
+                                <param name="word" type="string">the input text</param>
+                                <return type="string">the output text</return>
+                            </function>
+                            
+                            <function name="tokenize" scope="public">
+                                Tokenizes an input text and returns its new (xml-tokenized) representation.
+                                <param name="text" type="string">the untokenized input xml text</param>
+                                <return type="string">the tokenized xml text</return>
+                            </function>
+                            
+                            <function name="_isToken" scope="protected">
+                                Checks if a given string (token candidate) is a token (by definition). This function also invokes the isOffTokenStreamMarker-function to check whether tokenization is currently turned off for this sequence.
+                                <param name="candidate" type="string">the token candidate</param>
+                                <return type="bool">TRUE if the token matches the token definition, FALSE otherwise</return>
+                            </function>
+                            
+                            <function name="_isOffTokenStreamMarker" scope="protected">
+                                Checks if a token candidate marks the beginning or end of an xml tag whose content should not be tokenized. Affects $this->off_token_stream.
+                                <param name="candidate" type="string">the token candidate</param>
+                                <return type="bool">TRUE if the candidate is an off token stream marker, FALSE otherwise</return>
+                            </function>
+                            
+                            <function name="_makeToken" scope="protected">
+                                Takes a string and frames it with the token-markup.
+                                E.g. abbe => (wn)abbe(/wn)
+                                <param name="input_string" type="string">the string to be framed</param>
+                                <return type="string">the framed input string (=annotated token)</return>
+                            </function>
+                            
+                            <function name="_getTagName" scpoe="protected">
+                                Extracts the tag name out of an xml tag.
+                                E.g. (/hans n=23) => hans
+                                <param name="input_string" type="string">the xml string</param>
+                                <return type="string">the name of the xml tag</return>
+                            </function>
+                            
+                            
+                        </class>
+                        
+                    </file>
+                    
+                    <file short="lemma" name="Lemma">
+                        <descr>Class for handling Lemma objects</descr>
+                        
+                        <class name="Lemma">
+                            <descr>A Lemma object. A Lemma has an identifier (e.g., manger-1) and a concept (e.g., c). Optionally, it can have a surface (e.g., manger) and n morphological annotations.</descr>
+                            
+                            <ivar name="_id" scope="protected">the ID of the Lemma</ivar>
+                            <ivar name="_project_id" scope="protected">the ID of the project this Lemma is assigned to</ivar>
+                            <ivar name="_identifier" scope="protected">the identifier of this Lemma</ivar>
+                            <ivar name="_lemmastring_id" scope="protected">the ID of the Lemma's surface</ivar>
+                            <ivar name="_lemmastring" scope="protected">the string (surface) of the Lemma</ivar>
+                            <ivar name="_concept_id" scope="protected">the ID of the Lemma's Concept</ivar>
+                            <ivar name="_concept_short" scope="protected">the short name of this Lemma's concept</ivar>
+                            <ivar name="_is_lexicon_relevant" scope="protected">whether the Lemma is relevant for the lexicon</ivar>
+                            
+                            <constructor>
+                                A Lemma can be constructed either with an ID (=load an existing Lemma) or with an identifier and a Concept (=create new Lemma on the Database). If a Lemma with the given (surface/concept/project_id) allready exists, it is loaded from the DB rather than re-created.
+                                <param name="id_or_identifier" type="int/string">the ID (existing) or name (new) of the Lemma</param>
+                                <param name="concept_short" type="string" default="NULL">the short name of the new Lemma</param>
+                                <param name="project_id" type="int" default="NULL">the Project that the new Lemma should be assigned to</param>
+                                <param name="surface" type="string" default="NULL">the surface of the new Lemma</param>
+                                <param name="morph_params" type="array" default="NULL">an array with morphological categories (key) and values (value)</param>
+                            </constructor>
+                            
+                            <!-- getters -->
+                            <function name="getID">
+                                getter
+                                <return type="int">the ID of this Lemma</return>
+                            </function>
+                            <function name="getProjectID">
+                                getter
+                                <return type="int">the ID of the Project this Lemma is assigned to</return>
+                            </function>
+                            <function name="getIdentifier">
+                                getter
+                                <return type="string">the identifier of this Lemma</return>
+                            </function>
+                            <function name="getLemmaString">
+                                getter
+                                <return type="string">the surface of this Lemma</return>
+                            </function>
+                            <function name="getSurface">
+                                convenience function for getLemmaString()
+                                <return type="string">the surface of this Lemma</return>
+                            </function>
+                            <function name="getLemmaStringID">
+                                getter
+                                <return type="string">the ID of this Lemma's surface</return>
+                            </function>
+                            <function name="getConceptShort">
+                                getter
+                                <return type="string">the short form of this Lemma's Concept, e.g., 'c'</return>
+                            </function>
+                            <function name="getConcept">
+                                convenience function for getConceptShort()
+                                <return type="string">the short form of this Lemma's Concept, e.g., 'c'</return>
+                            </function>
+                            <function name="getConceptID">
+                                getter
+                                <return type="int">the ID of this Lemma's Concept</return>
+                            </function>
+                            <function name="isLexiconRelevant">
+                                getter
+                                <return type="bool">whether this Lemma is relevant for the lexicon</return>
+                            </function>
+                            <function name="getMorphAttributes">
+                                returns all morphological category/value-pairs that are assigned to this Lemma
+                                <return type="array">array( 'gen' => 'f', 'num' = ... )</return>
+                            </function>
+                            
+                            <!-- setters -->
+                            <function name="setProjectID">
+                                setter
+                                <param name="project_id" type="int">the new project ID</param>
+                            </function>
+                            <function name="setIdentifier">
+                                setter
+                                <param name="identifier" type="string">the new identifier for this Lemma</param>
+                            </function>
+                            <function name="setSurface">
+                                updates the surface of this Lemma
+                                <param name="surface_string" type="string">the new surface of the Lemma</param>
+                            </function>
+                            <function name="setConcept">
+                                updates the Concept of this Lemma
+                                <param name="concept_short" type="string">the short name of the Lemma's new Concept</param>
+                            </function>
+                            <function name="setMorphAttribute">
+                                Adds a morphological attirbute (category, value) to this Lemma. If there is an existing entry for the category given, this value will be overwritten.
+                                <param name="category" type="string">the category of the new morphological annotation</param>
+                                <param name="value" type="string">the value of the new morphological annotation</param>
+                            </function>
+                            <function name="setIsLexiconRelevant">
+                                setter
+                                <param name="is_relevant" type="bool">whether this Lemma is relevant for the lexicon or not</param>
+                            </function>
+                            
+                            <!-- public functions -->
+                            <function name="assignOccurrenceID">
+                                Assigns an Occurrence to this Lemma, given the Occurrence's ID.
+                                <param name="occurrence_id" type="int">the ID of the Occurrence to be assigned to this Lemma</param>
+                            </function>
+                            <function name="removeMorphAttribute">
+                                Removes a morphological attribute with a given category.
+                                <param name="category" type="string">the category of the morphological attribute to be removed</param>
+                            </function>
+                            <function name="removeMorphAttributes">
+                                Removes all morphological attributes that are currently assigned to this Lemma.
+                            </function>
+                            
+                            <!-- private functions -->
+                            <function name="_loadFromDB">
+                                selects all information on this Lemma from the database (by $this->_id) and writes it into this object's instance variables.
+                            </function>
+                            <function name="_writeToDB">
+                                writes all information on this Lemma from this instance into the database. If this Project instance allready has an ID, the corresponding DB-entry is updated. Otherwise, a new entry is created in the database and the new ID is stored in this objects _id variable.
+                            </function>
+                            
+                        </class>
+                        
+                    </file>
+                        
+                    <file short="graphgroup" name="Graphematic Subgroups">
+                        <descr>Classes for handling Graphematic Subgroups (Objects for Annotation)</descr>
+                        
+                        <class name="Graphgroup">
+                            <descr>A Graphgroup object represents a Grapheme Subgroup and thereby an entry in the GRAPHGROUP table of the DB</descr>
+                            
+                            <ivar name="_id" scope="protected">The ID of the Graphgroup</ivar>
+                            <ivar name="_number" scope="protected">The Number of the Graphgroup (unique for each Graph)</ivar>
+                            <ivar name="_name" scope="protected">The Name of the Graphgroup</ivar>
+                            
+                            <constructor>
+                                <param name="id_or_number" type="int">If a Graphgroup is constructed with an ID, it is loaded from the DB. If a Graphgroup is constructed with a name, it is created in the DB. Note that the name field is unique among all Graph-entries in the DB.</param>
+                                <param name="name" type="string" default="NULL">The (optinal) name for the new Graphgroup</param>
+                            </constructor>
+                            
+                            <function name="addOccurrence">
+                                add an Occurrence to this Graphgroup
+                                <param name="occurrenceID" type="int">the ID of the Occurrence to be added. Can be an array of IDs; in this case, they are all added.</param>
+                                <param name="deleteExistingAssignments" type="bool" default="TRUE">By default, all existing assignments of an occurrence are deleted before it is added to a new Graphgroup.</param>
+                            </function>
+                            
+                            <function name="removeOccurrence">
+                                remove an Occurrence from this Graphgroup
+                                <param name="occurrenceID" type="int">the ID of the Occurrence to be removed. Can be an array of IDs; in this case, they are all removed.</param>
+                            </function>
+                            
+                            <function name="getAssignedOccurrenceIDs">
+                                returns the IDs of all Occurrences assigned to this Graphgroup
+                                <return type="array(int)">the IDs of all Occurrences assigned to this Graphgroup</return>
+                            </function>
+                            
+                            <function name="_loadFromDB" scope="private"> selects all information on
+                                this Graphgroup from the database (by $this->_id) and writes it into this
+                                object's instance variables. </function>
+                            
+                            <function name="_writeToDB" scope="private"> writes all information on
+                                this Graphgroup from this instance into the database. If this Project
+                                instance allready has an ID, the corresponding DB-entry is updated.
+                                Otherwise, a new entry is created in the database and the new ID is
+                                stored in this objects _id variable. </function>
+                            
+                            <function name="getID">
+                                getter
+                                <return type="int">this Graphgroup's ID</return>
+                            </function>
+                            
+                            <function name="getName">
+                                getter
+                                <return type="string">this Graphgroup's name</return>
+                            </function>
+                            
+                            <function name="getNumber">
+                                getter
+                                <return type="string">this Graphgroup's number</return>
+                            </function>
+                            
+                            <function name="setName">
+                                setter
+                                <param name="name" type="string">the new name of the Graphgroup</param>
+                            </function>
+                            
+                            <function name="setNumber">
+                                setter
+                                <param name="number" type="string">the new number of the Graphgroup</param>
+                            </function>
+                        
+                        </class>
+                    
+                    </file>
+                    
+                    <file short="image" name="Image">
+                        <descr>Image: A Medium with Type=IMG</descr>
+                        
+                        <class name="Image">
+                            <descr>An Image is a Medium with Type=IMG. It consists of a file on the filesystem, a corresonding thumbnail, and the respective DB entries.
+                               NOTE: Use phpThumb (http://phpthumb.sourceforge.net/) for generating thumbnails.</descr>
+                            
+                            <ivar name="_id" scope="protected">The ID of the Image</ivar>
+                            <ivar name="_filepath" scope="protected">The filepath to the actual image file</ivar>
+                            <ivar name="_title" scope="protected">The title of the Image</ivar>
+                            <ivar name="_description" scope="protected">The description of the Image</ivar>
+                            <ivar name="_order" scope="protected">The ordering number of the Image</ivar>
+                            
+                            <constructor>
+                                An Image can be constructed with a filepath (a; new Image entity will be created) or an ID of an existing Image (b; which will then be loaded).
+                                <param name="id_or_filepath" type="int/string">See cases (a) and (b) above</param>
+                                <param name="title" type="string" default="''">The (optinal) title for the new Image</param>
+                                <param name="description" type="string" default="NULL">The (optinal) description for the new Image</param>
+                                <param name="order" type="string" default="0">The (optinal) ordering number for the new Image</param>
+                            </constructor>
+                            
+                            <function name="getID">
+                                getter
+                                <return type="string">the ID of the Image</return>
+                            </function>
+                            
+                            <function name="getTitle">
+                                getter
+                                <return type="string">the title of the Image</return>
+                            </function>
+                            
+                            <function name="getDescription">
+                                getter
+                                <return type="string">the description of the Image</return>
+                            </function>
+                            
+                            <function name="getOrder">
+                                getter
+                                <return type="string">the ordering number of the Image</return>
+                            </function>
+                            
+                            <function name="setTitle">
+                                setter
+                                <param name="title" type="string">the new title of the Image</param>
+                            </function>
+                            
+                            <function name="setDescription">
+                                setter
+                                <param name="description" type="string">the new description of the Image</param>
+                            </function>
+                            
+                            <function name="setOrder">
+                                setter
+                                <param name="order" type="string">the new ordering number of the Image</param>
+                            </function>
+                            
+                            <function name="delete">
+                                deletes this image entity, including all files and DB entries
+                            </function>
+                            
+                            <function name="linkToText">
+                                links the image to a text (via TEXT_MEDIUM)
+                                <param name="text_id" type="int">the text's ID</param>
+                            </function>
+                            
+                            <function name="removeFromText">
+                                removes the image from a text (via TEXT_MEDIUM)
+                                <param name="text_id" type="int">the text's ID</param>
+                            </function>
+                            
+                            <function name="getAssignedTexts">
+                                returns the IDs of all Texts this image is linked to (via TEXT_MEDIUM)
+                                <return type="array(id)">an array of TextIDs this Image is linked to</return>
+                            </function>
+                            
+                            <function name="_loadFromDB" scope="private">
+                                selects all information on this Image from the database (by $this->_id) and writes it into this object's instance variables.
+                            </function>
+                            
+                            <function name="_writeToDB" scope="private">
+                                writes all information on this Image from this instance into the database. If this Project instance allready has an ID, the corresponding DB-entry is updated. Otherwise, a new entry is created in the database and the new ID is stored in this objects _id variable.
+                            </function>
+                            
+                        </class>
+                    </file>
+                    
+                </section>
+
+                <section short="structures" name="data structures">
+                    <descr>Data structures such as Stacks, Queues and more complex types to be used
+                        within the PH2 Framework.</descr>
+                    <file short="stack" name="Stack">
+                        <descr>A simple stack data structure.</descr>
+                        <class name="Stack">
+                            <descr>A PH2 Stack consitsts of an array of items and can be accessed by
+                                basic operations such as push, pop, popAll etc.</descr>
+                            <ivar name="_items" scope="protected"/>
+                            <constructor> A stack is always constructed with an empty array of items
+                                ($_item). </constructor>
+                            <function name="push"> Adds an element onto the stack. <param
+                                    name="item" type="mixed">The element to be pushed onto the
+                                    stack.</param>
+                            </function>
+                            <function name="pop"> Pops the topmost item of the stack (removes it
+                                from the stack, then returns it). <return type="mixed">the topmost
+                                    element from the stack</return>
+                            </function>
+                            <function name="popAll"> Returns all elements from the Stack (removes
+                                them from the stack, then returns them, leaving an empty stack).
+                                    <return type="array">The array containing all stack
+                                    elements</return>
+                            </function>
+                            <function name="reset"> Resets the stack by removing all its items
+                                without returning them. </function>
+                            <function name="isEmpty">
+                                <return type="bool">TRUE if there are no items on the stack, FALSE
+                                    otherwise.</return>
+                            </function>
+                        </class>
+                    </file>
+                    <file short="x_stack-notification" name="Notification Stack">
+                        <descr>A Stack for Notifications</descr>
+                        <class name="NotificationStack" extends="Stack">
+                            <descr>A Stack holding items of type Notification, providing useful
+                                functions such as sorted get-operations etc.</descr>
+                            <function name="push"> Only items of type Notification can be pushed
+                                onto a NotificationStack <param name="item" type="Notification">The
+                                    Notification to be pushed onto the stack.</param>
+                            </function>
+                            <function name="popType"> Returns all Notifications with a given type
+                                and removes them from the stack. <param name="type"
+                                    type="int/string">the type of the notifications to be
+                                    returned</param>
+                                <return type="array">array of Notifications that match the given
+                                    type criterium</return>
+                            </function>
+                            <function name="popScope"> Returns all Notifications with a given scope
+                                and removes them from the stack. <param name="scope" type="string"
+                                    >the scope of the notifications to be returned</param>
+                                <return type="array">array of Notifications that match the given
+                                    scope criterium</return>
+                            </function>
+                        </class>
+                    </file>
+                    <file short="notification" name="Notification">
+                        <descr>Notifications are stored in PH2Sessions and transport information on
+                            various system events.</descr>
+                        <class name="Notification">
+                            <descr>A Notification consists of text, type, scope and (optional)
+                                origin.</descr>
+                            <ivar name="_text" scope="protected"/>
+                            <ivar name="_type" scope="protected"> 0:std, 1:ok, 2:note, 3:err,
+                                4:fatal</ivar>
+                            <ivar name="_scope" scope="protected">the system section where this
+                                notification is aimed at; all: general</ivar>
+                            <ivar name="_origin" scope="protected">the module signature where this
+                                notification was issued</ivar>
+                            <constructor> A Notification is constructed with at least a text; other
+                                instance vars receive default values if no information is provided.
+                                    <param name="text" type="string">the text of the
+                                    Notification.</param>
+                                <param name="type" type="int/string" default="0">the Notification
+                                    type (see instance vars)</param>
+                                <param name="scope" type="string" default="all">the scope of the
+                                    Notification</param>
+                                <param name="origin" type="string" default="NULL">the module
+                                    signature where the Notification was issued</param>
+                            </constructor>
+                            <function name="getText"> accessor <return type="string">the text of
+                                    this Notification</return>
+                            </function>
+                            <function name="getType"> accessor <return type="int">the type of this
+                                    Notification</return>
+                            </function>
+                            <function name="getScope"> accessor <return type="string">the scope of
+                                    this Notification</return>
+                            </function>
+                            <function name="getOrigin"> accessor <return type="string">the origin of
+                                    this Notification</return>
+                            </function>
+
+                        </class>
+                        <function name="checkNotificationType"> Checks if a given type variable is a
+                            valid type representation of a Notification. Valid are: 0-4 and 'std',
+                            'ok', 'note', 'err', 'fatal' <param name="type" type="int/string">the
+                                type candidate</param>
+                            <return type="bool">TRUE if the submitted variable is a valid type
+                                representation, FALSE otherwise</return>
+                        </function>
+                    </file>
+                </section>
+
+                <section short="html" name="HTML Output">
+                    <descr>Functions that return HTML code to be used within the GUI.</descr>
+                    <file short="basic" name="Basic HTML Output Generators">
+                        <descr>Basic functions returning various HTML Code.</descr>
+                        <function name="htmlUserTopBar"> The Content visible at the very top of the
+                            GUI, showing information on the currently logged-in user etc. <param
+                                name="session" type="Session">the current unserialized session
+                                object</param>
+                        </function>
+                        <function name="htmlTopCorpusSelection">
+                            The Selector visible at the very top of the GUI, showing information on the currently active Project and Corpus in the session.
+                        </function>
+                        <function name="htmlModuleStatusBarMessages"> The Messages with global scope
+                            within the submitted session, formated with their status color <param
+                                name="session" type="Session">the current unserialized session
+                                object</param>
+                            <return type="string">the html code</return>
+                        </function>
+                        <function name="htmlCorpusSelectionDropdown"> Returns a select-box (dropdown
+                            selection) listing all corpora of a given project. <param
+                                name="project_id" type="int">the project from which to select the
+                                corpora</param>
+                            <param name="name" type="string" default="'corpus_id'">the name of the
+                                form element</param>
+                            <param name="class" type="string" default="''">the class of the form
+                                element</param>
+                            <param name="id" type="string" default="''">the id of the form
+                                element</param>
+                            <return type="string">the html code</return>
+                        </function>
+                        <function name="htmlLemmaSelectionDropdown"> Returns a select-box (dropdown
+                            selection) listing all lemmata of a given project. <param
+                                name="project_id" type="int">the project from which to select the
+                                lemmata</param>
+                            <param name="name" type="string" default="'lemma_id'">the name of the
+                                form element</param>
+                            <param name="class" type="string" default="''">the class of the form
+                                element</param>
+                            <param name="id" type="string" default="''">the id of the form
+                                element</param>
+                            <return type="string">the html code</return>
+                        </function>
+                        <function name="htmlLemmaTypeSelectionDropdown"> Returns a select-box (dropdown selection) listing all lemma types (concepts).
+                            <param name="name" type="string" default="'lemma_type'">the name of the form element</param>
+                            <param name="class" type="string" default="''">the class of the form element</param>
+                            <param name="id" type="string" default="''">the id of the form element</param>
+                            <return type="string">the html code</return>
+                        </function>
+                        <function name="htmlGraphSelectionDropdown"> Returns a select-box (dropdown
+                            selection) listing all graphs of a given project.
+                            <param name="project_id" type="int">the project from which to select the graphs</param>
+                            <param name="name" type="string" default="'graph_id'">the name of the form element</param>
+                            <param name="class" type="string" default="''">the class of the form element</param>
+                            <param name="id" type="string" default="''">the id of the form element</param>
+                            <param name="initial_selection" type="int" default="NULL">the ID of the Grapheme to be selected by default/on-load</param>
+                            <return type="string">the html code</return>
+                        </function>
+                        <function name="htmlTypeSelectionDropdown"> Returns a select-box (dropdown selection) listing all types of a given project.
+                            <param name="project_id" type="int">the project from which to select the types</param>
+                            <param name="name" type="string" default="'token_id'">the name of the form element</param>
+                            <param name="class" type="string" default="''">the class of the form element</param>
+                            <param name="id" type="string" default="''">the id of the form element</param>
+                            <return type="string">the html code</return>
+                        </function>
+                        <function name="htmlMorphSelectionDropdown">
+                            Returns a select-box (dropdown selection) listing all Morphvalues of a given Morphcategory.
+                            <param name="morphcategory_XMLTagName" type="string">the XMLTagName (see Table MORPHCATEGORY) to select the morphological values from</param>
+                            <param name="name" type="string">the name of the form element</param>
+                            <param name="class" type="string" default="''">the class of the form element</param>
+                            <param name="id" type="string" default="''">the id of the form element</param>
+                            <param name="preselection" type="mixed" default="FALSE">the ID of the MORPHCATEGORY item that should be selected by default</param>
+                            <param name="none_option" type="bool" default="FALSE">whether or not to include a none-option</param>
+                            <return type="string">the html code</return>
+                        </function>
+                        <function name="modal">
+                            prints the path (href) to a modal window with all needed parameters. Note that 'rel="modal"' still has to be added to links pointing to a modal window!
+                            <param name="modal_name" type="string">the name of the modal to be loaded (without suffixes .modal.php)</param>
+                            <param name="redirect" type="string" default="NULL">the module signature of the module to be loaded after the modal action has been fired</param>
+                        </function>
+                        <function name="getModal">
+                            returns the path (href) to a modal window with all needed parameters. Note that 'rel="modal"' still has to be added to links pointing to a modal window!
+                            <param name="modal_name" type="string">the name of the modal to be loaded (without suffixes .modal.php)</param>
+                            <param name="redirect" type="string" default="NULL">the module signature of the module to be loaded after the modal action has been fired</param>
+                        </function>
+                        <function name="htmlCheckboxCorporaSelection">
+                            Returns a checkbox for each curpus in a specified project, optionally accompanied by a 'select all'-checkbox on top.
+                            <param name="classes" type="array(string)">the class(es) to append to each checkbox except for the 'select all' box</param>
+                            <param name="include_select_all" type="bool" default="FALSE">whether to include a 'select all'-checkbox on top</param>
+                            <param name="project" type="int" default="NULL">the project id to select the corpora from. If NULL, the active project of the current user session is taken.</param>
+                            <param name="check_current_corpus" type="bool" default="TRUE">if TRUE, the corpus that is active in the current session will be ticked by default.</param>
+                            <return type="string">the html code</return>
+                        </function>
+                        <function name="toHtmlClass">
+                            transforms an array to a string that can be placed inside a html object, e.g. ' class="foo bar"'.
+                            <param name="classes" type="array(string)">the array of classes</param>
+                            <return type="string">the class string to be placed inside a html object</return>
+                        </function>
+                        <function name="toHtmlId">
+                            transforms a simple string to a string that can be placed inside a html object, e.g. ' id="foo"'.
+                            <param name="id" type="string">the id</param>
+                            <return type="string">the id string to be placed inside a html object</return>
+                        </function>
+                    </file>
+                </section>
+                
+                <section name="Unmanaged third-party classes" short="3rdparty">
+                    <!-- these are not managed py PH2REPO -->
+                </section>
+
+            </framework>
+
+            <framework lang="js"/>
+
+        </frameworks>
+
+    </filestructure>
+
+    <meta>
+        <header>Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
+            Code by: Samuel Laeubli, University of Zurich
+            Contact: samuel.laeubli@uzh.ch</header>
+    </meta>
+</ph2>

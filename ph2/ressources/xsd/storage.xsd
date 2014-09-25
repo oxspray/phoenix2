@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.rose.uzh.ch/phoenix/schema/storage"
+    xmlns="http://www.rose.uzh.ch/phoenix/schema/storage"
+    xmlns:self="http://www.rose.uzh.ch/phoenix/schema/storage" elementFormDefault="qualified">
+
+    <xsd:redefine schemaLocation="base_types.xsd">
+        <xsd:complexType name="divType" mixed="true">
+            <xsd:complexContent>
+                <xsd:extension base="divType">
+                    <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                        <xsd:element ref="token" maxOccurs="1" minOccurs="1"/>
+                        <xsd:element ref="abr"/>
+                        <xsd:element ref="fue"/>
+                        <xsd:element ref="ful"/>
+                        <xsd:element ref="maj"/>
+                        <xsd:element ref="sup"/>
+                        <xsd:element ref="lat"/>
+                        <xsd:element ref="zw"/>
+                        <xsd:element ref="zwt"/>
+                    </xsd:choice>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:redefine>
+
+    
+
+    <xsd:element name="gl">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="an" type="anType"/>
+                <xsd:element name="txt">
+                    <xsd:complexType>
+                        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                            <xsd:element ref="int"/>
+                            <xsd:element ref="inv"/>
+                            <xsd:element ref="pub"/>
+                            <xsd:element ref="exp"/>
+                            <xsd:element ref="disp"/>
+                            <xsd:element ref="sanct"/>
+                            <xsd:element ref="cor"/>
+                            <xsd:element ref="dat"/>
+                            <xsd:element ref="vid"/>
+                            <xsd:element name="div" type="divType" maxOccurs="unbounded"/>
+                            <xsd:element maxOccurs="unbounded" ref="par"/>
+                            <xsd:element ref="zw"/>
+                        </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="zitf"/>
+        </xsd:complexType>
+        <xsd:unique name="uniqueTokenNumbers">
+            <xsd:selector xpath=".//self:token"/>
+            <xsd:field xpath="@n"/>
+        </xsd:unique>
+        <xsd:unique name="uniqueDivNumbers">
+            <xsd:selector xpath=".//self:div"/>
+            <xsd:field xpath="@n"/>
+        </xsd:unique>
+    </xsd:element>
+
+    <xsd:element name="corpus">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" ref="gl"/>
+            </xsd:sequence>
+        </xsd:complexType>
+        <xsd:unique name="uniqueZitf">
+            <xsd:selector xpath=".//self:gl"/>
+            <xsd:field xpath="@zitf"/>
+        </xsd:unique>
+    </xsd:element>
+
+</xsd:schema>

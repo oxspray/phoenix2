@@ -1,0 +1,32 @@
+@charset "UTF-8";
+/*/
+Phoenix2
+===
+Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
+Code by: Samuel Laeubli, University of Zurich
+Contact: samuel.laeubli@uzh.ch
+===
+File: ph2.css
+Description:
+Imports all Phoenix2 basic style sheets.
+---
+/*/
+
+/* reset css */
+@import url(external/reset.css);
+
+/* screen layout */
+@import url(external/sections.css);
+@import url(base/boxes.css);
+@import url(external/components.css);
+
+/* content */
+@import url(base/fonts.css);
+@import url(base/content.css);
+@import url(base/modal.css);
+
+/* fancybox plugin */
+@import url(../js/fancybox/jquery.fancybox-1.3.4.css);
+
+/* jQuery UI */
+@import url(jquery-ui/jquery-ui-1.8.16.custom.css);

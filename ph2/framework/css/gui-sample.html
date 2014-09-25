@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Phoenix2 GUI Implementation :: Base</title>
+<link href="ph2.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+<div class="overall">
+	
+    <div class="page">
+    	
+        <div id="top">
+        	<span>Logged in as <a href="#">Sample User</a>.</span>
+            <a id="header_show" href="#$ps->redirect(PH2_REF_USERHOME)" title="show header"></a>
+        </div>
+        
+        <div id="header">
+        	<div class="w80">
+            	<div class="inner10">
+                	<h1>Phoenix2</h1>
+                    <h2>Web-Based Annotation</h2>
+                </div>
+        	</div>
+            <div class="w20">
+            	<div class="inner10 rightbound">
+                	<p>Version 0.1 Alpha<br />Build 10</p>
+                </div>
+        	</div>
+            <a id="header_hide" href="#" title="hide header"></a>
+        </div>
+        
+        <div id="module">
+        	<!-- outsource: module -->
+            <div id="mod_top">
+                <div class="modulemenu">
+                    <div class="mainmodule">
+                        <a class="moduletitle" href="#">Sample-Module</a>
+                        <a class="item" href="#">Option 1</a>
+                        <a class="item" href="#">Option 2</a>
+                    </div>
+                    <form action="" method="post">
+                    	Lemma: <input type="text" class="text small" class="modulefield" />
+                        <input type="submit" class="button" value="Go!" />
+                        <input type="submit" class="button" value="Action 2" />
+                    </form>                   
+                    <a class="submodule" href="#">Submodule 1</a>
+                    <a class="submodule current" href="#">Submodule 2</a>
+                    <a class="submodule" href="#">Submodule 3</a>
+                </div>
+            </div>
+            <div id="mod_status"><span>This is a fancy status bar text. It is funny and useful.</span></div>
+            <div id="mod_body">
+            
+            	<div class="w100">
+                	<div class="modulebox h250">
+                        <div class="title">The Module Title</div>
+                        <div class="title_extension">
+                            <a href="#">Button 1</a>
+                            <a href="#">Button 2</a>
+                        </div>
+                        <div class="body">
+                        	<div class="h200 scrollbox">
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                                <p>The module content.</p>
+                        	</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="w33">
+                	<div class="modulebox">
+                        <div class="title">Sample: Table</div>
+                        <div class="body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <td>Group</td>
+                                        <td><a class="tooltipp" title="This is a sample tooltip-text." href="#">Short Name</a></td>
+                                        <td>Occ.</td>
+                                        <td>Texts</td>
+                                        <td>Corp.</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1.</td>
+                                        <td>mouture</td>
+                                        <td>23</td>
+                                        <td>2</td>
+                                        <td>1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1.1.</td>
+                                        <td>mouture</td>
+                                        <td>2</td>
+                                        <td>1</td>
+                                        <td>1</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                	</div>
+            	</div>
+                
+                <div class="w66">
+                	<div class="modulebox">
+                        <div class="title">Sample: Form</div>
+                        <div class="title_extension">
+                        	<form action="" method="post">
+                            	<select name="s1">
+                                	<option value="1">Do whatever</option>
+                                    <option value="2">Do something</option>
+                                    <option value="3">Do nothing</option>
+                                </select>
+                                <input type="button" class="button" value="Action!" />
+                            </form>
+                        </div>
+                        <div class="body">
+                        	<form action="" method="post">
+                            	<fieldset>
+                                	<legend>Fieldset 1</legend>
+                                    <label for="f1">Field 1</label>
+                                    <input type="text" class="text normal" name="f1" />
+                                    <label for="f2">Field 2</label>
+                                    <input type="text" class="text big" name="f2" />
+                                </fieldset>
+                                <fieldset>
+                                	<legend>Fieldset 2: noblock-attribute on text inputs</legend>
+                                    <label for="f3" class="inline">Field 3</label>
+                                    <input type="text" class="text w20" name="f3" />
+                                    <label for="f4" class="inline">Field 4</label>
+                                    <input type="text" class="text w20" name="f4" />
+                                </fieldset>
+                                <input type="button" class="button" value="action" /><input type="submit" class="button" />
+                            </form>
+                        </div>
+                    </div>
+            	</div>
+                
+            </div>
+            <!-- end outsource: module -->
+        </div>
+        
+    </div>
+    
+</div>
+
+</body>
+</html>

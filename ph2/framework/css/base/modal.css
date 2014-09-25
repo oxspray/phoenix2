@@ -1,0 +1,34 @@
+@charset "UTF-8";
+/*/
+Phoenix2
+===
+Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
+Code by: Samuel Laeubli, University of Zurich
+Contact: samuel.laeubli@uzh.ch
+===
+File: modal.css
+Description:
+CSS definitions for modal window contents. The module window css definitions themselves are handled via facebox.css.
+---
+/*/
+
+#modal h1 {
+	font-size: 160%;
+	margin-bottom: 4px;
+}
+
+#modal h1 + p {
+	margin-bottom: 12px;
+}
+
+#modal p {
+	margin: 8px 0 8px 0;
+}
+
+#modal .modalheader {
+	padding: 20px 20px 0 20px;
+}
+
+#modal .modulebox {
+	margin-bottom: 20px;
+}

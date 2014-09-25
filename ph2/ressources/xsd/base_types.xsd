@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xsd:annotation>
+    <xsd:documentation>Base Types to be used in the target namespaces 'entry', 'storage', and 'edit'.</xsd:documentation>
+  </xsd:annotation>
+  <!-- ******************* -->
+  <!-- *     Include     * -->
+  <!-- ******************* -->
+  <!--include schemaLocation="xyz.xsd"/-->
+  <!-- 
+
+	 -->
+  <!-- ********************************************************** -->
+  <!-- ********************************************************** -->
+  <!-- -->
+  <xsd:simpleType name="zitfType">
+    <xsd:restriction base="xsd:string">
+      <xsd:whiteSpace value="preserve"/>
+      <xsd:minLength value="1"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="idType">
+    <xsd:annotation>
+      <xsd:documentation>9-stellige ID-Nummer</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[1-9]\d{8}"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="nType">
+    <xsd:annotation>
+      <xsd:documentation>Typ für Attribute 'n'</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:positiveInteger">
+      <xsd:pattern value="[1-9](\d+)*"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <!--  -->
+  <!-- ********************************************************** -->
+  <xsd:complexType name="anType">
+    <xsd:annotation>
+      <xsd:documentation>Die gesamte Varietäten-relevante Information</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence maxOccurs="unbounded">
+      <xsd:element name="nom" type="nomType"/>
+      <xsd:element name="d" type="dType"/>
+      <xsd:element name="d0" type="d0Type"/>
+      <xsd:element name="scripta" type="scriptaType"/>
+      <xsd:element name="loc" type="locType"/>
+      <xsd:element name="loc0" type="loc0Type"/>
+      <xsd:element name="soc" type="socType"/>
+      <xsd:element name="soc0" type="soc0Type"/>
+      <xsd:element name="type" type="typeType"/>
+      <xsd:element name="r" type="rType"/>
+      <xsd:element name="aut" type="autType"/>
+      <xsd:element name="disp" type="dispType"/>
+      <xsd:element name="s" type="sType"/>
+      <xsd:element name="b" type="bType"/>
+      <xsd:element name="act" type="actType"/>
+      <xsd:element name="rd" type="rdType"/>
+      <xsd:element name="rd0" type="rd0Type"/>
+      <xsd:element name="sc" type="scType"/>
+      <xsd:element name="f" type="fType"/>
+      <xsd:element name="l" type="lType"/>
+      <xsd:element name="ed" type="edType"/>
+      <xsd:element name="ana" type="anaType"/>
+      <xsd:element name="ec" type="ecType"/>
+      <xsd:element name="met" type="metType"/>
+      <xsd:element name="v" type="vType"/>
+      <xsd:element name="transcr" type="transcrType"/>
+      <xsd:element name="resp" type="respType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="nomType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Vom Texteditor vergebene Überschrift</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="dType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Datumsangabe für menschlichen Leser</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:simpleType name="d0Type">
+    <xsd:annotation>
+      <xsd:documentation>maschinenlesbares Referenzdatum: 
+        0000/00/00 = unbekannt
+        1jjj/mm/tt
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="(0000/00/00|1\d{3}/(00|01|02|03|04|05|06|07|08|09|10|11|12)/(0|1|2|3)\d)"
+      />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <!--  -->
+  <xsd:complexType name="locType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Ortsangabe für menschlichen Leser</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:simpleType name="loc0Type">
+    <xsd:annotation>
+      <xsd:documentation>maschinenlesbarer Referenzort</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>darf nicht leer sein</xsd:documentation>
+      </xsd:annotation>
+      <xsd:pattern value="(\-|[^\-].+)"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <!--  -->
+  <xsd:complexType name="socType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>...? für menschlichen Leser</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:simpleType name="soc0Type">
+    <xsd:annotation>
+      <xsd:documentation>maschinenlesbarer ...?</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>darf nicht leer sein</xsd:documentation>
+      </xsd:annotation>
+      <xsd:pattern value="(\-|[^\-].+)"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <!--  -->
+  <xsd:complexType name="typeType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Textsorte</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="rType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Regest</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="abr"/>
+      <xsd:element ref="fua"/>
+      <xsd:element ref="form"/>
+      <xsd:element ref="maj"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="autType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Autor (im diplomatischen Sinn), mit Angabe des sozialen Rangs</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="dispType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Veranlasser (im diplomatischen Sinn), wenn der Autor fehlt</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="sType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Siegelgeber</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="bType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Nutzniesser</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="sup"/>
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="actType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>weitere Protagonisten</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="rdType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Redakteur (entspricht inhaltlich 'loc')</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="form"/>
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:simpleType name="rd0Type">
+    <xsd:annotation>
+      <xsd:documentation>maschinenlesbarer Redakteur</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>darf nicht leer sein</xsd:documentation>
+      </xsd:annotation>
+      <xsd:pattern value="(\-|[^\-].+)"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <!--  -->
+  <!--  -->
+  <xsd:complexType name="scType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Angaben zum Schreiber</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="fType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Materielle Überlieferung (original parchemin ...)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="lType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Aufbewahrungsort</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="edType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Etwaige frühere Editionen</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="form"/>
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <xsd:element ref="titre"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="anaType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Etwaige Urkundenanalysen</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="form"/>
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="ecType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Bemerkungen zur Schrift</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="abr"/>
+      <xsd:element ref="form"/>
+      <xsd:element ref="fua"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="titre"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="metType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Bemerkungen zur Sprachform</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element ref="abr"/>
+      <xsd:element ref="form"/>
+      <xsd:element ref="fua"/>
+      <!-- weitere zulässige Elemente -->
+    </xsd:choice>
+  </xsd:complexType>
+  <!--  -->
+  <xsd:complexType name="vType" mixed="true">
+    <xsd:annotation>
+      <xsd:documentation>Angaben zum Verso</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice maxOccurs="unbounded" minOccurs="0">
+      <xsd:element ref="abr"/>
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="maj"/>
+      <xsd:element ref="zw"/>
+      <xsd:element ref="zwt"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!-- -->
+  <xsd:simpleType name="transcrType">
+    <xsd:annotation>
+      <xsd:documentation>editorischer Vermerk</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value=".*"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <!--- -->
+  <xsd:simpleType name="respType">
+    <xsd:annotation>
+      <xsd:documentation>editorischer Vermerk</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value=".*"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <!-- ********************************************************** -->
+  <!-- Nur im Kopf zulässige Unterelemente -->
+  <xsd:element name="form">
+    <xsd:annotation>
+      <xsd:documentation>Wortformen (?)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType mixed="true">
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- Kann eine einzelne Majuskel enthalten -->
+        <xsd:element ref="maj"/>
+        <xsd:element ref="sup"/>
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="fua">
+    <xsd:annotation>
+      <xsd:documentation>Editionsnote für Kopf</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType mixed="true">
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="abr"/>
+        <xsd:element ref="sup"/>
+        <!-- weitere Element -->
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="sup">
+    <xsd:annotation>
+      <xsd:documentation>Format! (Hochgestellt)</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="titre">
+    <xsd:annotation>
+      <xsd:documentation>Buchtitel</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <!-- ********************************************************** -->
+  <!-- -->
+  <!-- -->
+  <xsd:element name="par">
+    <xsd:annotation>
+      <xsd:documentation>Milestone: Absatzkennung</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <!-- -->
+  <!-- -->
+  <!-- -->
+  <!-- -->
+  <!-- -->
+  <!-- -->
+  <!-- -->
+  <!-- -->
+  <!-- ********************************************************** -->
+  <!-- -->
+  <xsd:element name="abr">
+    <xsd:annotation>
+      <xsd:documentation>Abbreviaturen</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType mixed="true">
+      <xsd:choice maxOccurs="unbounded" minOccurs="0">
+        <!-- Kann eine einzelne Majuskel enthalten -->
+        <xsd:element ref="maj"/>
+        <xsd:element ref="sup"/>
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="fue">
+    <xsd:annotation>
+      <xsd:documentation>Editionsnote Typ "abc"</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType mixed="true">
+      <xsd:choice maxOccurs="unbounded" minOccurs="0">
+        <xsd:element ref="abr"/>
+        <xsd:element ref="maj"/>
+        <xsd:element ref="sup"/>
+        <!-- weitere Element -->
+        <xsd:element ref="zw"/>
+        <xsd:element ref="zwt"/>
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="ful">
+    <xsd:annotation>
+      <xsd:documentation>Editionsnote Typ "123"</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType mixed="true">
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="abr"/>
+        <xsd:element ref="sup"/>
+        <!-- weitere Element -->
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="maj">
+    <xsd:annotation>
+      <xsd:documentation>Majuskeln</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType mixed="true">
+      <xsd:sequence minOccurs="0">
+        <!-- Kann eine einzelne Abkürzung enthalten -->
+        <xsd:element ref="abr"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="wn">
+    <xsd:annotation>
+      <xsd:documentation>Getagte Worte</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType mixed="true">
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="lat" maxOccurs="unbounded"/>
+        <xsd:element ref="abr" maxOccurs="unbounded"/>
+        <xsd:element ref="maj" maxOccurs="unbounded"/>
+        <xsd:element ref="sup" maxOccurs="unbounded"/>
+        <xsd:element ref="zwt" minOccurs="1" maxOccurs="unbounded"/>
+      </xsd:choice>
+      <xsd:attribute name="n" type="nType" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="token" type="tokenType"/>
+
+  <xsd:complexType name="tokenType" mixed="true">
+    <xsd:choice maxOccurs="unbounded" minOccurs="0">
+      <xsd:element ref="lat"/>
+      <xsd:element ref="abr"/>
+      <xsd:element ref="maj"/>
+      <xsd:element ref="sup"/>
+      <xsd:element ref="zwt"/>
+    </xsd:choice>
+    <xsd:attribute form="unqualified" name="n" type="nType" use="optional"/>
+    <xsd:attribute name="type" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+  <xsd:element name="lat">
+    <xsd:annotation>
+      <xsd:documentation>Lateinische Einsprengsel</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType mixed="true">
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="abr"/>
+        <xsd:element ref="zw"/>
+        <xsd:element ref="zwt"/>
+        <xsd:element ref="maj"/>
+        <xsd:element ref="sup"/>
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="zw">
+    <xsd:annotation>
+      <xsd:documentation>Milestone: Zeilenwechsel</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <!-- -->
+  <xsd:element name="zwt">
+    <xsd:annotation>
+      <xsd:documentation>Milestone: Zeilenwechsel im Wort</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <!-- ********************************************************** -->
+  <!-- Sonstiges -->
+  <xsd:complexType mixed="true" name="divType">
+    <xsd:attribute name="n" type="nType" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="div" type="divType"/>
+  <xsd:complexType mixed="true" name="scriptaType">
+    <xsd:annotation>
+      <xsd:documentation>Scripta</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice maxOccurs="unbounded" minOccurs="0">
+      <xsd:element ref="form"/>
+      <xsd:element ref="fua"/>
+      <xsd:element ref="sup"/>
+      <!-- weitere zulässige Elemente -->
+      <xsd:element ref="abr"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:complexType name="section">
+    <xsd:choice maxOccurs="unbounded" minOccurs="0">
+      <xsd:element ref="par" maxOccurs="unbounded" minOccurs="0"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" ref="zw"/>
+      <xsd:element maxOccurs="unbounded" ref="div"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:element name="int" type="section"/>
+  <xsd:element name="inv" type="section"/>
+  <xsd:element name="pub" type="section"/>
+  <xsd:element name="exp" type="section"/>
+  <xsd:element name="disp" type="section"/>
+  <xsd:element name="sanct" type="section"/>
+  <xsd:element name="cor" type="section"/>
+  <xsd:element name="dat" type="section"/>
+  <xsd:complexType name="sections">
+    <xsd:choice maxOccurs="unbounded" minOccurs="0">
+      <xsd:element minOccurs="1" ref="int"/>
+      <xsd:element minOccurs="1" ref="inv"/>
+      <xsd:element minOccurs="1" ref="pub"/>
+      <xsd:element minOccurs="1" ref="exp"/>
+      <xsd:element minOccurs="1" ref="disp"/>
+      <xsd:element minOccurs="1" ref="sanct"/>
+      <xsd:element minOccurs="1" ref="cor"/>
+      <xsd:element minOccurs="1" ref="dat"/>
+      <xsd:element ref="div"/>
+      <xsd:element ref="par"/>
+      <xsd:element ref="zw"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:element name="vid" type="sections"/>
+
+
+
+</xsd:schema>

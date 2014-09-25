@@ -1,0 +1,14 @@
+archive/
+repo/
+tst/
+settings.php
+ph2versions.php
+*/data/media/**
+*/data/xml/**
+_notes
+test.html
+test_migration.php
+*/mockups/
+.DS_Store
+PH2-DEAFel-soapui-project.xml
+

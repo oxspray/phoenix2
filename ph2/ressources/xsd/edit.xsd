@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.rose.uzh.ch/phoenix/schema/edit"
+    xmlns="http://www.rose.uzh.ch/phoenix/schema/edit"
+    xmlns:self="http://www.rose.uzh.ch/phoenix/schema/edit" elementFormDefault="qualified">
+
+    <xsd:redefine schemaLocation="base_types.xsd">
+        <xsd:complexType name="divType" mixed="true">
+            <xsd:complexContent>
+                <xsd:extension base="divType">
+                    <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                        <xsd:element ref="token" maxOccurs="1" minOccurs="1"/>
+                        <xsd:element ref="abr"/>
+                        <xsd:element ref="fue"/>
+                        <xsd:element ref="ful"/>
+                        <xsd:element ref="maj"/>
+                        <xsd:element ref="sup"/>
+                        <xsd:element ref="lat"/>
+                        <xsd:element ref="zw"/>
+                        <xsd:element ref="zwt"/>
+                    </xsd:choice>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+        <xsd:complexType name="tokenType" mixed="true">
+            <xsd:complexContent>
+                <xsd:extension base="tokenType">
+                    <xsd:attribute name="lemma" type="lemmaType"/>
+                    <xsd:attribute name="concept" type="conceptType"/>
+                    <xsd:attribute name="pos" type="posType"/>
+                    <xsd:attribute name="gen" type="genType"/>
+                    <xsd:attribute name="num" type="numType"/>
+                    <xsd:attribute name="cas" type="casType"/>
+                    <xsd:attribute name="temp" type="tempType"/>
+                    <xsd:attribute name="mod" type="modType"/>
+                    <xsd:attribute name="asp" type="aspType"/>
+                    <xsd:attribute name="vox" type="voxType"/>
+                    <xsd:attribute name="pers" type="persType"/>
+                    <xsd:attribute name="comp" type="compType"/>
+                    <xsd:attribute name="lemma_pos" type="lemma_posType"/>
+                    <xsd:attribute name="lemma_gen" type="lemma_genType"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:redefine>
+
+
+    <xsd:element name="gl">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="an" type="anType"/>
+                <xsd:element name="txt">
+                    <xsd:complexType>
+                        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                            <xsd:element ref="int"/>
+                            <xsd:element ref="inv"/>
+                            <xsd:element ref="pub"/>
+                            <xsd:element ref="exp"/>
+                            <xsd:element ref="disp"/>
+                            <xsd:element ref="sanct"/>
+                            <xsd:element ref="cor"/>
+                            <xsd:element ref="dat"/>
+                            <xsd:element ref="vid"/>
+                            <xsd:element name="div" type="divType" maxOccurs="unbounded"/>
+                            <xsd:element maxOccurs="unbounded" ref="par"/>
+                            <xsd:element ref="zw"/>
+                        </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="zitf"/>
+            <xsd:attribute name="checkout_id" use="required">
+                <xsd:annotation>
+                    <xsd:documentation>Random 32-digit string (=md5 hash of the timestamp +
+                        TextID/CorpusID at checkout). Ensures that only one version is checked out
+                        at a time.</xsd:documentation>
+                </xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:length value="32"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:attribute>
+        </xsd:complexType>
+        <xsd:unique name="uniqueTokenNumbers">
+            <xsd:selector xpath=".//self:token"/>
+            <xsd:field xpath="@n"/>
+        </xsd:unique>
+        <xsd:unique name="uniqueDivNumbers">
+            <xsd:selector xpath=".//self:div"/>
+            <xsd:field xpath="@n"/>
+        </xsd:unique>
+    </xsd:element>
+
+    <xsd:element name="corpus">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" ref="gl"/>
+            </xsd:sequence>
+            <xsd:attribute name="checkout_id" use="required">
+                <xsd:annotation>
+                    <xsd:documentation>Random 32-digit string (=md5 hash of the timestamp +
+                        TextID/CorpusID at checkout). Ensures that only one version is checked out
+                        at a time.</xsd:documentation>
+                </xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:length value="32"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:attribute>
+        </xsd:complexType>
+        <xsd:unique name="uniqueZitf">
+            <xsd:selector xpath=".//self:gl"/>
+            <xsd:field xpath="@zitf"/>
+        </xsd:unique>
+    </xsd:element>
+
+
+    <!-- additional attributes for tokenType -->
+    <xsd:simpleType name="lemmaType">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="conceptType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="p"/>
+            <xsd:enumeration value="l"/>
+            <xsd:enumeration value="c"/>
+            <xsd:enumeration value="lp"/>
+            <xsd:enumeration value="cp"/>
+            <xsd:enumeration value="cl"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="posType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Wortart (Cattex09 Tagset)</xsd:documentation>
+            <xsd:documentation>http://bfm.ens-lyon.fr/IMG/xml/cattex2009.xml</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ABR">
+                <xsd:annotation>
+                    <xsd:documentation>ABRÉVIATION</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADJcar">
+                <xsd:annotation>
+                    <xsd:documentation>ADJECTIF cardinal</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADJind">
+                <xsd:annotation>
+                    <xsd:documentation>ADJECTIF indéfini</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADJord">
+                <xsd:annotation>
+                    <xsd:documentation>ADJECTIF ordinal</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADJpos">
+                <xsd:annotation>
+                    <xsd:documentation>ADJECTIF possessif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADJqua">
+                <xsd:annotation>
+                    <xsd:documentation>ADJECTIF qualificatif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADVgen">
+                <xsd:annotation>
+                    <xsd:documentation>ADVERBE (général)</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADVgen.PROper">
+                <xsd:annotation>
+                    <xsd:documentation>contraction ADVERBE + PRONOM personnel</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADVint">
+                <xsd:annotation>
+                    <xsd:documentation>ADVERBE interrogatif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADVneg">
+                <xsd:annotation>
+                    <xsd:documentation>ADVERBE de négation</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADVneg.PROper">
+                <xsd:annotation>
+                    <xsd:documentation>contraction ADVERBE de négation + PRONOM
+                        personnel</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ADVsub">
+                <xsd:annotation>
+                    <xsd:documentation>ADVERBE subordonnant</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="CONcoo">
+                <xsd:annotation>
+                    <xsd:documentation>CONJONCTION de coordination</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="CONsub">
+                <xsd:annotation>
+                    <xsd:documentation>CONJONCTION de subordination</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETcar">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT cardinal</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETcom">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT défini composé</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETdef">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT féfini</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETdem">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT démonstratif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETind">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT indéfini</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETint">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT interrogatif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETndf">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT non défini</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETpos">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT possessif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="DETrel">
+                <xsd:annotation>
+                    <xsd:documentation>DÉTERMINANT relatif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="ETR">
+                <xsd:annotation>
+                    <xsd:documentation>MOT ÉTRANGER</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="INJ">
+                <xsd:annotation>
+                    <xsd:documentation>INTERJECTION</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="NOMcom">
+                <xsd:annotation>
+                    <xsd:documentation>NOM commun</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="NOMpro">
+                <xsd:annotation>
+                    <xsd:documentation>NOM propre</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="OUT">
+                <xsd:annotation>
+                    <xsd:documentation>ERREUR</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PONfbl">
+                <xsd:annotation>
+                    <xsd:documentation>PONCTUATION faible</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PONfrt">
+                <xsd:annotation>
+                    <xsd:documentation>PONCTUATION forte</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PONpdr">
+                <xsd:annotation>
+                    <xsd:documentation>PONCTUATION parenthèse droite</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PONpga">
+                <xsd:annotation>
+                    <xsd:documentation>PONCTUATION parenthèse gauche</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PONpxx">
+                <xsd:annotation>
+                    <xsd:documentation>PONCTUATION parenthèse (gauche ou droite)</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PRE">
+                <xsd:annotation>
+                    <xsd:documentation>PRÉPOSITION</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PRE.DETdef">
+                <xsd:annotation>
+                    <xsd:documentation>contraction PRÉPOSITION + DÉTERMINANT
+                        défini</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PRE.DETrel">
+                <xsd:annotation>
+                    <xsd:documentation>contraction PRÉPOSITION + DÉTERMINANT
+                        rélatif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PRE.PROper">
+                <xsd:annotation>
+                    <xsd:documentation>contraction PRÉPOSITION + PRONOM
+                        personnel</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROadv">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM adverbial</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROcar">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM cardinal</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROdem">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM démonstratif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROimp">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM impersonnel</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROind">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM indéfini</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROint">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM interrogatif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROord">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM ordinal</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROper">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM personnel</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROper.PROper">
+                <xsd:annotation>
+                    <xsd:documentation>contraction PRONOM personnel + PRONOM
+                        personnel</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROpos">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM possessif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PROrel">
+                <xsd:annotation>
+                    <xsd:documentation>PRONOM relatif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="RED">
+                <xsd:annotation>
+                    <xsd:documentation>REDONDANT</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="RES">
+                <xsd:annotation>
+                    <xsd:documentation>RÉSIDU</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="VERcjg">
+                <xsd:annotation>
+                    <xsd:documentation>VERBE conjugué</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="VERinf">
+                <xsd:annotation>
+                    <xsd:documentation>VERBE infinitif</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="VERppa">
+                <xsd:annotation>
+                    <xsd:documentation>VERBE participe présent</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="VERppe">
+                <xsd:annotation>
+                    <xsd:documentation>VERBE participe passé</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="genType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Genus</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="m"/>
+            <xsd:enumeration value="f"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="numType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Numerus</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="sg"/>
+            <xsd:enumeration value="pl"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="casType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Casus</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="r"/>
+            <xsd:enumeration value="obl"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="tempType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Tempus</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="inf"/>
+            <xsd:enumeration value="imper"/>
+            <xsd:enumeration value="pparf"/>
+            <xsd:enumeration value="ppres"/>
+            <xsd:enumeration value="gerond"/>
+            <xsd:enumeration value="gerondppres"/>
+            <xsd:enumeration value="impf"/>
+            <xsd:enumeration value="parf"/>
+            <xsd:enumeration value="fut"/>
+            <xsd:enumeration value="plquparf"/>
+            <xsd:enumeration value="futant"/>
+            <xsd:enumeration value="passant"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="modType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Modus</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ind"/>
+            <xsd:enumeration value="subj"/>
+            <xsd:enumeration value="cond"/>
+            <xsd:enumeration value="cond2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="aspType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Aspekt</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:whiteSpace value="preserve"/>
+            <xsd:enumeration value="perf"/>
+            <xsd:enumeration value="imperf"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="voxType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Vox</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="actif"/>
+            <xsd:enumeration value="passif"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="persType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Person</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:int">
+            <xsd:minInclusive value="1"/>
+            <xsd:maxInclusive value="6"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="compType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Steigerung</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="simpl"/>
+            <xsd:enumeration value="comp"/>
+            <xsd:enumeration value="sup"/>
+            <xsd:enumeration value="elat"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="lemma_posType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Part-of-Speech für Lemma</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ABR"/>
+            <xsd:enumeration value="ADJ"/>
+            <xsd:enumeration value="ADV"/>
+            <xsd:enumeration value="CON"/>
+            <xsd:enumeration value="DET"/>
+            <xsd:enumeration value="ETR"/>
+            <xsd:enumeration value="INJ"/>
+            <xsd:enumeration value="NOM"/>
+            <xsd:enumeration value="PON"/>
+            <xsd:enumeration value="PRE"/>
+            <xsd:enumeration value="PRO"/>
+            <xsd:enumeration value="RED"/>
+            <xsd:enumeration value="RES"/>
+            <xsd:enumeration value="VER"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="lemma_genType">
+        <xsd:annotation>
+            <xsd:documentation>Morphologie: Genus für Lemma</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="m"/>
+            <xsd:enumeration value="f"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

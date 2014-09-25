@@ -1,0 +1,543 @@
+@charset "UTF-8";
+/*/
+Phoenix2
+===
+Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
+Code by: Samuel Laeubli, University of Zurich
+Contact: samuel.laeubli@uzh.ch
+===
+File: components.css
+Description:
+CSS definitions for components to be loaded into modules, such as search fields or similar. Layer between boxes.css and sections.css.
+---
+/*/
+
+/* top right (corpus selection) */
+#top_right {
+	position: absolute;
+	top: 0;
+	height: 18px;
+	text-align: right;
+	right: 0;
+	display: block;
+	z-index: 10;
+}
+
+#top_right .corpus_selection {
+	float: right;
+	background-color: #22314e;
+}
+
+#top_right a.item {
+	display: block;
+	border-left: 1px solid #3f4e69;
+	padding: 3px 10px 3px 10px;
+	height: 12px;
+}
+
+#top_right a.item.project {
+	float: left;
+}
+
+#top_right .corpus_selection a.item {
+	display: none;
+}
+
+#top_right .corpus_selection a.item.current {
+	display: block;
+	border-bottom: none;
+}
+
+#top_right .corpus_selection:hover a.item {
+	display: block;
+	border-bottom: 1px dotted #3f4e69;
+}
+
+#top_right .corpus_selection:hover a.item.current {
+	text-align: left;
+	padding-left: 4px;
+	color: #FAFAFA;
+	background-color: transparent !important;
+}
+
+#top_right .corpus_selection:hover a.item:hover {
+	background-color: #31405C;
+}
+
+
+/* MODULE MENU */
+/* This is the topmost menu of a module, grouping submodules etc. */
+.modulemenu {
+	position: absolute;
+	min-width: 940px;
+	z-index: 10;
+}
+
+.modulemenu a {
+	color: #666 !important;
+	background-color: #dfe5e6;
+}
+
+.modulemenu a:hover {
+	color: #333 !important;
+	background-color: #e8ebeb !important;
+}
+
+.modulemenu a.submodule.current {
+	background-color: #fafafa !important;
+	color: #000;
+}
+
+.modulemenu .mainmodule {
+	position: relative;
+	float: left;
+	border-right:  1px solid #FFF;
+	border-bottom: 1px solid #FFF;
+}
+
+.modulemenu .mainmodule:hover a.item {
+	display: block;
+}
+
+.modulemenu a.moduletitle {
+	position: relative;
+	display: block;
+	height: 20px;
+	padding: 10px 16px 10px 10px;
+	font-size: 160%;
+}
+
+.modulemenu a.submodule {
+	display: table-cell;
+	float: left;
+	height: 14px;
+	padding: 13px;
+	font-size: 140%;
+	border-right: 1px dotted #FFF;
+}
+
+.modulemenu a.item {
+	position: relative;
+	display: none;
+	line-height: 1.4;
+	font-size: 120%;
+	padding: 4px 10px 4px 10px;
+	border-top: 1px dotted #FFF;
+}
+
+.modulemenu form {
+	display: block;
+	height: 20px;
+	padding: 10px;
+	float: left;
+	border-right: 1px solid #FFF;
+}
+
+.modulemenu form * {
+	margin-right: 3px !important;
+}
+
+/* MODULE BOX */
+/* A module box gathers fields, buttons or text inside a module as a section. */
+.modulebox {
+	/* a module box must be placed inside a base box with a with-class from boxes.css, e.g. .w100 */
+	/* further classes, such as (min-)height or inner padding definitions, can be added as well */
+	position: relative;
+	width: auto;
+	margin: 20px 20px 0 20px;
+	background-color: #FAFAFA;
+	border: 1px solid #CCC;
+	overflow: visible; /* to place tooltips / on-the-fly messages */
+	/* rounded edges */
+	-webkit-border-radius: 5px;
+  	-moz-border-radius: 5px;
+  	border-radius: 5px;
+}
+
+.modulebox > .title {
+	width: auto;
+	height: 16px;
+	margin: 2px 2px 8px 2px;
+	padding: 2px 2px 2px 4px;
+	background-color: #dfe5e6;
+	font-size: 145%;
+	font-family: "OpenSansRegular", Verdana, Geneva, sans-serif;
+	/* rounded edges on top */
+	-webkit-border-radius: 5px 5px 0 0;
+  	-moz-border-radius: 5px 5px 0 0;
+  	border-radius: 5px 5px 0 0;
+}
+
+.modulebox > .title_extension {
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 20px;
+	font-size: 130%;
+	vertical-align: middle;
+}
+
+.modulebox > .title_extension a {
+	display: block;
+	float: left;
+	height: 16px;
+	padding: 2px 5px 2px 5px;
+	margin: 2px 0px 0 0px;
+	border-left: 2px solid #FAFAFA;
+	text-decoration: none;
+	color: #22314e;
+}
+
+.modulebox > .title_extension .loading {
+	margin-top: 5px;
+	margin-right: 10px;
+}
+
+.modulebox > .title_extension a:hover {
+	background-color: #e8ebeb;
+}
+
+.modulebox > .title_extension a.active {
+	background-color: #FAFAFA;
+}
+
+.modulebox > .title_extension a.disabled {
+	cursor: default;
+	color: #CCC;
+}
+
+.modulebox > .title_extension a.disabled:hover {
+	background-color: none;
+}
+
+.modulebox > .title_extension a.active {
+	background-color: none;
+}
+
+.modulebox > .title_extension form {
+	line-height: 1 !important;
+}
+
+.modulebox > .title_extension form select {
+	height: 20px;
+	border: 1px solid #CCC;
+	float: none !important;
+	vertical-align: middle;
+	margin-top: -3px !important;
+	margin-right: -5px;
+}
+
+.modulebox > .title_extension form .button {
+	font-size: 90%;
+	height: 20px;
+	margin: 2px 2px 0 0 !important;
+	border: none;
+	border-left: 2px solid #FFF;
+	color: #22314e;
+	background-color: #dfe5e6 !important;
+	/* rounded edges on top */
+	-webkit-border-radius: 0px 5px 0 0;
+  	-moz-border-radius: 0px 5px 0 0;
+  	border-radius: 0px 5px 0 0;
+}
+
+.modulebox > .title_extension form .button:hover {
+	background-color: #FFF !important;
+}
+
+.modulebox > .body {
+	width: auto;
+	padding: 5px 5px 10px 5px;
+	float: none;
+}
+
+.modulebox > .body form:last-child {
+	padding-bottom: 0px !important;
+}
+
+.modulebox > .body form fieldset:last-child {
+	padding-bottom: 0px !important;
+}
+
+/* tabbed module box */
+
+.modulebox.tabs > .title {
+	padding: 0;
+	height: 20px;
+	
+}
+
+.modulebox.tabs > .title a {
+	display: block;
+	float: left;
+	height: 16px;
+	padding: 2px 4px 2px 4px;
+	font-size: 90%;
+	border-right: 2px solid #FAFAFA;
+}
+
+.modulebox.tabs > .title a:hover {
+	background-color: #e8ebeb;
+}
+
+.modulebox.tabs > .title a.current {
+	background-color: #FAFAFA;
+}
+
+/* active project module box */
+
+.modulebox#active-project .title {
+	margin-bottom: 0;
+}
+
+.modulebox#active-project .body {
+	padding: 0;
+}
+
+a.active-project-selection {
+	display: block;
+	font-size: 130%;
+	padding: 5px 5px 5px 4px;
+	margin: 2px;
+}
+
+a.active-project-selection:hover, a.active-project-selection.hover {
+	background-color: #e8ebeb;
+}
+
+a.active-project-selection.active {
+	background-color: #dfe5e6;
+	font-family: "OpenSansRegular", Verdana, Geneva, sans-serif !important;
+}
+
+a.active-project-selection.current {
+	font-family: "OpenSansSemibold", Verdana, Geneva, sans-serif;
+	/* rounded edges on bottom */
+	-webkit-border-radius: 0 0 5px 5px;
+  	-moz-border-radius: 0 0 5px 5px;
+  	border-radius: 0 0 5px 5px;
+}
+
+.modulebox#active-project .button, .modulebox input.change.button {
+	float: right;
+	position: static;
+	height: 23px;
+	margin: 0 2px 0 0;
+	/* rounded edges on bottom */
+	-webkit-border-radius: 0 0 5px 0;
+  	-moz-border-radius: 0 0 5px 0;
+  	border-radius: 0 0 5px 0;
+}
+
+/* occurrence lines (search results) module box */
+.OccContextBox #occ_matches {
+	z-index: 2;
+	resize: vertical; /* FF, Chrome, and Safari only. The resize action is coupled to #occ_matches_meta via javascript (see ph2components.js).*/
+}
+
+.OccContextBox pre.occ_line, ul.typelist a  {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 130%;
+}
+
+.OccContextBox pre.occ_line .match, ul.typelist a {
+	font-weight: bold;
+	color: #22314e;
+	cursor: default;
+}
+
+.OccContextBox pre.occ_line .match.lemmatized {
+	color: #C63 !important;
+}
+
+.OccContextBox pre.occ_line .match:hover {
+	border-bottom: 1px dotted #999999;
+}
+
+.OccContextBox .selected {
+	background-color: #FFF;
+}
+
+.OccContextBox pre.occ_line .match.selected {
+	border-bottom: 1px dotted #22314e;
+	background-color:  #e8ebeb;
+}
+
+.OccContextBox #occ_matches_meta {
+	position: absolute;
+	width: auto;
+	padding: 0 8px 0 0;
+	z-index: 1;
+	background-color: #FAFAFA; /* ev. TODO: make fading border */
+	overflow-x: scroll;
+	overflow-y: hidden;
+}
+
+.OccContextBox pre.occ_line, .OccContextBox table tr {
+/* line height for both boxes (must be equal!) */
+	height: 22px;
+}
+
+.OccContextBox table {
+	font-size: 120%;
+	line-height: 1;
+}
+
+.OccContextBox table thead {
+	font-size: 80%;
+	font-family: "OpenSansRegular", Verdana, Geneva, sans-serif; 
+}
+
+.OccContextBox table td, .OccContextBox table th  {
+	display: inline-block;
+	padding: 0 2px 0 0;
+	width: 15px;
+	text-align: center;
+}
+
+.OccContextBox table td.wider, .OccContextBox table th.wider {
+	width: 30px;
+}
+
+.OccContextBox table td.widest, .OccContextBox table th.widest {
+	width: 65px;
+}
+
+.OccContextBox td a.tooltipp {
+	border: none !important;
+}
+
+.OccContextBox table th.padded {
+	padding-left: 6px;
+}
+
+.OccContextBox input {
+	padding: 0;
+	margin: 0;
+}
+
+.OccContextBox #occ_progress {
+	position: absolute;
+	right: 0;
+	padding: 3px;
+	margin-right: 2px;
+	background-color: #dfe5e6;
+	font-size: 120%;
+	text-align: right;
+}
+
+.modulebox .tab {
+	padding: 5px 5px 12px 5px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #dfe5e6;
+	/*background-color: #FCFCEC;*/
+}
+
+ul.typelist li {
+	font-size: 110%;
+	line-height: 1.2;
+}
+
+ul.typelist li a {
+	cursor: pointer !important;
+}
+
+.top_lemma_selector {
+	
+}
+
+.top_lemma_selector .ui-button {
+	height: 20px;
+	margin: 1px 0 0 0;
+	margin-left: -4px;
+}
+
+.top_lemma_selector .ui-autocomplete-input {
+	height: 18px;
+	background: #FFF;
+	font-size: 120%;
+}
+
+.top_lemma_selector #load {
+	margin-left: 30px;
+}
+
+.GroupSelector {
+	
+}
+
+.GroupSelector table tbody td{
+	vertical-align: middle !important;
+}
+
+.GroupSelector .plus-icon {
+	background-position: 0 -192px;
+}
+
+.GroupSelector table tbody tr.special {
+	height: 20px;
+	vertical-align: central;
+}
+
+
+/* filter for occurrence searches */
+.lemma_graph_filter a.filtertext:after {
+	content: ' / ';
+}
+
+.lemma_graph_filter a.filtertext:last-child:after {
+	content: none;
+}
+
+.lemma_graph_filter a.filtertext.selected:after {
+	content: '';
+}
+
+.lemma_graph_filter a.filtertext.selected.current:after {
+	content: ': ';
+}
+
+.lemma_graph_filter .filter .name {
+	border-bottom: 1px dotted #999999;
+}
+
+/* dashboard variants of .modulebox */
+
+.modulebox.dashboard {
+	border: none;
+	background-color: #fafafa;
+}
+
+.modulebox.dashboard > .title {
+	padding: 6px;
+	margin: 2px;
+	border: 1px solid #FFF;
+	font-size: 180%;
+	font-family: "OpenSansLight", Verdana, Geneva, sans-serif;
+	height: auto;
+}
+
+.modulebox.dashboard > .title a {
+	display: block;
+}
+
+.modulebox.dashboard > .title:hover {
+	background-color: #e8ebeb;
+}
+
+.modulebox.dashboard > .body > p {
+	margin-bottom: 10px;
+}
+
+.modulebox.dashboard > .body > a {
+	display: block;
+	font-size: 140%;
+	padding: 3px;
+	color: #666;
+	background-color: #dfe5e6;
+	border-top: 1px solid #FFF;
+}
+
+.modulebox.dashboard > .body > a:hover {
+	background-color: #e8ebeb;
+}

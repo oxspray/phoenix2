@@ -1,0 +1,16 @@
+@charset "UTF-8";
+/*/
+Phoenix2
+===
+Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
+Code by: Samuel Laeubli, University of Zurich
+Contact: samuel.laeubli@uzh.ch
+===
+File: fonts.css
+Description:
+Non-standard font integration.
+---
+/*/
+
+@import url(../../../ressources/fonts/colaborate/colaborate-font.css);
+@import url(../../../ressources/fonts/opensans/opensans-font.css);

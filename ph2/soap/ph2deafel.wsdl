@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions targetNamespace="http://www.rose.uzh.ch/phoenix/schema/ph2deafel.wsdl"
+    xmlns:ph2deafel="http://www.rose.uzh.ch/phoenix/schema/ph2deafel.wsdl"
+    xmlns:ph2deafelTypes="http://www.rose.uzh.ch/phoenix/schema/ph2deafel.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+    
+    <types>
+        <schema xmlns="http://www.w3.org/2001/XMLSchema"
+            xmlns:ph2deafelTypes="http://www.rose.uzh.ch/phoenix/schema/ph2deafel.xsd"
+            targetNamespace="http://www.rose.uzh.ch/phoenix/schema/ph2deafel.xsd">
+            
+            <simpleType name="string2">
+                <annotation>
+                    <documentation>A copy of the simple type xs:string in order to override a PHP bug that requires unique method signatures for every method offered.</documentation>
+                </annotation>
+                <restriction base="string"/>
+            </simpleType>
+            
+            <complexType name="OccurrenceType">
+                <annotation>
+                    <documentation xml:lang="en">All details on an occurrence (individual word form/token in a charter) in the PH2 database.</documentation>
+                </annotation>
+                <all>
+                    
+                    <element name="occurrenceID" type="positiveInteger">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The persistent ID of the Occurrence in the PH2 database.
+                                E.g.: 3269
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="surface" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The actual word form (surface) of the occurrence.
+                                E.g.: abbés
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="contextLeft" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The occurrences (surfaces) appearing on the left-hand side of the occurrence in scope.
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="contextRight" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The occurrences (surfaces) appearing on the right-hand side of the occurrence in scope.
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="lemma" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The lemma that is assigned to this occurrence.
+                                E.g.: abbé
+                                According to the commonly established DEAF/DocLing list of DEAF/TL lemmata
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="lemmaPOS" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The part of speech of the lemma that is assigned to this occurrence.
+                                E.g.: VERinf
+                                According to the Cattex2009 tag set (see http://bfm.ens-lyon.fr/article.php3?id_article=323)
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="morphology" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The morphological annotation of the occurrence.
+                                E.g.: #TBD (serialization of all Cattex2009 annotations?)
+                                According to the Cattex2009 tag set (see http://bfm.ens-lyon.fr/article.php3?id_article=323)
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="divisio" type="positiveInteger">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The divisio (part of the charter) that the occurrence belongs to.
+                                E.g.: 2
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    
+                    <!-- the following attributes relate to meta information of the charter that the requested occurrence belongs to -->
+                    
+                    <element name="sigel" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The citation form of the charter
+                                E.g.: chMM 56
+                                Relates to PH2.xsd.storage.gl@zitf
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="year">
+                        <simpleType>
+                            <annotation>
+                                <documentation xml:lang="en">
+                                    The year in which the charter was created.
+                                    E.g.: 1269
+                                    Is identical to the first four digits of d0.
+                                </documentation>
+                            </annotation>
+                            <restriction base="positiveInteger">
+                                <totalDigits value="4"/>
+                            </restriction>
+                        </simpleType>
+                    </element>
+                    
+                    <element name="date" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The date in which the charter was created. Machine-readable (=normalized) form.
+                                E.g.: 1269/05/15
+                                Relates to PH2.xsd.storage.d0
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="type" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The genre of the charter
+                                E.g.: vente
+                                Relates to PH2.xsd.storage.type
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="scripta" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The scripta of the charter.
+                                E.g.: #TBD
+                                Relates to PH2.xsd.storage.scripta
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="scriptorium" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The scriptorium that createt the charter. Machine-readable (=normalized) form.
+                                E.g.: EpMetz!
+                                Relates to PH2.xsd.storage.rd0
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                    <element name="url" type="string">
+                        <annotation>
+                            <documentation xml:lang="en">
+                                The direct URL to access the public version of this occurrence/charter.
+                                E.g.: http://www.rose.uzh.ch/phoenix/public/showCharter.php?OccurrenceID=3269
+                            </documentation>
+                        </annotation>
+                    </element>
+                    
+                </all>
+            </complexType>
+            
+            <element name="Occurrence" type="ph2deafelTypes:OccurrenceType">
+                <annotation>
+                    <documentation xml:lang="en">A single Occurrence element</documentation>
+                </annotation>
+            </element>
+            
+            <element name="OccurrenceCollection">
+                <annotation>
+                    <documentation xml:lang="en">A collection of 1..* elements of type Occurrence.</documentation>
+                </annotation>
+                <complexType>
+                    <sequence>
+                        <element name="Occurrence" type="ph2deafelTypes:OccurrenceType" minOccurs="1" maxOccurs="unbounded"/>
+                    </sequence>
+                </complexType>
+            </element>
+            
+            <element name="OccurrenceIDCollection">
+                <annotation>
+                    <documentation xml:lang="en">A collection of 1..* OccurrenceIDs.</documentation>
+                </annotation>
+                <complexType>
+                    <sequence>
+                        <element maxOccurs="unbounded" name="integer" type="positiveInteger"/>
+                    </sequence>
+                </complexType>
+            </element>
+            
+            <element name="LemmaCollection">
+                <annotation>
+                    <documentation xml:lang="en">A collection of 1..* Lemmata (string identifiers).</documentation>
+                </annotation>
+                <complexType>
+                    <sequence>
+                        <element maxOccurs="unbounded" name="string" type="string"/>
+                    </sequence>
+                </complexType>
+            </element>
+        
+        </schema>
+    </types>
+    
+    <!-- getAllLemmata() -->
+    <message name="getAllLemmataRequest"/>
+    <message name="getAllLemmataResponse">
+        <part name="LemmaCollection" element="ph2deafelTypes:LemmaCollection"/>
+    </message>
+    
+    <!-- getOccurrenceIDs(Lemma) -->
+    <message name="getOccurrenceIDsRequest">
+        <part name="lemma" type="xs:string"/>
+    </message>
+    <message name="getOccurrenceIDsResponse">
+        <part name="occurrenceIDCollection" element="ph2deafelTypes:OccurrenceIDCollection"/>
+    </message>
+    
+    <!-- getOccurrences(Lemma) -->
+    <message name="getOccurrencesRequest">
+        <part name="lemma2" type="ph2deafelTypes:string2"/>
+        <part name="withContext" type="xs:boolean"/>
+    </message>
+    <message name="getOccurrencesResponse">
+        <part name="occurrenceCollection" element="ph2deafelTypes:OccurrenceCollection"/>
+    </message>
+    
+    <!-- getOccurrenceDetails(OccurrenceID) -->
+    <message name="getOccurrenceDetailsRequest">
+        <part name="occurrenceID" type="xs:nonNegativeInteger"/>
+        <part name="withContext" type="xs:boolean"/>
+    </message>
+    <message name="getOccurrenceDetailsResponse">
+        <part name="occurrenceDetails" element="ph2deafelTypes:Occurrence"/>
+    </message>
+    
+    <portType name="Occurrences">
+        <operation name="getAllLemmata">
+            <documentation>Returns the string identifier of all Lemmata that are assigned 1..* (at least one) Occurrence.</documentation>
+            <input message="ph2deafel:getAllLemmataRequest"/>
+            <output message="ph2deafel:getAllLemmataResponse"/>
+        </operation>
+        <operation name="getOccurrenceIDs">
+            <documentation>Returns the the ID of all Occurrences assigned to a given Lemma (string identifier).</documentation>
+            <input message="ph2deafel:getOccurrenceIDsRequest"/>
+            <output message="ph2deafel:getOccurrenceIDsResponse"/>
+        </operation>
+        <operation name="getOccurrences">
+            <documentation>Returns context information to all Occurrences assigned to a given Lemma (string identifier).</documentation>
+            <input message="ph2deafel:getOccurrencesRequest"/>
+            <output message="ph2deafel:getOccurrencesResponse"/>
+        </operation>
+        <operation name="getOccurrenceDetails">
+            <documentation>Returns context information to an Occurrences, given its ID.</documentation>
+            <input message="ph2deafel:getOccurrenceDetailsRequest"/>
+            <output message="ph2deafel:getOccurrenceDetailsResponse"/>
+        </operation>
+    </portType>
+    
+    <binding type="ph2deafel:Occurrences" name="Occ">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+        <operation name="getAllLemmata">
+            <soap:operation soapAction="http://www.rose.uzh.ch/phoenix/workspace/live/ph2/soap/getAllLemmata"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="getOccurrenceIDs">
+            <soap:operation soapAction="http://www.rose.uzh.ch/phoenix/workspace/live/ph2/soap/getOccurrenceIDs"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="getOccurrences">
+            <soap:operation soapAction="http://www.rose.uzh.ch/phoenix/workspace/live/ph2/soap/getOccurrences"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="getOccurrenceDetails">
+            <soap:operation soapAction="http://www.rose.uzh.ch/phoenix/workspace/live/ph2/soap/getOccurrenceDetails"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    
+    <service name="ph2deafel">
+        <documentation>Phoenix2 -> DEAFel Wep API. Provides access to occurrences stored in the PH2 (DocLing) database of medieval charters.</documentation>
+        <port name="OccurrencesPort" binding="ph2deafel:Occ">
+            <soap:address location="http://www.rose.uzh.ch/phoenix/workspace/live/ph2/soap/ph2deafel.php"/>
+        </port>
+    </service>
+    
+</definitions>

@@ -1,0 +1,80 @@
+@charset "UTF-8";
+/*/
+Phoenix2
+===
+Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
+Code by: Samuel Laeubli, University of Zurich
+Contact: samuel.laeubli@uzh.ch
+===
+File: base.css
+Description:
+Basic CSS definitions for all modules.
+---
+/*/
+
+/* GENERAL */
+.overall {
+  	position:relative;
+}
+
+.page {
+	position: relative;
+	background: url(../../../ressources/img/contentarea_back_external.png) bottom repeat-x;
+}
+
+/* MAIN SECTIONS */
+#top {
+	position: relative;
+	height: 18px;
+	background-color: #333;
+}
+
+#header {
+	position: relative;
+	height: 80px;
+	background-color: #acbdd0; /*fallback*/
+	background: url(../../../ressources/img/header_back_external.png) bottom repeat-x;
+	overflow: hidden;
+}
+
+/* LOGIN SITE */
+#login_header {
+	position: relative;
+	height: 180px;
+	background-color: #acbdd0;
+	border-bottom: 1px dotted #22314e;
+}
+
+#login_box {
+	top: 30px;
+	position: relative;
+	width: 250px;
+	left: 50%;
+	margin-left: -125px;
+}
+
+/* MODULE SECTIONS */
+#mod_top {
+	height: 40px;
+	background-color: #E2E0CC;
+	border-top: 1px solid #FFF;
+}
+
+#mod_status {
+	/* intended to change background-color according to pushed status type */
+	background-color: #DAD8BF;
+	/* 
+	** STD	 #DAD8BF
+	** OK	 #d7eb9c
+	** NOTE	 #ffc
+	** ERR	 #f5bace
+	** FATAL #c90044
+	*/
+	height: 18px;
+	border-top: 1px solid #FFF;
+	overflow: hidden;
+}
+
+#mod_body {
+	min-height: 600px;
+}
