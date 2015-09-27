@@ -116,7 +116,7 @@ function getOccurrences ($lemma, $withContext) {
 		where L.LemmaIdentifier like '$lemma'
 		group by O.OccurrenceID) A ";
 		if ($withContext) {
-			$occsWithContext.
+			$occsWithContext = $occsWithContext.
 			"left join " .
 			"($contextLeftQueryString) B on (A.OccurrenceId = B.OccurrenceId) " .
 			"left join " .
@@ -182,7 +182,5 @@ $server->addFunction("getOccurrenceIDs");
 $server->addFunction("getAllLemmata");
 // run the server
 $server->handle();
-
-getOccurrenceDetails(104765, false);
 
 ?>
