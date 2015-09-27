@@ -18,18 +18,23 @@ class PH2Occurrence {
 	public $scriptorium;
 	public $url;
 	
-	public function __construct( $occurrenceID, $withContext = FALSE ) {
-		
+	public function __construct( $occurrenceID, $withContext = FALSE , $empty = FALSE) {
+
+		if ($empty) {
+			return;
+		}
+
 		$this->occurrenceID = $occurrenceID;
-		
+
 		if ($withContext) {
 			// get occurrence details / context
 			$details = getOccurrenceContext( $this->occurrenceID );
 			
 			$this->surface = $details['match'][0]['surface'];
 			$this->lemma = $details['meta'][0]['lemma']; #TODO: change (separate)
-			$this->contextLeft = $details['match'][0]['leftContext'];
-			$this->contextRight = $details['match'][0]['rightContext'];
+			// trim() for comparison with new getOccurrence() version. (Fields are trimmed by soap anyway.)
+			$this->contextLeft = trim($details['match'][0]['leftContext']);
+			$this->contextRight = trim($details['match'][0]['rightContext']);
 			$this->lemmaPOS = $details['meta'][0]['lemma_pos']; #TODO: change (separate)
 			$this->morphology = ''; #TODO
 			$this->divisio = $details['meta'][0]['divID'];
@@ -78,7 +83,7 @@ class PH2Occurrence {
 			$this->scripta = $descriptors['scripta'];
 			$this->scriptorium = $descriptors['rd0'];
 			foreach ($morphvalues as $morphvalue) {
-				$this->morphology .= $morphvalue . ' ';
+				$this->morphology .= $morphvalue . '';
 			}
 		}
 				
