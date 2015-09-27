@@ -1,7 +1,7 @@
 archive/
 repo/
 tst/
-settings.php
+settings_db.php
 ph2versions.php
 */data/media/**
 */data/xml/**
