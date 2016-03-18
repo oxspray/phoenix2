@@ -11,9 +11,9 @@ chdir('..');
 
 require_once('ph2deafel.php');
 
-$lemma = 'pain'; // fast test, only a few occs
-//$lemma = 'nostre'; // many occs
-$withContext = true;
+//$lemma = 'de'; // fast test, only a few occs
+$lemma = 'l\''; // many occs
+$withContext = false;
 $occs1 = getOccurrencesOld($lemma, $withContext);
 $occs2 = getOccurrences($lemma, $withContext);
 

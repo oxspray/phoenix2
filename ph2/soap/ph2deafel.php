@@ -25,7 +25,80 @@ function object_to_soap_response( $object ) {
 	return new SoapVar($object, SOAP_ENC_OBJECT, "SOAPStruct", $NAMESPACE);
 }
 
-function getContextQueryString($lemmaWildcard, $left = true) {
+/**
+ * Retrieves the occurrences for the specified lemma, or, if the lemma is null, for the specified occurrence id.
+ *
+ * @param $lemma the lemma. can contain mysql where like wildcards, e.g., 'fa%'. If null, use occurrence id.
+ * @param $occurrenceId the id for the occurrence to retrieve
+ * @param $withContext whether the occurrences should be retrieved with or without context
+ * @return array of occurrences. The array has size <= 1 if we retrieve by occurrence id.
+ */
+function getOccurrencesForLemmaOrOccurrenceId ($lemma, $occurrenceId, $withContext) {
+
+
+	$dao = new Table('OCCURRENCE');
+	// TODO: test for injecection-proofeness
+	// TODO: maybe move to misc entity functions
+
+	$contextLeftQueryString = getContextQueryString($lemma, $occurrenceId, true);
+	$contextRightQueryString = getContextQueryString($lemma, $occurrenceId, false);
+
+	$occsWithContext = "select * from (select O.OccurrenceID, O.TextID, O.Order, O.Div, T.Surface, TE.CiteID,
+		XMLTagName as Descriptor,
+		TD.Value as DescriptorValue, LemmaIdentifier, M.Value as MorphValue,
+		max(IF(XMLTagName = 'd0', substr(TD.Value,1,4), null)) AS Year,
+		max(IF(XMLTagName = 'd0', TD.Value, null)) as Date,
+		max(IF(XMLTagName = 'type', TD.Value, null)) as Type,
+		max(IF(XMLTagName = 'scripta', TD.Value, null)) as Scripta,
+		max(IF(XMLTagName = 'rd0', TD.Value, null)) as Scriptorium
+		from OCCURRENCE as O join TOKEN as T on O.TokenID=T.TokenID
+		join TEXT as TE on O.TextID=TE.TextID
+		join TEXT_DESCRIPTOR as TD on O.TextID=TD.TextID
+		join DESCRIPTOR as D on TD.DescriptorID=D.DescriptorID
+		left join LEMMA_OCCURRENCE as LO on O.OccurrenceID=LO.OccurrenceID
+		left join LEMMA as L on LO.LemmaID=L.LemmaID
+		left join LEMMA_MORPHVALUE as LM on L.LemmaID=LM.LemmaID
+		left join MORPHVALUE as M on LM.MorphvalueID = M.MorphvalueID
+		where ".
+		($lemma != null ? "L.LemmaIdentifier like '$lemma'" : "O.OccurrenceId = $occurrenceId ").
+		"group by O.OccurrenceID) A ";
+	if ($withContext) {
+		$occsWithContext = $occsWithContext.
+			"left join " .
+			"($contextLeftQueryString) B on (A.OccurrenceId = B.OccurrenceId) " .
+			"left join " .
+			"($contextRightQueryString) C on (A.OccurrenceId = C.OccurrenceId)";
+	}
+
+	$occurrences = array();
+	foreach ($dao->query($occsWithContext) as $row) {
+		// fill properties from row
+		$occ = new PH2Occurrence(null, TRUE, TRUE);
+		$occ->occurrenceID = $row['OccurrenceID'];
+		$occ->surface = $row['Surface'];
+		$occ->lemma = $row['LemmaIdentifier'];
+		$occ->divisio = $row['Div'];
+		$occ->sigel = $row['CiteID'];
+		$occ->year = $row['Year'];
+		$occ->date = $row['Date'];
+		$occ->scripta = $row['Scripta'];
+		$occ->scriptorium = $row['Scriptorium'];
+		$occ->type = $row['Type'];
+		$occ->url = 'http://www.rose.uzh.ch/docling/charte.php?t=' . $row['TextID'] . '&occ_order_number=' . $row['Order'];
+		$occ->morphology = ''; // TODO
+		//	$occ->lemmaPOS = $row['OccurrenceID']; TODO: how to get lemmaPOS?
+		if ($withContext) {
+			$occ->contextLeft = trim($row['context_left']);
+			$occ->contextRight = trim($row['context_right']);
+		}
+
+		$occurrences[] = object_to_soap_response($occ);
+
+	}
+	return $occurrences;
+}
+
+function getContextQueryString($lemmaWildcard, $occurrenceId, $left = true) {
 	/*/
 	Returns the mysql query string that retrieves the (left or right) context for all lemmata matched by the specified
 	lemma wildcard.
@@ -56,7 +129,11 @@ function getContextQueryString($lemmaWildcard, $left = true) {
 				(select O.OccurrenceID, TextID, $borders
 				from LEMMA L join LEMMA_OCCURRENCE LC on L.LemmaID = LC.LemmaID
 				join OCCURRENCE O on LC.OccurrenceID = O.OccurrenceID
-				where L.LemmaIdentifier like '$lemmaWildcard') as occborder
+				where ".
+				($lemmaWildcard != null ?
+					"L.LemmaIdentifier like '$lemmaWildcard'"
+					: "O.OccurrenceId = $occurrenceId").")
+				as occborder
 			join OCCURRENCE O on occborder.TextID = O.TextID
 			where `Order` >= lborder and `Order` <= rborder) as X
 		join TOKEN T on T.TokenID = X.TokenID
@@ -89,69 +166,15 @@ function getOccurrencesOld ($lemma, $withContext) {
 }
 
 function getOccurrences ($lemma, $withContext) {
-
-	$dao = new Table('OCCURRENCE');
-	// TODO: test for injecection-proofeness
-	// TODO: maybe move to misc entity functions
-
-	$contextLeftQueryString = getContextQueryString($lemma, true);
-	$contextRightQueryString = getContextQueryString($lemma, false);
-
-	$occsWithContext = "select * from (select O.OccurrenceID, O.TextID, O.Order, O.Div, T.Surface, TE.CiteID,
-		XMLTagName as Descriptor,
-		TD.Value as DescriptorValue, LemmaIdentifier, M.Value as MorphValue,
-		max(IF(XMLTagName = 'd0', substr(TD.Value,1,4), null)) AS Year,
-		max(IF(XMLTagName = 'd0', TD.Value, null)) as Date,
-		max(IF(XMLTagName = 'type', TD.Value, null)) as Type,
-		max(IF(XMLTagName = 'scripta', TD.Value, null)) as Scripta,
-		max(IF(XMLTagName = 'rd0', TD.Value, null)) as Scriptorium
-		from OCCURRENCE as O join TOKEN as T on O.TokenID=T.TokenID
-		join TEXT as TE on O.TextID=TE.TextID
-		join TEXT_DESCRIPTOR as TD on O.TextID=TD.TextID
-		join DESCRIPTOR as D on TD.DescriptorID=D.DescriptorID
-		left join LEMMA_OCCURRENCE as LO on O.OccurrenceID=LO.OccurrenceID
-		left join LEMMA as L on LO.LemmaID=L.LemmaID
-		left join LEMMA_MORPHVALUE as LM on L.LemmaID=LM.LemmaID
-		left join MORPHVALUE as M on LM.MorphvalueID = M.MorphvalueID
-		where L.LemmaIdentifier like '$lemma'
-		group by O.OccurrenceID) A ";
-		if ($withContext) {
-			$occsWithContext = $occsWithContext.
-			"left join " .
-			"($contextLeftQueryString) B on (A.OccurrenceId = B.OccurrenceId) " .
-			"left join " .
-			"($contextRightQueryString) C on (A.OccurrenceId = C.OccurrenceId)";
-		}
-
-	$occurrences = array();
-	foreach ($dao->query($occsWithContext) as $row) {
-		// fill properties from row
-        $occ = new PH2Occurrence(null, TRUE, TRUE);
-		$occ->occurrenceID = $row['OccurrenceID'];
-		$occ->surface = $row['Surface'];
-		$occ->lemma = $row['LemmaIdentifier'];
-		$occ->divisio = $row['Div'];
-		$occ->sigel = $row['CiteID'];
-		$occ->year = $row['Year'];
-		$occ->date = $row['Date'];
-		$occ->scripta = $row['Scripta'];
-		$occ->scriptorium = $row['Scriptorium'];
-		$occ->type = $row['Type'];
-		$occ->url = 'http://www.rose.uzh.ch/docling/charte.php?t=' . $row['TextID'] . '&occ_order_number=' . $row['Order'];
-		$occ->morphology = ''; // TODO
-		//	$occ->lemmaPOS = $row['OccurrenceID']; TODO: how to get lemmaPOS?
-		if ($withContext) {
-			$occ->contextLeft = trim($row['context_left']);
-			$occ->contextRight = trim($row['context_right']);
-		}
-
-		$occurrences[] = object_to_soap_response($occ);
-
-    }
-    return $occurrences;
+	return getOccurrencesForLemmaOrOccurrenceId($lemma, null, $withContext);
 }
 
 function getOccurrenceDetails ($occurrenceID, $withContext) {
+	$occurrences = getOccurrencesForLemmaOrOccurrenceId(null, $occurrenceID, $withContext);
+	return $occurrences[0];
+}
+
+function getOccurrenceDetailsOld ($occurrenceID, $withContext) {
 	$occurrence = new PH2Occurrence($occurrenceID, $withContext);
 	return object_to_soap_response( $occurrence );
 }
