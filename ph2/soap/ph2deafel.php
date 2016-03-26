@@ -16,6 +16,8 @@ define('LEFT_CONTEXT_WIDTH', 220);
 /** String size of the right lemma context. */
 define ('RIGHT_CONTEXT_WIDTH', 225);
 
+/** Maximum size of occurrence chunks. */
+define('CHUNK_SIZE', 500);
 
 # HELPER FUNCTIONS
 # -----------------
@@ -141,14 +143,58 @@ function getContextQueryString($lemmaWildcard, $occurrenceId, $left = true) {
 	return $queryString;
 }
 
+/**
+ * Returns the range values of the specified $chunk given the specified $chunkSize and the specified $listSize.
+ * <p>
+ * We want to partition a list of size $listSize into n+1 chunks c_0, c_1, ..., c_n, where each chunk
+ * c_i, i!=n, has size $chunkSize, and the last chunk c_n has size <= $chunkSize.
+ * This function computes the range of a chunk c_k, that is, the first and the last index of the chunk c_k
+ * in the list. For example, setting $chunkSize=5, $listSize=12 yields the ranges [0, 4], [5, 9], and [10, 11]
+ * for $chunk=0, $chunk=1, and $chunk=3, respectively.
+ * @param $chunk the number of the chunk, zero-based
+ * @param $chunkSize maximum size of a chunk.
+ * @param $listSize the list size of the list that is to be sliced into chunks
+ * @return array the chunk range, or array(0, -1) if there exists no chunk range for the
+ * specified parameters
+ */
+function getChunkRange($chunk, $chunkSize, $listSize) {
+
+	if ($chunk < 0 || $chunkSize < 2) {
+		return array(0, -1);
+	} else if ($chunk < floor($listSize / $chunkSize)) {
+		return array($chunk * $chunkSize, $chunkSize * ($chunk + 1) - 1);
+	} else if ($chunk == floor($listSize / $chunkSize) && $chunk * $chunkSize < $listSize) {
+		return array($chunk * $chunkSize, $chunk * $chunkSize + $listSize % $chunkSize - 1);
+	} else {
+		return array(0, -1);
+	}
+}
+
+function getNumberOfOccurrences($lemma) {
+
+	$dao = new Table('Occurrence');
+	$result = $dao->query("select count(*) as count
+		from LEMMA l natural join LEMMA_OCCURRENCE lo
+		where l.lemmaIdentifier like '$lemma';");
+	return $result[0]['count'];
+}
+
 # WEBSERVICE FUNCTIONS
 # --------------------
 
+
+/**
+ * Returns a list of occurrence ids for the specified $lemma. The occurrences are ordered by OccurrenceID asc.
+ * @param $lemma
+ * @return array
+ */
 function getOccurrenceIDs ($lemma) {
+
 	$occurrence_ids = array();
 	// search the database for Lemmata with the given identifier
 	$dao = new Table('LEMMA');
 	$dao->from = 'LEMMA_OCCURRENCE join LEMMA on LEMMA_OCCURRENCE.LemmaID=LEMMA.LemmaID';
+    $dao->orderby = 'OccurrenceId asc';
 	$results = $dao->get( array('LemmaIdentifier' => $lemma) );
 	foreach ($results as $occurrence) {
 		$occurrence_ids[] = $occurrence['OccurrenceID'];
@@ -193,6 +239,45 @@ function getAllLemmata () {
 	return $lemma_identifiers;
 }
 
+/**
+ * Gets the number of chunks for the occurrence list of the specified lemma. See also
+ * getChunkeRange().
+ * @param $lemma
+ * @return float
+ */
+function getNumberOfOccurrenceChunks($lemma) {
+
+	return ceil(getNumberOfOccurrences($lemma) / CHUNK_SIZE);
+}
+
+/**
+ * Gets the specified $chunk for the specified $lemma with or without context.
+ * <p>
+ * We use chunking to avoid server timeouts. Some lemmas have such a high number of
+ * occurrences that the time it takes to retrieve them with getOccurrences($lemma) takes longer
+ * than the server timeout time. We use this function to transfer the occurrences of these lemmas
+ * in multiple chunks, where each transfer takes less time than the server timeout.
+ *
+ * @param $lemma
+ * @param $withContext
+ * @param $chunk
+ * @return array an array of occurrences.
+ */
+function getOccurrencesChunk($lemma, $withContext, $chunk) {
+
+	$occurrenceIds = getOccurrenceIDs($lemma);
+
+	$chunkRange = getChunkRange($chunk, CHUNK_SIZE, count($occurrenceIds));
+	$occurrences = array();
+
+	for ($i = $chunkRange[0]; $i <= $chunkRange[1]; ++$i) {
+		$occurrenceId = $occurrenceIds[$i];
+		$occurrences[] = getOccurrencesForLemmaOrOccurrenceId(null, $occurrenceId, $withContext)[0];
+	}
+	return $occurrences;
+
+}
+
 # SOAP SERVER
 # -----------
 
@@ -203,6 +288,9 @@ $server->addFunction("getOccurrences");
 $server->addFunction("getOccurrenceDetails");
 $server->addFunction("getOccurrenceIDs");
 $server->addFunction("getAllLemmata");
+$server->addFunction("getOccurrencesChunk");
+$server->addFunction("getNumberOfOccurrenceChunks");
+
 // run the server
 $server->handle();
 

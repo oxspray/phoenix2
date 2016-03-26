@@ -241,6 +241,24 @@
     <message name="getOccurrencesResponse">
         <part name="occurrenceCollection" element="ph2deafelTypes:OccurrenceCollection"/>
     </message>
+
+    <!-- getOccurrencesChunk($lemma, $withContext, $chunk)  -->
+    <message name="getOccurrencesChunkRequest">
+        <part name="lemma3" type="xs:string"/>
+        <part name="withContext" type="xs:boolean"/>
+        <part name="chunk" type="xs:nonNegativeInteger"/>
+    </message>
+    <message name="getOccurrencesChunkResponse">
+        <part name="occurrenceCollection" element="ph2deafelTypes:OccurrenceCollection"/>
+    </message>
+    
+    <!-- getNumberOfOccurrenceChunks($lemma)  -->
+    <message name="getNumberOfOccurrenceChunksRequest">
+        <part name="lemma4" type="xs:string"/>
+    </message>
+    <message name="getNumberOfOccurrenceChunksResponse">
+        <part name="numOfChunks" element="xs:nonNegativeInteger"/>
+    </message>
     
     <!-- getOccurrenceDetails(OccurrenceID) -->
     <message name="getOccurrenceDetailsRequest">
@@ -266,6 +284,16 @@
             <documentation>Returns context information to all Occurrences assigned to a given Lemma (string identifier).</documentation>
             <input message="ph2deafel:getOccurrencesRequest"/>
             <output message="ph2deafel:getOccurrencesResponse"/>
+        </operation>
+        <operation name="getOccurrencesChunk">
+            <documentation>Returns the specified chunk of the Occurrences list ordered by OccurrenceId.</documentation>
+            <input message="ph2deafel:getOccurrencesChunkRequest"/>
+            <output message="ph2deafel:getOccurrencesChunkResponse"/>
+        </operation>
+        <operation name="getNumberOfOccurrenceChunks">
+            <documentation>Returns the number of chunks Occurrence chunks for the specified lemma.</documentation>
+            <input message="ph2deafel:getNumberOfOccurrenceChunksRequest"/>
+            <output message="ph2deafel:getNumberOfOccurrenceChunksResponse"/>
         </operation>
         <operation name="getOccurrenceDetails">
             <documentation>Returns context information to an Occurrences, given its ID.</documentation>
@@ -296,6 +324,24 @@
         </operation>
         <operation name="getOccurrences">
             <soap:operation soapAction="http://www.rose.uzh.ch/phoenix/workspace/live/ph2/soap/getOccurrences"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="getOccurrencesChunk">
+            <soap:operation soapAction="http://www.rose.uzh.ch/phoenix/workspace/live/ph2/soap/getOccurrencesChunk"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="getNumberOfOccurrenceChunks">
+            <soap:operation soapAction="http://www.rose.uzh.ch/phoenix/workspace/live/ph2/soap/getNumberOfOccurrenceChunks"/>
             <input>
                 <soap:body use="literal"/>
             </input>
