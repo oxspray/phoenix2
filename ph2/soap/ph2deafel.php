@@ -202,15 +202,6 @@ function getOccurrenceIDs ($lemma) {
 	return $occurrence_ids;
 }
 
-function getOccurrencesOld ($lemma, $withContext) {
-  	$occurrences = array();
-  	$occurrence_ids = getOccurrenceIDs($lemma);
-  	foreach ($occurrence_ids as $occurrence_id) {
-	  	$occurrences[] = object_to_soap_response( new PH2Occurrence( $occurrence_id, $withContext ) );
-  	}
-  	return $occurrences;
-}
-
 function getOccurrences ($lemma, $withContext) {
 	return getOccurrencesForLemmaOrOccurrenceId($lemma, null, $withContext);
 }
@@ -218,11 +209,6 @@ function getOccurrences ($lemma, $withContext) {
 function getOccurrenceDetails ($occurrenceID, $withContext) {
 	$occurrences = getOccurrencesForLemmaOrOccurrenceId(null, $occurrenceID, $withContext);
 	return $occurrences[0];
-}
-
-function getOccurrenceDetailsOld ($occurrenceID, $withContext) {
-	$occurrence = new PH2Occurrence($occurrenceID, $withContext);
-	return object_to_soap_response( $occurrence );
 }
 
 function getAllLemmata () {
