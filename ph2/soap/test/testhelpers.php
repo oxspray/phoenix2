@@ -8,7 +8,7 @@
 
 function compareOccsArrays($occs1, $occs2) {
     if (count($occs1) !== count($occs2)) {
-        echo "count(occs1)=", count($occs1), "!== count(occs2)=", count($occs2);
+        echo "\ncount(occs1)=", count($occs1), " !== count(occs2)=", count($occs2);
         return false;
     }
 
@@ -20,7 +20,7 @@ function compareOccsArrays($occs1, $occs2) {
         if ($occ1->enc_value != $occ2->enc_value) {
             print_r($occ1->enc_value);
             print_r($occ2->enc_value);
-            echo "Failure!\n";
+            echo "\nFailure!\n";
             return false;
         }
     }

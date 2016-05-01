@@ -193,9 +193,10 @@ function getOccurrenceIDs ($lemma) {
 	$occurrence_ids = array();
 	// search the database for Lemmata with the given identifier
 	$dao = new Table('LEMMA');
-	$dao->from = 'LEMMA_OCCURRENCE join LEMMA on LEMMA_OCCURRENCE.LemmaID=LEMMA.LemmaID';
+	$dao->from = 'LEMMA_OCCURRENCE join LEMMA on (LEMMA_OCCURRENCE.LemmaID = LEMMA.LemmaID)';
     $dao->orderby = 'OccurrenceId asc';
-	$results = $dao->get( array('LemmaIdentifier' => $lemma) );
+	$dao->where = "LemmaIdentifier like  '$lemma'";
+	$results = $dao->get();
 	foreach ($results as $occurrence) {
 		$occurrence_ids[] = $occurrence['OccurrenceID'];
 	}
