@@ -257,7 +257,7 @@
         <part name="lemma4" type="xs:string"/>
     </message>
     <message name="getNumberOfOccurrenceChunksResponse">
-        <part name="numOfChunks" element="xs:nonNegativeInteger"/>
+        <part name="numOfChunks" type="xs:nonNegativeInteger"/>
     </message>
     
     <!-- getOccurrenceDetails(OccurrenceID) -->
