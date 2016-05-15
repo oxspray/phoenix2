@@ -286,7 +286,7 @@
             <output message="ph2deafel:getOccurrencesResponse"/>
         </operation>
         <operation name="getOccurrencesChunk">
-            <documentation>Returns the specified chunk of the Occurrences list ordered by OccurrenceId.</documentation>
+            <documentation>Returns the specified chunk of the Occurrences list ordered by OccurrenceId. Chunks are zero-based.</documentation>
             <input message="ph2deafel:getOccurrencesChunkRequest"/>
             <output message="ph2deafel:getOccurrencesChunkResponse"/>
         </operation>
