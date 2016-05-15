@@ -45,9 +45,9 @@ function getOccurrencesForLemmaOrOccurrenceId ($lemma, $occurrenceId, $withConte
 	$contextLeftQueryString = getContextQueryString($lemma, $occurrenceId, true);
 	$contextRightQueryString = getContextQueryString($lemma, $occurrenceId, false);
 
+	// TODO: the min(LemmaIdentifier) is still bad
 	$occsWithContext = "select * from (select O.OccurrenceID, O.TextID, O.Order, O.Div, T.Surface, TE.CiteID,
-		XMLTagName as Descriptor,
-		TD.Value as DescriptorValue, LemmaIdentifier, M.Value as MorphValue,
+		min(LemmaIdentifier) as LemmaIdentifier,
 		max(IF(XMLTagName = 'd0', substr(TD.Value,1,4), null)) AS Year,
 		max(IF(XMLTagName = 'd0', TD.Value, null)) as Date,
 		max(IF(XMLTagName = 'type', TD.Value, null)) as Type,
@@ -87,8 +87,10 @@ function getOccurrencesForLemmaOrOccurrenceId ($lemma, $occurrenceId, $withConte
 		$occ->scriptorium = $row['Scriptorium'];
 		$occ->type = $row['Type'];
 		$occ->url = 'http://www.rose.uzh.ch/docling/charte.php?t=' . $row['TextID'] . '&occ_order_number=' . $row['Order'];
-		$occ->morphology = ''; // TODO
-		//	$occ->lemmaPOS = $row['OccurrenceID']; TODO: how to get lemmaPOS?
+		$occ->morphology = ''; // TODO: morphValue; concat in Samuel's old code:
+								// foreach ($morphvalues as $morphvalue) {$this->morphology .= $morphvalue . '';
+		//	$occ->lemmaPOS = $row['OccurrenceID']; TODO: lemmaPos: lemma_morphvalues concatenated:
+								// while ( !empty($lemma_morph) ) $lemma_morph_string .= " " . array_shift($lemma_morph);
 		if ($withContext) {
 			$occ->contextLeft = trim($row['context_left']);
 			$occ->contextRight = trim($row['context_right']);
