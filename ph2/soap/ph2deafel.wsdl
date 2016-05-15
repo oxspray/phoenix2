@@ -10,15 +10,8 @@
         <schema xmlns="http://www.w3.org/2001/XMLSchema"
             xmlns:ph2deafelTypes="http://www.rose.uzh.ch/phoenix/schema/ph2deafel.xsd"
             targetNamespace="http://www.rose.uzh.ch/phoenix/schema/ph2deafel.xsd">
-            
-            <simpleType name="string2">
-                <annotation>
-                    <documentation>A copy of the simple type xs:string in order to override a PHP bug that requires unique method signatures for every method offered.</documentation>
-                </annotation>
-                <restriction base="string"/>
-            </simpleType>
-            
-            <complexType name="OccurrenceType">
+
+            <complexType name="Occurrence">
                 <annotation>
                     <documentation xml:lang="en">All details on an occurrence (individual word form/token in a charter) in the PH2 database.</documentation>
                 </annotation>
@@ -177,7 +170,7 @@
                 </all>
             </complexType>
             
-            <element name="Occurrence" type="ph2deafelTypes:OccurrenceType">
+            <element name="Occurrence" type="ph2deafelTypes:Occurrence">
                 <annotation>
                     <documentation xml:lang="en">A single Occurrence element</documentation>
                 </annotation>
@@ -189,7 +182,7 @@
                 </annotation>
                 <complexType>
                     <sequence>
-                        <element name="Occurrence" type="ph2deafelTypes:OccurrenceType" minOccurs="1" maxOccurs="unbounded"/>
+                        <element name="Occurrence" type="ph2deafelTypes:Occurrence" minOccurs="1" maxOccurs="unbounded"/>
                     </sequence>
                 </complexType>
             </element>
@@ -235,7 +228,7 @@
     
     <!-- getOccurrences(Lemma) -->
     <message name="getOccurrencesRequest">
-        <part name="lemma2" type="ph2deafelTypes:string2"/>
+        <part name="lemma2" type="xs:string"/>
         <part name="withContext" type="xs:boolean"/>
     </message>
     <message name="getOccurrencesResponse">
