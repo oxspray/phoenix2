@@ -1,5 +1,7 @@
 <?php
 
+require_once '../../settings_db.php';
+
 abstract class API {
 
     /**
@@ -46,8 +48,6 @@ abstract class API {
         header("Pragma: no-cache");
         header("Content-Type: application/json");
 
-        $this->headers = apache_request_headers();
-
         $this->args = explode('/', rtrim($request, '/'));
         $this->endpoint = array_shift($this->args);
         if (array_key_exists(0, $this->args) && !is_numeric($this->args[0])) {
@@ -67,6 +67,10 @@ abstract class API {
     }
 
     public function processAPI() {
+        if (strcmp($_SERVER['HTTP_APIKEY'], PH2_APIKEY) !== 0) {
+            return $this->_response('Wrong api key.', 401);
+        }
+
         switch ($this->method) {
             case 'DELETE':
                 return $this->_response('Invalid Method', 405);
@@ -77,9 +81,6 @@ abstract class API {
                 $this->request = $this->_cleanInputs($_GET);
                 break;
             case 'PUT':
-//                $this->request = $this->_cleanInputs($_GET);
-//                $this->file = file_get_contents("php://input");
-//                break;
                 return $this->_response('Invalid Method', 405);
             default:
                 return $this->_response('Invalid Method', 405);
@@ -92,10 +93,30 @@ abstract class API {
                 return call_user_func_array(array($this, "_response"),
                     is_array($returnValue) ? $returnValue : array($returnValue));
             } catch (Exception $e) {
-                return $this->_response('Technical Error', 404);
+                $error = Array('error' => $e->getMessage());
+                return $this->_response($error, 400);
             }
         }
         return $this->_response("No Endpoint: $this->endpoint", 404);
+    }
+
+    private function _response($data, $status = 200) {
+//        error_log("data");
+//        error_log(print_r($data, true));
+        header("HTTP/1.1 " . $status . " " . $this->_requestStatus($status));
+        return json_encode($data, JSON_PRETTY_PRINT); // JSON_PRETTY_PRINT only works in PHP >= 5.4
+    }
+
+    private function _requestStatus($code) {
+        $status = array(
+            200 => 'OK',
+            400 => 'Bad Request',
+            401 => 'Unauthorized',
+            404 => 'Not Found',
+            405 => 'Method Not Allowed',
+            500 => 'Internal Server Error',
+        );
+        return ($status[$code]) ? $status[$code] : $status[500];
     }
 
     private function _cleanInputs($data) {
@@ -108,24 +129,6 @@ abstract class API {
             $clean_input = trim(strip_tags($data));
         }
         return $clean_input;
-    }
-
-    private function _response($data, $status = 200) {
-        error_log("data");
-        error_log(print_r($data, true));
-        header("HTTP/1.1 " . $status . " " . $this->_requestStatus($status));
-        return json_encode($data, JSON_PRETTY_PRINT); // JSON_PRETTY_PRINT only works in PHP >= 5.4
-    }
-
-    private function _requestStatus($code) {
-        $status = array(
-            200 => 'OK',
-            400 => 'Bad Request',
-            404 => 'Not Found',
-            405 => 'Method Not Allowed',
-            500 => 'Internal Server Error',
-        );
-        return ($status[$code]) ? $status[$code] : $status[500];
     }
 }
 
