@@ -7,10 +7,6 @@ require_once('../soap/ph2deafel_rest.php');
 class MyAPI extends API {
     public function __construct($request, $origin) {
         parent::__construct($request);
-
-        error_log($this->headers['Postman-Token']);
-
-        // Add authentication, model initialization, etc here
     }
 
     /*
@@ -42,15 +38,7 @@ class MyAPI extends API {
     /*
  * Example of an Endpoint
  */
-    protected function lemmata() {
-        if ($this->method == 'GET') {
-            return array(getAllLemmata(), 200);
-        } else {
-            throw new Exception("bla");
-        }
-    }
-
-    protected function occurrenceIds() {
+    protected function occurrenceIDs() {
         $lemma = $_GET["lemma"];
         if ($this->method == 'GET' && ! empty($lemma)) {
 
@@ -62,7 +50,7 @@ class MyAPI extends API {
 
     protected function occurrences() {
         $lemma = $_GET["lemma"];
-        $withContext = $_GET["withContext"];
+        $withContext = filter_var($_GET["withContext"], FILTER_VALIDATE_BOOLEAN);
         if ($this->method == 'GET' && ! empty($lemma)) {
             $occs = getOccurrences ($lemma, $withContext);
             return array($occs, 200);
@@ -71,6 +59,45 @@ class MyAPI extends API {
         }
     }
 
+    protected function occurrence() {
+        $occurrenceID = $_GET["occurrenceID"];
+        $withContext = filter_var($_GET["withContext"], FILTER_VALIDATE_BOOLEAN);
+        if ($this->method == 'GET' && ! empty($occurrenceID)) {
+            $occs = getOccurrenceDetails($occurrenceID, $withContext);
+            return array($occs, 200);
+        } else {
+            throw new Exception("bla");
+        }
+    }
+
+    protected function allLemmata() {
+        if ($this->method == 'GET') {
+            return array(getAllLemmata(), 200);
+        } else {
+            throw new Exception("bla");
+        }
+    }
+
+    protected function numberOfOccurrenceChunks() {
+        $lemma = $_GET["lemma"];
+        if ($this->method == 'GET') {
+            return array(getNumberOfOccurrenceChunks($lemma), 200);
+        } else {
+            throw new Exception("bla");
+        }
+    }
+
+    protected function occurrencesChunk() {
+        $lemma = $_GET["lemma"];
+        $withContext = filter_var($_GET["withContext"], FILTER_VALIDATE_BOOLEAN);
+        $chunk = $_GET["chunk"];
+        if ($this->method == 'GET' && ! empty($lemma)) {
+            $occs = getOccurrencesChunk($lemma, $withContext, $chunk);
+            return array($occs, 200);
+        } else {
+            throw new Exception("bla");
+        }
+    }
 }
 
 ?>
