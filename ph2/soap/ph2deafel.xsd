@@ -41,6 +41,16 @@
                 </annotation>
             </element>
 
+            <element name="mainLemma" type="string">
+                <annotation>
+                    <documentation xml:lang="en">
+                        The main lemma that is assigned to this occurrence.
+                        E.g.: abbé
+                        According to the commonly established DEAF/DocLing list of DEAF/TL lemmata
+                    </documentation>
+                </annotation>
+            </element>
+
             <element name="lemma" type="string">
                 <annotation>
                     <documentation xml:lang="en">

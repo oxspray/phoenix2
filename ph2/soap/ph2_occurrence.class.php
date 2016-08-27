@@ -7,6 +7,7 @@ class PH2Occurrence {
 	
 	public $occurrenceID;
 	public $surface;
+    public $mainLemma;
 	public $lemma;
 	public $lemmaPOS;
 	public $morphology;

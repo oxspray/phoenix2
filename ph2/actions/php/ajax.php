@@ -91,7 +91,7 @@ function getLemmata ($get, $post) { global $ps;
 /* retrieves a list of all LEMMAta from the database, grouped by their CONCEPT */
 	
 	$dao = new Table('LEMMA');
-	$dao->select = 'distinct(LemmaID), LemmaIdentifier, ConceptID';
+	$dao->select = 'distinct(LemmaID), MainLemmaIdentifier, LemmaIdentifier, ConceptID';
 	$dao->orderby = "LemmaIdentifier COLLATE utf8_roman_ci";
 	
 	if ($ps->filterIsActive()) {		
@@ -115,8 +115,8 @@ function getLemmata ($get, $post) { global $ps;
 	
 	$result = array();
 	foreach ($rows as $row) {
-		$result[$row['ConceptID']][] = array($row['LemmaID'], $row['LemmaIdentifier']);
-	} // result: [ 1: [LemmaID, LemmaIdentifier], ..., 2: ..., n:, ... ]
+		$result[$row['ConceptID']][] = array($row['LemmaID'], $row['MainLemmaIdentifier'], $row['LemmaIdentifier']);
+	} // result: [ 1: [LemmaID, MainLemmaIdentifier, LemmaIdentifier], ..., 2: ..., n:, ... ]
 	
 	echo json_encode($result);
 	

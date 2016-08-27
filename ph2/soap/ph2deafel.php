@@ -48,6 +48,7 @@ function getOccurrencesForLemmaOrOccurrenceId ($lemma, $occurrenceId, $withConte
 	// TODO: the min(LemmaIdentifier) is still bad
 	$occsWithContext = "select * from (select O.OccurrenceID, O.TextID, O.Order, O.Div, T.Surface, TE.CiteID,
 		min(LemmaIdentifier) as LemmaIdentifier,
+		min(MainLemmaIdentifier) as MainLemmaIdentifier,
 		max(IF(XMLTagName = 'd0', substr(TD.Value,1,4), null)) AS Year,
 		max(IF(XMLTagName = 'd0', TD.Value, null)) as Date,
 		max(IF(XMLTagName = 'type', TD.Value, null)) as Type,

@@ -157,7 +157,8 @@ element
 	$tb_LEMMA = $tb_LEMMA->get();
 	// modify resultset: token surface is enriched with concept type of lemma
 	foreach ($tb_LEMMA as $key => $value) {
-		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
+		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['LemmaIdentifier'] . ', ' .
+            $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
 	}
 	$resultset = new ResultSetTransformer($tb_LEMMA);
 	
