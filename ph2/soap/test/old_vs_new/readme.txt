@@ -3,3 +3,5 @@ from the db (Samuel's implementation) with the new way of getting occurrences (C
 
 Besides the test modules, this directory also contains a copy of the ph2_occurrence.class.php
 and a copy of the p2deafel.php. Both of these copies contain the old implementations.
+
+To make it work with the new rest/soap distinction, set SOAP_ENABLED = True in ph2deafel.php.
