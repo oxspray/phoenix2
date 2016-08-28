@@ -2,7 +2,7 @@
 
 require_once 'abstract_api.php';
 
-require_once('../soap/ph2deafel_rest.php');
+require_once('../soap/ph2deafel.php');
 
 class MyAPI extends API {
     public function __construct($request, $origin) {

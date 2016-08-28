@@ -19,12 +19,23 @@ define ('RIGHT_CONTEXT_WIDTH', 225);
 /** Maximum size of occurrence chunks. */
 define('CHUNK_SIZE', 500);
 
+/** enable soap -> disable rest, and vice versa.*/
+define ('SOAP_ENABLED', False);
+
 # HELPER FUNCTIONS
 # -----------------
 
+/**
+ * @param $object object to wrap into SoapVar.
+ * @return SoapVar if SOAP_ENABLED, the unmodified object otherwise.
+ */
 function object_to_soap_response( $object ) {
-	# encodes an object in a propper SOAP XML (WSDL compliant) format
-	return new SoapVar($object, SOAP_ENC_OBJECT, "SOAPStruct", $NAMESPACE);
+    if (SOAP_ENABLED) {
+        # encodes an object in a propper SOAP XML (WSDL compliant) format
+        return new SoapVar($object, SOAP_ENC_OBJECT, "SOAPStruct", $NAMESPACE);
+    } else {
+        return $object;
+    }
 }
 
 /**
@@ -270,18 +281,19 @@ function getOccurrencesChunk($lemma, $withContext, $chunk) {
 
 # SOAP SERVER
 # -----------
+if (SOAP_ENABLED) {
+    ini_set("soap.wsdl_cache_enabled", "0"); // ENABLE FOR TESTING!
 
-ini_set("soap.wsdl_cache_enabled", "0"); // ENABLE FOR TESTING!
+    $server = new SoapServer("ph2deafel.wsdl");
+    $server->addFunction("getOccurrences");
+    $server->addFunction("getOccurrenceDetails");
+    $server->addFunction("getOccurrenceIDs");
+    $server->addFunction("getAllLemmata");
+    $server->addFunction("getOccurrencesChunk");
+    $server->addFunction("getNumberOfOccurrenceChunks");
 
-$server = new SoapServer("ph2deafel.wsdl");
-$server->addFunction("getOccurrences");
-$server->addFunction("getOccurrenceDetails");
-$server->addFunction("getOccurrenceIDs");
-$server->addFunction("getAllLemmata");
-$server->addFunction("getOccurrencesChunk");
-$server->addFunction("getNumberOfOccurrenceChunks");
-
-// run the server
-$server->handle();
+    // run the server
+    $server->handle();
+}
 
 ?>
