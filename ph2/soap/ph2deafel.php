@@ -91,6 +91,7 @@ function getOccurrencesForLemmaOrOccurrenceId ($lemma, $occurrenceId, $withConte
 		$occ->occurrenceID = $row['OccurrenceID'];
 		$occ->surface = $row['Surface'];
 		$occ->lemma = $row['LemmaIdentifier'];
+		$occ->mainLemma = $row['MainLemmaIdentifier'];
 		$occ->divisio = $row['Div'];
 		$occ->sigel = $row['CiteID'];
 		$occ->year = $row['Year'];
