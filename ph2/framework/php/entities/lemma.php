@@ -22,20 +22,22 @@ class Lemma
 	protected $_id; /// the ID of the Lemma
 	protected $_project_id; /// the ID of the project this Lemma is assigned to
 	protected $_identifier; /// the identifier of this Lemma
+	protected $_mainLemmaIdentifier; /// the main lemma
 	protected $_lemmastring_id; /// the ID of the Lemma's surface
 	protected $_lemmastring; /// the string (surface) of the Lemma
 	protected $_concept_id; /// the ID of the Lemma's Concept
 	protected $_concept_short; /// the short name of this Lemma's concept
 	protected $_is_lexicon_relevant; /// whether the Lemma is relevant for the lexicon
-	
+
 	// CONSTRUCTOR
 	// -----------
 	//+ 
-	function __construct ( $id_or_identifier , $concept_short=NULL , $project_id=NULL , $surface=NULL , $morph_params=NULL )
+	function __construct ( $id_or_identifier , $concept_short=NULL , $project_id=NULL , $surface=NULL , $morph_params=NULL,
+                            $mainLemmaIdentifier=NULL)
 	/*/
 	A Lemma can be constructed either with an ID (=load an existing Lemma) or with an 
 	identifier and a Concept (=create new Lemma on the Database). If a Lemma with the given 
-	(surface/concept/project_id) allready exists, it is loaded from the DB rather than 
+	(identifier/concept/project_id/mainLemmaIdentifier) already exists, it is loaded from the DB rather than
 	re-created.
 	---
 	@param id_or_identifier: the ID (existing) or name (new) of the Lemma
@@ -63,6 +65,7 @@ class Lemma
 				$this->_project_id = $ps->getActiveProject();
 			}
 			$this->_identifier = $id_or_identifier;
+            $this->_mainLemmaIdentifier = $mainLemmaIdentifier;
 			$this->_is_lexicon_relevant = 1;
 			// check if the submitted concept is valid
 			$dao_concept = new Table('CONCEPT');
@@ -70,9 +73,12 @@ class Lemma
 			if (count($rows) > 0) {
 				$this->_concept_id = $rows[0]['ConceptID'];
 				$this->_concept_short = $concept_short;
-				// if a lemma with this (identifier/concept/project_id) allready exists, load it instead of creating a new one
+				// if a lemma with this (identifier/concept/project_id/mainLemmaIdentifier) already exists,
+                // load it instead of creating a new one
 				$dao_lemma = new Table('LEMMA');
-				$rows = $dao_lemma->get( array( 'ProjectID' => $this->_project_id, 'LemmaIdentifier' => $this->_identifier, 'ConceptID' => $this->_concept_id ) );
+				$rows = $dao_lemma->get( array( 'ProjectID' => $this->_project_id,
+                    'LemmaIdentifier' => $this->_identifier, 'ConceptID' => $this->_concept_id,
+                    'MainLemmaIdentifier' => $this->_mainLemmaIdentifier) );
 				if (count($rows) > 0) {
 					$this->_id = (int)$rows[0]['LemmaID'];
 					$this->_loadFromDB();
@@ -90,7 +96,7 @@ class Lemma
 					}
 				}
 			} else {
-				die("ERROR constucting lemma $id_or_name: $concept is not a valid concept");
+				die("ERROR constructing lemma $id_or_identifier: $concept_short is not a valid concept");
 			}
 		}
 	} //__construct
@@ -132,8 +138,21 @@ class Lemma
 	{
 		return $this->_identifier;
 	} //getIdentifier
-	
-	//+ 
+
+    //+
+    function getMainLemmaIdentifier ( )
+        /*/
+        getter
+        -
+        @return: the main lemma identifier of this Lemma
+        @rtype:  string
+        /*/
+    {
+        return $this->_mainLemmaIdentifier;
+    } //getMainLemmaIdentifier
+
+
+    //+
 	function getLemmaString ( )
 	/*/
 	getter
@@ -265,6 +284,18 @@ class Lemma
 		$this->_identifier = $identifier;
 		$this->_writeToDB();
 	} //setIdentifier
+
+    function setMainLemmaIdentifier ($mainLemmaIdentifier )
+        /*/
+        setter
+        ---
+        @param mainLemmaIdentifier: the new mainLemmaIdentifier for this Lemma
+        @type  mainLemmaIdentifier: string
+        /*/
+    {
+        $this->_mainLemmaIdentifier = $mainLemmaIdentifier;
+        $this->_writeToDB();
+    } //setMainLemmaIdentifier
 	
 	//+ 
 	function setSurface ( $surface_string )
@@ -439,6 +470,7 @@ class Lemma
 		if (count($rows) > 0 ) {
 			$this->_project_id = $rows[0]['ProjectID'];
 			$this->_identifier = $rows[0]['LemmaIdentifier'];
+			$this->_mainLemmaIdentifier = $rows[0]['MainLemmaIdentifier'];
 			$this->_lemmastring_id = $rows[0]['LemmastringID'];
 			$this->_lemmastring = $rows[0]['Surface'];
 			$this->_concept_id = $rows[0]['ConceptID'];
@@ -458,7 +490,9 @@ class Lemma
 	/*/
 	{
 		// prepare entry
-		$row = array( 'ProjectID' => $this->_project_id, 'LemmastringID' => $this->_lemmastring_id, 'LemmaIdentifier' => $this->_identifier, 'ConceptID' => $this->_concept_id, 'isLexiconRelevant' => $this->_is_lexicon_relevant);
+		$row = array( 'ProjectID' => $this->_project_id, 'LemmastringID' => $this->_lemmastring_id,
+            'LemmaIdentifier' => $this->_identifier, 'ConceptID' => $this->_concept_id,
+            'isLexiconRelevant' => $this->_is_lexicon_relevant, 'MainLemmaIdentifier' => $this->_mainLemmaIdentifier);
 		// write to db
 		$dao = new Table('LEMMA');
 		if (empty($this->_id)) {
