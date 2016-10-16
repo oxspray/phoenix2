@@ -408,7 +408,7 @@ class Lemma
 	@type  occurrence_id: int
 	/*/
 	{
-		// delete existing assignment
+		// delete existing assignments
 		$dao = new Table('LEMMA_OCCURRENCE');
 		$dao->delete( array( 'OccurrenceID' => $occurrence_id ) );
 		// write new assignment

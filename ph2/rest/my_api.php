@@ -98,6 +98,36 @@ class MyAPI extends API {
             throw new Exception("bla");
         }
     }
+
+    protected function assignOccurrencesToLemma() {
+
+        $d = $this->retrieveJsonPostDataAsArray();
+        $newMainLemmaIdentifier = $d['newMainLemmaIdentifier'];
+        $newLemmaIdentifier = $d['newLemmaIdentifier'];
+        $occurrenceIDs = $d['occurrenceIDs'];
+
+        if ($this->method == 'POST' && !empty($newMainLemmaIdentifier) && !empty($newLemmaIdentifier)) {
+
+            try {
+                $result = assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newLemmaIdentifier);
+            } catch (Exception $e) {
+                // this will occurr when new lemma is not unique -> error on phoenix2 side
+                return array($e->getMessage(), 500);
+            }
+
+            return array($result, 200);
+        } else {
+            throw new Exception("invalid request");
+        }
+    }
+
+    private function retrieveJsonPostDataAsArray() {
+        // get the raw POST data
+        $rawData = file_get_contents("php://input");
+
+        // this returns null if not valid json
+        return json_decode($rawData, true);
+    }
 }
 
 ?>

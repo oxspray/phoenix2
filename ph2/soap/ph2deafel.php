@@ -1,6 +1,7 @@
 <?php
 
 include('ph2_occurrence.class.php');
+include('ph2_lemma.class.php');
 
 require_once('../../settings.php');
 require_once('../framework/php/framework.php');
@@ -21,6 +22,13 @@ define('CHUNK_SIZE', 500);
 
 /** enable soap -> disable rest, and vice versa.*/
 define ('SOAP_ENABLED', False);
+
+/** Default values for newly created lemmas. */
+define('DEFAULT_CONCEPT', 'c');
+define('DEFAULT_PROJECT_ID', 1);
+define('DEFAULT_SURFACE', null);
+define('DEFAULT_MORPH_PARAMS', null);
+
 
 # HELPER FUNCTIONS
 # -----------------
@@ -279,6 +287,80 @@ function getOccurrencesChunk($lemma, $withContext, $chunk) {
 	return $occurrences;
 
 }
+
+# Write functions
+# ---------------
+
+/**
+ * Assigns the occurrence identified by $occurrenceID to the lemma partially identified by combination of
+ * $newMainLemmaIdentifier, $newLemmaIdentified. Removes the occurrence from its old lemma(s).
+ *
+ * If the new lemma does not exist, it creates it. In this case, it uses default values for the lemma attributes
+ * projectId, concept, morphvalues, and surface. (DEFAULT_PROJECT_ID, DEFAULT_CONCEPT, , ...).
+ *
+ * @throws Exception with exception code 0 if the combination ($newMainLemmaIdentifier, $newLemmaIdentifier) is not
+ * unique, i.e., there exist more than one lemma with this combination.
+ */
+function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newLemmaIdentifier) {
+
+    $dao = new Table('LEMMA');
+    $q = "select * from lemma where mainLemmaIdentifier = '$newMainLemmaIdentifier' 
+          and lemmaIdentifier = '$newLemmaIdentifier'";
+    $lemmaRows = $dao->query($q);
+    $lemmaCount = count($lemmaRows);
+
+    if ($lemmaCount == 0) {
+        $lemma = new Lemma($newLemmaIdentifier, DEFAULT_CONCEPT, DEFAULT_PROJECT_ID, DEFAULT_SURFACE,
+            DEFAULT_MORPH_PARAMS, $newMainLemmaIdentifier);
+    } else if ($lemmaCount == 1) {
+        $lemma = new Lemma((int)$lemmaRows[0]['LemmaID']);
+    } else if ($lemmaCount > 1) {
+        throw new Exception("Lemma ($newMainLemmaIdentifier, $newLemmaIdentifier) not unique.", 0);
+    }
+
+    foreach ($occurrenceIDs as $occurrenceID) {
+        try {
+            _assignOccurrenceToLemma($occurrenceID, $lemma);
+        } catch (Exception $e) {
+            $errorOccs[] = $occurrenceID;
+        }
+    }
+    $result['createdNewLemma'] = $lemmaCount == 0;
+    $result['lemma'] = new PH2Lemma($lemma);
+    $result['errorOccurrences'] = $errorOccs;
+    return $result;
+}
+
+/**
+ * Assigns the occurrence identified by $occurrenceID to $lemma. Removes occurrence from previously assigned lemma.
+ *
+ * @throws Exception with exception code 0 if the occurrence with $occurrenceID does not exist.
+ */
+function _assignOccurrenceToLemma($occurrenceID, $lemma) {
+
+    $dao = new Table('OCCURRENCE');
+    $occ = $dao->get("occurrenceId = $occurrenceID")[0];
+    if ($occ == null) {
+        throw new Exception("Occurrence with occurrenceID $occurrenceID does not exist.", 1);
+    }
+
+    $lemma->assignOccurrenceID($occurrenceID); // existing lemma assignment is deleted.
+}
+
+/**
+ * Retrieves the lemma(s) assigned to $occurrenceID from the db.
+ * @return the list of lemmas as mysql_query result set. null if no lemma could be retrieved.
+ * @see Table::query()
+ */
+function _retrieveLemmaList($occurrenceID) {
+    $dao = new Table('LEMMA_OCCURRENCE');
+    $r = $dao->query("select l.LemmaId as LemmaID
+      from Occurrence o join Lemma_Occurrence lo on (o.OccurrenceID = lo.OccurrenceID)
+      join Lemma l on (lo.lemmaId = l.lemmaId)
+      where o.OccurrenceID = $occurrenceID");
+    return $r;
+}
+
 
 # SOAP SERVER
 # -----------
