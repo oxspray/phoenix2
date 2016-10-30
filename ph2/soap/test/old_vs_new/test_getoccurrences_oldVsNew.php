@@ -21,9 +21,7 @@ require_once('ph2deafel.php');
  * @return int see strcmp
  */
 function cmp($a, $b) {
-    // to test with raw objects (without soap): remove wrapping into soap var from getOccurrences
-    // and remove ->enc_value in the following line
-    return strcmp($a->enc_value->occurrenceID, $b->enc_value->occurrenceID);
+    return strcmp($a->occurrenceID, $b->occurrenceID);
 }
 
 

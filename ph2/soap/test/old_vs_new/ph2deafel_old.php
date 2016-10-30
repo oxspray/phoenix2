@@ -45,7 +45,7 @@ function getOccurrencesOld ($lemma, $withContext) {
   	$occurrences = array();
   	$occurrence_ids = getOccurrenceIDsOld($lemma);
   	foreach ($occurrence_ids as $occurrence_id) {
-	  	$occurrences[] = object_to_soap_response( new PH2OccurrenceOld( $occurrence_id, $withContext ) );
+		$occurrences[] = new PH2OccurrenceOld( $occurrence_id, $withContext );
   	}
   	return $occurrences;
 }

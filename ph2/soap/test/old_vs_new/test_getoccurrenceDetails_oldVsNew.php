@@ -25,7 +25,7 @@ function compare_getOccurrenceDetails($lemma, $withContext) {
         $occsOld = getOccurrenceDetailsOld($occurrenceId, $withContext);
         $occsNew = getOccurrenceDetails($occurrenceId, $withContext);
 
-        if (!compareOccs($occsOld->enc_value, $occsNew->enc_value)) {
+	if (!compareOccs($occsOld, $occsNew)) {
             return false;
         }
     }

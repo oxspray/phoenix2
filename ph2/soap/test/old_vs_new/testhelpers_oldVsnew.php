@@ -41,7 +41,7 @@ function compareOccsArrays($occsOld, $occsNew) {
     }
 
     for ($i = 0; $i < count($occsOld); $i++) {
-        if (!compareOccs($occsOld[$i]->enc_value, $occsNew[$i]->enc_value)) {
+	if (!compareOccs($occsOld[$i], $occsNew[$i])) {
             return false;
         }
     }
