@@ -101,8 +101,6 @@ abstract class API {
     }
 
     private function _response($data, $status = 200) {
-//        error_log("data");
-//        error_log(print_r($data, true));
         header("HTTP/1.1 " . $status . " " . $this->_requestStatus($status));
         return json_encode($data, JSON_PRETTY_PRINT); // JSON_PRETTY_PRINT only works in PHP >= 5.4
     }

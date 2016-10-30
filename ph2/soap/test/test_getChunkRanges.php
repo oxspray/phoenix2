@@ -16,11 +16,11 @@ $null_array = array(0, -1);
 
 function testExpectedRanges($expectedRanges, $chunkSize, $listSize) {
     for ($i = 0; $i < count($expectedRanges); $i++) {
-        $chunkRange = getChunkRange($i, $chunkSize, $listSize);
+        $chunkRange = _getChunkRange($i, $chunkSize, $listSize);
         assert($chunkRange == $expectedRanges[$i]);
     }
 
-    $chunkRange = getChunkRange(-1, $chunkSize, $listSize);
+    $chunkRange = _getChunkRange(-1, $chunkSize, $listSize);
     assert($chunkRange == array(0, -1));
 }
 

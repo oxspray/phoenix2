@@ -15,6 +15,11 @@ require_once('testhelpers_oldVsnew.php');
 chdir('../..');
 require_once('ph2deafel.php');
 
+// Set our assert options
+assert_options(ASSERT_ACTIVE, true);
+assert_options(ASSERT_BAIL, true);
+assert_options(ASSERT_WARNING, true);
+
 /**
  * Compares two occurrences $a and $b based on their occurrenceId.
  *
@@ -30,27 +35,20 @@ $lemma = 'bien';
 $withContext = false;
 
 $occsOld = getOccurrencesOld($lemma, $withContext);
-$occsNew = getOccurrences($lemma, $withContext);
+$occsNew = getOccurrences(null, $lemma, $withContext);
 // sort both arrays by occurrenceId
 usort($occsOld, "cmp");
 usort($occsNew, "cmp");
-$success = compareOccsArrays($occsOld, $occsNew);
+assert(compareOccsArrays($occsOld, $occsNew));
 
 $withContext = true;
 $occsOld = getOccurrencesOld($lemma, $withContext);
-$occsNew = getOccurrences($lemma, $withContext);
+$occsNew = getOccurrences(null, $lemma, $withContext);
 // sort both arrays by occurrenceId
 usort($occsOld, "cmp");
 usort($occsNew, "cmp");
-$success = compareOccsArrays($occsOld, $occsNew);
+assert(compareOccsArrays($occsOld, $occsNew));
 
-
-if ($success) {
-    echo "Success! \n";
-} else {
-    echo "Failure! \n";
-}
-echo "done";
-
+echo "Test done. Success! \n";
 
 ?>

@@ -35,27 +35,25 @@ class MyAPI extends API {
 
     }
 
-    /*
- * Example of an Endpoint
- */
     protected function occurrenceIDs() {
+        $mainLemma = $_GET["mainLemma"];
         $lemma = $_GET["lemma"];
-        if ($this->method == 'GET' && ! empty($lemma)) {
-
-            return array(getOccurrenceIDs($lemma), 200);
+        if ($this->method == 'GET') {
+            return array(getOccurrenceIDs($mainLemma, $lemma), 200);
         } else {
-            throw new Exception("bla");
+            throw new Exception("GET request expected.");
         }
     }
 
     protected function occurrences() {
+        $mainLemma = $_GET["mainLemma"];
         $lemma = $_GET["lemma"];
         $withContext = filter_var($_GET["withContext"], FILTER_VALIDATE_BOOLEAN);
-        if ($this->method == 'GET' && ! empty($lemma)) {
-            $occs = getOccurrences ($lemma, $withContext);
+        if ($this->method == 'GET') {
+            $occs = getOccurrences ($mainLemma, $lemma, $withContext);
             return array($occs, 200);
         } else {
-            throw new Exception("bla");
+            throw new Exception("GET request expected.");
         }
     }
 
@@ -66,7 +64,7 @@ class MyAPI extends API {
             $occs = getOccurrenceDetails($occurrenceID, $withContext);
             return array($occs, 200);
         } else {
-            throw new Exception("bla");
+            throw new Exception("GET request expected.");
         }
     }
 
@@ -74,28 +72,30 @@ class MyAPI extends API {
         if ($this->method == 'GET') {
             return array(getAllLemmata(), 200);
         } else {
-            throw new Exception("bla");
+            throw new Exception("GET request expected.");
         }
     }
 
     protected function numberOfOccurrenceChunks() {
+        $mainLemma = $_GET["mainLemma"];
         $lemma = $_GET["lemma"];
         if ($this->method == 'GET') {
-            return array(getNumberOfOccurrenceChunks($lemma), 200);
+            return array(getNumberOfOccurrenceChunks($mainLemma, $lemma), 200);
         } else {
-            throw new Exception("bla");
+            throw new Exception("GET request expected.");
         }
     }
 
     protected function occurrencesChunk() {
+        $mainLemma = $_GET["mainLemma"];
         $lemma = $_GET["lemma"];
         $withContext = filter_var($_GET["withContext"], FILTER_VALIDATE_BOOLEAN);
         $chunk = $_GET["chunk"];
-        if ($this->method == 'GET' && ! empty($lemma)) {
-            $occs = getOccurrencesChunk($lemma, $withContext, $chunk);
+        if ($this->method == 'GET') {
+            $occs = getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk);
             return array($occs, 200);
         } else {
-            throw new Exception("bla");
+            throw new Exception("GET request expected.");
         }
     }
 

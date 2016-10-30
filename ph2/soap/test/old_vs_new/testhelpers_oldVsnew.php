@@ -41,7 +41,7 @@ function compareOccsArrays($occsOld, $occsNew) {
     }
 
     for ($i = 0; $i < count($occsOld); $i++) {
-	if (!compareOccs($occsOld[$i], $occsNew[$i])) {
+        if (!compareOccs($occsOld[$i], $occsNew[$i])) {
             return false;
         }
     }
@@ -51,8 +51,9 @@ function compareOccsArrays($occsOld, $occsNew) {
 function compareOccs($occOld, $occNew) {
     $occOldNew = toNewOccurrence($occOld);
     if ($occOldNew != $occNew) {
-        echo "old vs new \n";
+        echo "old:\n";
         print_r($occOldNew);
+        echo "new:\n";
         print_r($occNew);
         echo "Failure!\n";
         return false;

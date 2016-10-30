@@ -50,19 +50,22 @@ function object_to_soap_response( $object ) {
  * Retrieves the occurrences for the specified lemma, or, if the lemma is null, for the specified occurrence id.
  *
  * @param $lemma the lemma. can contain mysql where like wildcards, e.g., 'fa%'. If null, use occurrence id.
+ * @param $mainLemma the mainLemma identifier. Can contain mysql where like wildcards. Only used, if lemma != null.
  * @param $occurrenceId the id for the occurrence to retrieve
  * @param $withContext whether the occurrences should be retrieved with or without context
  * @return array of occurrences. The array has size <= 1 if we retrieve by occurrence id.
  */
-function getOccurrencesForLemmaOrOccurrenceId ($lemma, $occurrenceId, $withContext) {
+function getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceId, $withContext) {
+    // TODO: maybe move to misc entity functions
 
+    $dao = new Table('OCCURRENCE');
+    // TODO extract escaping to function with array arg
+    $mainLemma = mysql_real_escape_string($mainLemma);
+    $lemma = mysql_real_escape_string($lemma);
+    $withContext = mysql_real_escape_string($withContext);
 
-	$dao = new Table('OCCURRENCE');
-	// TODO: test for injecection-proofeness
-	// TODO: maybe move to misc entity functions
-
-	$contextLeftQueryString = getContextQueryString($lemma, $occurrenceId, true);
-	$contextRightQueryString = getContextQueryString($lemma, $occurrenceId, false);
+	$contextLeftQueryString = _getContextQueryString($mainLemma, $lemma, $occurrenceId, true);
+	$contextRightQueryString = _getContextQueryString($mainLemma, $lemma, $occurrenceId, false);
 
 	// TODO: the min(LemmaIdentifier) is still bad
 	$occsWithContext = "select * from (select O.OccurrenceID, O.TextID, O.Order, O.Div, T.Surface, TE.CiteID,
@@ -82,8 +85,9 @@ function getOccurrencesForLemmaOrOccurrenceId ($lemma, $occurrenceId, $withConte
 		left join LEMMA_MORPHVALUE as LM on L.LemmaID=LM.LemmaID
 		left join MORPHVALUE as M on LM.MorphvalueID = M.MorphvalueID
 		where ".
-		($lemma != null ? "L.LemmaIdentifier like '$lemma'" : "O.OccurrenceId = $occurrenceId ").
-		"group by O.OccurrenceID) A ";
+		($lemma != null ? "L.LemmaIdentifier like '$lemma'" : "O.OccurrenceId = $occurrenceId").
+		($lemma != null && $mainLemma!=null ? " and L.MainLemmaIdentifier like '$mainLemma'" : "").
+		" group by O.OccurrenceID) A ";
 	if ($withContext) {
 		$occsWithContext = $occsWithContext.
 			"left join " .
@@ -123,7 +127,7 @@ function getOccurrencesForLemmaOrOccurrenceId ($lemma, $occurrenceId, $withConte
 	return $occurrences;
 }
 
-function getContextQueryString($lemmaWildcard, $occurrenceId, $left = true) {
+function _getContextQueryString($mainLemmaWildcard, $lemmaWildcard, $occurrenceId, $left = true) {
 	/*/
 	Returns the mysql query string that retrieves the (left or right) context for all lemmata matched by the specified
 	lemma wildcard.
@@ -156,9 +160,10 @@ function getContextQueryString($lemmaWildcard, $occurrenceId, $left = true) {
 				join OCCURRENCE O on LC.OccurrenceID = O.OccurrenceID
 				where ".
 				($lemmaWildcard != null ?
-					"L.LemmaIdentifier like '$lemmaWildcard'"
-					: "O.OccurrenceId = $occurrenceId").")
-				as occborder
+                    "L.LemmaIdentifier like '$lemmaWildcard'" : "O.OccurrenceId = $occurrenceId").
+                ($lemmaWildcard != null && $mainLemmaWildcard !=null ?
+                    " and L.MainLemmaIdentifier like '$mainLemmaWildcard'" : "")."
+                ) as occborder
 			join OCCURRENCE O on occborder.TextID = O.TextID
 			where `Order` >= lborder and `Order` <= rborder) as X
 		join TOKEN T on T.TokenID = X.TokenID
@@ -180,7 +185,7 @@ function getContextQueryString($lemmaWildcard, $occurrenceId, $left = true) {
  * @return array the chunk range, or array(0, -1) if there exists no chunk range for the
  * specified parameters
  */
-function getChunkRange($chunk, $chunkSize, $listSize) {
+function _getChunkRange($chunk, $chunkSize, $listSize) {
 
 	if ($chunk < 0 || $chunkSize < 2) {
 		return array(0, -1);
@@ -193,13 +198,13 @@ function getChunkRange($chunk, $chunkSize, $listSize) {
 	}
 }
 
-function getNumberOfOccurrences($lemma) {
+function _getNumberOfOccurrences($mainLemma, $lemma) {
 
 	$dao = new Table('Occurrence');
-	$result = $dao->query("select count(*) as count
-		from LEMMA l natural join LEMMA_OCCURRENCE lo
-		where l.lemmaIdentifier like '$lemma';");
-	return $result[0]['count'];
+    $dao->select = "count(*) as occ_count";
+    $dao->from = "LEMMA l natural join LEMMA_OCCURRENCE lo";
+    $dao->where = toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma, 'LemmaIdentifier' => $lemma));
+    return $dao->get()[0]['occ_count'];
 }
 
 # WEBSERVICE FUNCTIONS
@@ -207,31 +212,35 @@ function getNumberOfOccurrences($lemma) {
 
 
 /**
- * Returns a list of occurrence ids for the specified $lemma. The occurrences are ordered by OccurrenceID asc.
- * @param $lemma
+ * Returns a list of occurrence ids for the specified $mainLemma, $lemma combination.
+ * The occurrences are ordered by OccurrenceID asc.
+ * @param $mainLemma the main lemma identifier
+ * @param $lemma the lemma identifier
  * @return array
  */
-function getOccurrenceIDs ($lemma) {
+function getOccurrenceIDs($mainLemma = null, $lemma = null) {
 
-	$occurrence_ids = array();
-	// search the database for Lemmata with the given identifier
-	$dao = new Table('LEMMA');
-	$dao->from = 'LEMMA_OCCURRENCE join LEMMA on (LEMMA_OCCURRENCE.LemmaID = LEMMA.LemmaID)';
+    $occurrence_ids = array();
+    // search the database for Lemmata with the given identifier
+    $dao = new Table('LEMMA');
+    $dao->select = "OccurrenceID";
+    $dao->from = 'LEMMA_OCCURRENCE join LEMMA on (LEMMA_OCCURRENCE.LemmaID = LEMMA.LemmaID)';
     $dao->orderby = 'OccurrenceId asc';
-	$dao->where = "LemmaIdentifier like  '$lemma'";
-	$results = $dao->get();
-	foreach ($results as $occurrence) {
-		$occurrence_ids[] = $occurrence['OccurrenceID'];
-	}
-	return $occurrence_ids;
+    $dao->where = toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma, 'LemmaIdentifier' => $lemma));
+
+    $results = $dao->get();
+    foreach ($results as $occurrence) {
+        $occurrence_ids[] = $occurrence['OccurrenceID'];
+    }
+    return $occurrence_ids;
 }
 
-function getOccurrences ($lemma, $withContext) {
-	return getOccurrencesForLemmaOrOccurrenceId($lemma, null, $withContext);
+function getOccurrences ($mainLemma, $lemma, $withContext) {
+	return getOccurrencesForLemmaOrOccurrenceId($mainLemma, $lemma, null, $withContext);
 }
 
 function getOccurrenceDetails ($occurrenceID, $withContext) {
-	$occurrences = getOccurrencesForLemmaOrOccurrenceId(null, $occurrenceID, $withContext);
+	$occurrences = getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceID, $withContext);
 	return $occurrences[0];
 }
 
@@ -239,12 +248,12 @@ function getAllLemmata () {
 	$lemma_identifiers = array();
 	// get all Lemmata that have at least one Occurrence assigned from the database
 	$dao = new Table('LEMMA');
-	$dao->select = "distinct(LemmaID), LemmaIdentifier";
+	$dao->select = "distinct(LemmaID), LemmaIdentifier, MainLemmaIdentifier";
 	$dao->from = "LEMMA natural join LEMMA_OCCURRENCE";
 	$dao->orderby = "LemmaIdentifier COLLATE utf8_roman_ci";
 	$results = $dao->get();
 	foreach ($results as $lemma) {
-		$lemma_identifiers[] = $lemma['LemmaIdentifier'];
+		$lemma_identifiers[] = array($lemma['LemmaIdentifier'], $lemma['MainLemmaIdentifier']);
 	}
 	return $lemma_identifiers;
 }
@@ -255,9 +264,8 @@ function getAllLemmata () {
  * @param $lemma
  * @return float
  */
-function getNumberOfOccurrenceChunks($lemma) {
-
-	return ceil(getNumberOfOccurrences($lemma) / CHUNK_SIZE);
+function getNumberOfOccurrenceChunks($mainLemma, $lemma) {
+	return ceil(_getNumberOfOccurrences($mainLemma, $lemma) / CHUNK_SIZE);
 }
 
 /**
@@ -273,16 +281,16 @@ function getNumberOfOccurrenceChunks($lemma) {
  * @param $chunk
  * @return array an array of occurrences.
  */
-function getOccurrencesChunk($lemma, $withContext, $chunk) {
+function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
 
-	$occurrenceIds = getOccurrenceIDs($lemma);
+	$occurrenceIds = getOccurrenceIDs($mainLemma, $lemma);
 
-	$chunkRange = getChunkRange($chunk, CHUNK_SIZE, count($occurrenceIds));
+	$chunkRange = _getChunkRange($chunk, CHUNK_SIZE, count($occurrenceIds));
 	$occurrences = array();
 
 	for ($i = $chunkRange[0]; $i <= $chunkRange[1]; ++$i) {
 		$occurrenceId = $occurrenceIds[$i];
-		$occurrences[] = getOccurrencesForLemmaOrOccurrenceId(null, $occurrenceId, $withContext)[0];
+		$occurrences[] = getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceId, $withContext)[0];
 	}
 	return $occurrences;
 

@@ -14,25 +14,24 @@ chdir('..');
 define('CHUNK_SIZE', 10);
 require_once('ph2deafel.php');
 
-$lemma = 'mot';
+$lemma = 'tab%';
+$mainLemma = "";
 
-$numChunks = getNumberOfOccurrenceChunks($lemma);
-echo "numChunks ", $numChunks, "\n";
+$numChunks = getNumberOfOccurrenceChunks($mainLemma, $lemma);
+echo "\nnumChunks ", $numChunks, "\n";
 
 $occs = array();
 for ($i = 0; $i < $numChunks; $i++) {
-    $newOccs = getOccurrencesChunk($lemma, False, $i);
+    $newOccs = getOccurrencesChunk($mainLemma, $lemma, False, $i);
     $occs = array_merge($occs, $newOccs);
 }
-
-$excpectedOccs = getOccurrences($lemma, False);
-
+$excpectedOccs = getOccurrences($mainLemma, $lemma, False);
 $success = compareOccsArrays($excpectedOccs, $occs);
 
 if ($success) {
-    echo "Success! \n";
+    echo "\nSuccess! \n";
 } else {
-    echo "Failure! \n";
+    echo "\nFailure! \n";
 }
 echo "done";
 

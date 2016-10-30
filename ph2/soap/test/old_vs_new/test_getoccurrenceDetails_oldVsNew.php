@@ -19,13 +19,13 @@ $success = true;
 function compare_getOccurrenceDetails($lemma, $withContext) {
     echo "compare occs for lemma '$lemma' withContext="; echo $withContext ? "true\n" : "false\n";
 
-    $occurrenceIds = getOccurrenceIDs($lemma);
+    $occurrenceIds = getOccurrenceIDs(null, $lemma);
 
     foreach ($occurrenceIds as $occurrenceId) {
         $occsOld = getOccurrenceDetailsOld($occurrenceId, $withContext);
         $occsNew = getOccurrenceDetails($occurrenceId, $withContext);
 
-	if (!compareOccs($occsOld, $occsNew)) {
+        if (!compareOccs($occsOld, $occsNew)) {
             return false;
         }
     }
