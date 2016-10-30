@@ -204,7 +204,6 @@ class Table
 		
 		// build the query string
 		$query = "SELECT $select_str FROM $from_str $where_str $groupby_str $having_str $orderby_str $limit_str";
-		
 		return $this->query($query, TRUE /*important: allow caching*/);
 		
 	} //get
@@ -569,6 +568,33 @@ class Table
 	} //_removeLatestCacheEntry
 	
 	
+}
+
+
+/**
+ * Converts an associative array of field-value-pairs to an SQL string like (Field like 'Value' AND Field2
+ * like 'Value2' ...) and escapes all values with mysql_real_escape_string().
+ * Adds only field-value-pairs to the SQL string whose value != null. E.g., does not add NULL or empty string values
+ * to the SQL string.
+ *
+ * @param field_value_pairs : The array to convert.
+ * @type  field_value_pairs: associative array (field/value-pairs)
+ * @param sep : the keyword linking the field/value-statements
+ * @type  sep: string
+ * @param link : the operator between a field and its value (field[$link]value)
+ * @type  link: string
+ *
+ * @return: the escaped sql (part) string
+ * @rtype:  string
+ */
+function toSQLStringOptional($field_value_pairs, $sep = ' AND ', $link = ' like ') {
+    $result = "";
+    foreach ($field_value_pairs as $item => $value) {
+        if ($value != NULL) {
+            $result .= '`' . $item . '`' . $link . "'" . mysql_real_escape_string($value) . "'" . $sep;
+        }
+    }
+    return rtrim($result, $sep);
 }
 
 ?>
