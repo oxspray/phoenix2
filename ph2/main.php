@@ -57,9 +57,11 @@ include_once('actions/php/actionhandler.php');
 </head>
 <body>
 <div class="overall">
-	
+
     <div class="page">
-    	
+
+        <?php include('includes/components/basic/workspace_db_mismatch.php')?>
+
         <div id="top">
         	<span>
 				<?php htmlUserTopBar($ps); ?>

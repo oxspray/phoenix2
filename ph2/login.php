@@ -36,7 +36,8 @@ if($_POST) {
 </head>
 <body>
 <div class="overall">
-	
+
+    <?php include('includes/components/basic/workspace_db_mismatch.php')?>
     <div class="page">
     	<div id="login_header">
         	<h1>Phoenix2</h1>

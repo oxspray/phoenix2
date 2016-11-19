@@ -14,6 +14,27 @@ Basic functions returning various HTML Code.
 ---
 /*/
 
+/**
+ * Returns a warning messages if current workspace (dev or live) and the current database
+ * (phoenix2 or phoenix2-text) do not match, that is, if dev is connected to the phoenix2 database,
+ * or if live is connected to phoenix2-text database. Returns 'false' otherwise.
+ */
+function workspaceDbMismatch() {
+
+    $cwd = getcwd();
+    $dev = true; // dev workspace?
+    if (strpos($cwd, 'workspace/live') !== false) {
+        $dev = false;
+    }
+    if (!$dev && PH2_DB_NAME == "phoenix2-test") {
+        return "Warning: Live workspace connected to test database!";
+    }
+    if ($dev && PH2_DB_NAME == "phoenix2") {
+        return "Warning: Test workspace connected to live database!";
+    }
+    return false;
+}
+
 //+ 
 function htmlUserTopBar ( $session )
 /*/
