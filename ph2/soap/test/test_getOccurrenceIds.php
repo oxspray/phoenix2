@@ -18,20 +18,16 @@ assert_options(ASSERT_WARNING, true);
 
 
 //$lemma = 'avoir'; // many occs
-$lemma = 'tab%';
-$mainLemma = "";
 $withContext = true;
 
-
 try {
-    // this should throw an exception if there are more than MAX_OCCS (p2deafel.php) lemmatized occurrences in the db
-    getOccurrences("%", "%", $withContext);
+    $occs = getOccurrenceIDs("%", "%", false);
     echo "\nFailed to throw exception";
 } catch (Exception $e) {
     echo $e->getMessage();
 }
 
-$occs = getOccurrences($mainLemma, $lemma, $withContext);
+$occs = getOccurrenceIDs("%", "venir", true);
 
 // just a basic check
 assert(count($occs) > 20);

@@ -20,6 +20,9 @@ define ('RIGHT_CONTEXT_WIDTH', 225);
 /** Maximum size of occurrence chunks. */
 define('CHUNK_SIZE', 500);
 
+/** Maximum size of occurrence chunks. */
+define('MAX_OCCS', 2000);
+
 /** enable soap -> disable rest, and vice versa.*/
 define ('SOAP_ENABLED', False);
 
@@ -217,16 +220,14 @@ function _getNumberOfOccurrences($mainLemma, $lemma) {
  * @param $mainLemma the main lemma identifier
  * @param $lemma the lemma identifier
  * @return array
+ * @throws Exception if occurrenceIDs for the specified $mainLemma, $lemma is greater than MAX_OCCS
  */
 function getOccurrenceIDs($mainLemma = null, $lemma = null) {
 
     $occurrence_ids = array();
-    // search the database for Lemmata with the given identifier
-    $dao = new Table('LEMMA');
+    $dao = _guardedNumOccsForLemma($mainLemma, $lemma);
+
     $dao->select = "OccurrenceID";
-    $dao->from = 'LEMMA_OCCURRENCE join LEMMA on (LEMMA_OCCURRENCE.LemmaID = LEMMA.LemmaID)';
-    $dao->orderby = 'OccurrenceId asc';
-    $dao->where = toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma, 'LemmaIdentifier' => $lemma));
 
     $results = $dao->get();
     foreach ($results as $occurrence) {
@@ -235,7 +236,28 @@ function getOccurrenceIDs($mainLemma = null, $lemma = null) {
     return $occurrence_ids;
 }
 
+
+function _guardedNumOccsForLemma($mainLemma, $lemma) {
+    $dao = new Table('LEMMA');
+    $dao->select = "count(OccurrenceID) as count";
+    $dao->from = 'LEMMA_OCCURRENCE join LEMMA on (LEMMA_OCCURRENCE.LemmaID = LEMMA.LemmaID)';
+    $dao->orderby = 'OccurrenceId asc';
+    $dao->where = toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma, 'LemmaIdentifier' => $lemma));
+
+    // check for number of occurrences restriction
+    $number = $dao->get()[0]["count"];
+    if($number > MAX_OCCS) {
+        throw new Exception("Too many occurrences ($number) for mainLemma: '$mainLemma', lemma: '$lemma'."
+            ." Use more restrictive query.");
+    }
+
+    return $dao;
+}
+
 function getOccurrences ($mainLemma, $lemma, $withContext) {
+
+    _guardedNumOccsForLemma($mainLemma, $lemma);
+
 	return getOccurrencesForLemmaOrOccurrenceId($mainLemma, $lemma, null, $withContext);
 }
 
