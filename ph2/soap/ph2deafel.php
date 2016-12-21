@@ -50,11 +50,12 @@ function object_to_soap_response( $object ) {
 }
 
 /**
- * Retrieves the occurrences for the specified lemma, or, if the lemma is null, for the specified occurrence id.
+ * Retrieves the occurrences for the specified $mainLemma and $lemma, or, if the $mainLemma and the $lemma are
+ * both null, for the specified occurrence id.
  *
- * @param $lemma the lemma. can contain mysql where like wildcards, e.g., 'fa%'. If null, use occurrence id.
- * @param $mainLemma the mainLemma identifier. Can contain mysql where like wildcards. Only used, if lemma != null.
- * @param $occurrenceId the id for the occurrence to retrieve
+ * @param $lemma the lemma. can contain mysql where like wildcards, e.g., 'fa%'.
+ * @param $mainLemma the mainLemma identifier. Can contain mysql where like wildcards.
+ * @param $occurrenceId the id for the occurrence to retrieve. Used if both $mainLemma and $lemma are null.
  * @param $withContext whether the occurrences should be retrieved with or without context
  * @return array of occurrences. The array has size <= 1 if we retrieve by occurrence id.
  */
@@ -88,8 +89,7 @@ function getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceId
 		left join LEMMA_MORPHVALUE as LM on L.LemmaID=LM.LemmaID
 		left join MORPHVALUE as M on LM.MorphvalueID = M.MorphvalueID
 		where ".
-		($lemma != null ? "L.LemmaIdentifier like '$lemma'" : "O.OccurrenceId = $occurrenceId").
-		($lemma != null && $mainLemma!=null ? " and L.MainLemmaIdentifier like '$mainLemma'" : "").
+        _whereClause($mainLemma, $lemma, $occurrenceId).
 		" group by O.OccurrenceID) A ";
 	if ($withContext) {
 		$occsWithContext = $occsWithContext.
@@ -162,16 +162,20 @@ function _getContextQueryString($mainLemmaWildcard, $lemmaWildcard, $occurrenceI
 				from LEMMA L join LEMMA_OCCURRENCE LC on L.LemmaID = LC.LemmaID
 				join OCCURRENCE O on LC.OccurrenceID = O.OccurrenceID
 				where ".
-				($lemmaWildcard != null ?
-                    "L.LemmaIdentifier like '$lemmaWildcard'" : "O.OccurrenceId = $occurrenceId").
-                ($lemmaWildcard != null && $mainLemmaWildcard !=null ?
-                    " and L.MainLemmaIdentifier like '$mainLemmaWildcard'" : "")."
-                ) as occborder
+                  _whereClause($mainLemmaWildcard, $lemmaWildcard, $occurrenceId)
+                .") as occborder
 			join OCCURRENCE O on occborder.TextID = O.TextID
 			where `Order` >= lborder and `Order` <= rborder) as X
 		join TOKEN T on T.TokenID = X.TokenID
 		group by X.OccurrenceId, TextID) Y";
 	return $queryString;
+}
+
+function _whereClause($mainLemmaWildcard, $lemmaWildcard, $occurrenceId) {
+    if ($lemmaWildcard == null && $mainLemmaWildcard == null) {
+        return "O.OccurrenceId = $occurrenceId";
+    }
+    return toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemmaWildcard, 'LemmaIdentifier' => $lemmaWildcard));
 }
 
 /**
