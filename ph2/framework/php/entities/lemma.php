@@ -412,7 +412,10 @@ class Lemma
 		$dao = new Table('LEMMA_OCCURRENCE');
 		$dao->delete( array( 'OccurrenceID' => $occurrence_id ) );
 		// write new assignment
-		$dao->insert( array( 'OccurrenceID' => $occurrence_id, 'LemmaID' => $this->getID() ) );
+		$result = $dao->insert( array( 'OccurrenceID' => $occurrence_id, 'LemmaID' => $this->getID() ) );
+        if (is_string($result) && 0 === strpos($result, 'MYSQL ERROR')) {
+            throw new Exception($result);
+        }
 		
 	} //assignOccurrenceID
 	

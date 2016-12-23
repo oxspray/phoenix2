@@ -356,7 +356,7 @@ function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newL
         try {
             _assignOccurrenceToLemma($occurrenceID, $lemma);
         } catch (Exception $e) {
-            $errorOccs[] = $occurrenceID;
+            $errorOccs[] = array('id'=> $occurrenceID, 'error' => $e->getMessage());
         }
     }
     $result['createdNewLemma'] = $lemmaCount == 0;
