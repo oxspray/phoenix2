@@ -18,16 +18,15 @@ assert_options(ASSERT_WARNING, true);
 
 
 //$lemma = 'avoir'; // many occs
-$withContext = true;
 
 try {
-    $occs = getOccurrenceIDs("%", "%", false);
+    $occs = getOccurrenceIDs("%", "%");
     echo "\nFailed to throw exception";
 } catch (Exception $e) {
     echo $e->getMessage();
 }
 
-$occs = getOccurrenceIDs("%", "venir", true);
+$occs = getOccurrenceIDs("%", "le");
 
 // just a basic check
 assert(count($occs) > 20);

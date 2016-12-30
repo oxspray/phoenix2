@@ -25,7 +25,7 @@ for ($i = 0; $i < $numChunks; $i++) {
     $newOccs = getOccurrencesChunk($mainLemma, $lemma, False, $i);
     $occs = array_merge($occs, $newOccs);
 }
-$excpectedOccs = getOccurrences($mainLemma, $lemma, False);
+$excpectedOccs = _getOccurrencesForLemmaOrOccurrenceId($mainLemma, $lemma, null, False);
 $success = compareOccsArrays($excpectedOccs, $occs);
 
 if ($success) {

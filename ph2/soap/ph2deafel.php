@@ -20,8 +20,11 @@ define ('RIGHT_CONTEXT_WIDTH', 225);
 /** Maximum size of occurrence chunks. */
 define('CHUNK_SIZE', 500);
 
-/** Maximum size of occurrence chunks. */
+/** Maximum number of occurrences return per get request. */
 define('MAX_OCCS', 2000);
+
+/** Maximum number of occurrence ids return per get request. */
+define('MAX_OCC_IDS', 100000);
 
 /** enable soap -> disable rest, and vice versa.*/
 define ('SOAP_ENABLED', False);
@@ -59,7 +62,7 @@ function object_to_soap_response( $object ) {
  * @param $withContext whether the occurrences should be retrieved with or without context
  * @return array of occurrences. The array has size <= 1 if we retrieve by occurrence id.
  */
-function getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceId, $withContext) {
+function _getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceId, $withContext) {
     // TODO: maybe move to misc entity functions
 
     $dao = new Table('OCCURRENCE');
@@ -223,13 +226,15 @@ function _getNumberOfOccurrences($mainLemma, $lemma) {
  * The occurrences are ordered by OccurrenceID asc.
  * @param $mainLemma the main lemma identifier
  * @param $lemma the lemma identifier
+ * @param $guarded if false, does not throw exception if number of occurrences is greater than MAX_OCCS
  * @return array
- * @throws Exception if occurrenceIDs for the specified $mainLemma, $lemma is greater than MAX_OCCS
+ * @throws Exception if occurrenceIDs for the specified $mainLemma, $lemma is greater than MAX_OCCS (only thrown if
+ * guarded is true, which is the default value)
  */
 function getOccurrenceIDs($mainLemma = null, $lemma = null) {
 
     $occurrence_ids = array();
-    $dao = _guardedNumOccsForLemma($mainLemma, $lemma);
+    $dao = _guardedOccurrenceIdsForLemma($mainLemma, $lemma, MAX_OCC_IDS);
 
     $dao->select = "OccurrenceID";
 
@@ -241,18 +246,18 @@ function getOccurrenceIDs($mainLemma = null, $lemma = null) {
 }
 
 
-function _guardedNumOccsForLemma($mainLemma, $lemma) {
+function _guardedOccurrenceIdsForLemma($mainLemma, $lemma, $guardValue, $guarded = true) {
     $dao = new Table('LEMMA');
     $dao->select = "count(OccurrenceID) as count";
-    $dao->from = 'LEMMA_OCCURRENCE join LEMMA on (LEMMA_OCCURRENCE.LemmaID = LEMMA.LemmaID)';
+    $dao->from = 'LEMMA_OCCURRENCE natural join LEMMA natural join OCCURRENCE';
     $dao->orderby = 'OccurrenceId asc';
     $dao->where = toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma, 'LemmaIdentifier' => $lemma));
 
     // check for number of occurrences restriction
     $number = $dao->get()[0]["count"];
-    if($number > MAX_OCCS) {
+    if($guarded && $number > $guardValue) {
         throw new Ph2DeafelException("Too many occurrences ($number) for mainLemma: '$mainLemma', lemma: '$lemma'."
-            ." Use more restrictive query.", $messageCode="too.manny.occurrences");
+            ." Use more restrictive query or chunking.", $messageCode="too.manny.occurrences");
     }
 
     return $dao;
@@ -260,13 +265,13 @@ function _guardedNumOccsForLemma($mainLemma, $lemma) {
 
 function getOccurrences ($mainLemma, $lemma, $withContext) {
 
-    _guardedNumOccsForLemma($mainLemma, $lemma);
+    _guardedOccurrenceIdsForLemma($mainLemma, $lemma, MAX_OCCS);
 
-	return getOccurrencesForLemmaOrOccurrenceId($mainLemma, $lemma, null, $withContext);
+	return _getOccurrencesForLemmaOrOccurrenceId($mainLemma, $lemma, null, $withContext);
 }
 
 function getOccurrenceDetails ($occurrenceID, $withContext) {
-	$occurrences = getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceID, $withContext);
+	$occurrences = _getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceID, $withContext);
 	return $occurrences[0];
 }
 
@@ -316,7 +321,7 @@ function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
 
 	for ($i = $chunkRange[0]; $i <= $chunkRange[1]; ++$i) {
 		$occurrenceId = $occurrenceIds[$i];
-		$occurrences[] = getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceId, $withContext)[0];
+		$occurrences[] = _getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceId, $withContext)[0];
 	}
 	return $occurrences;
 
