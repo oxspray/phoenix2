@@ -92,8 +92,11 @@ abstract class API {
                 $returnValue = $this->{$this->endpoint}($this->args);
                 return call_user_func_array(array($this, "_response"),
                     is_array($returnValue) ? $returnValue : array($returnValue));
+            } catch (Ph2DeafelException $e) {
+                $error = Array('error.msg' => $e->getMessage(), 'error.code' => $e->messageCode);
+                return $this->_response($error, 400);
             } catch (Exception $e) {
-                $error = Array('error' => $e->getMessage());
+                $error = Array('error.msg' => $e->getMessage());
                 return $this->_response($error, 400);
             }
         }

@@ -251,8 +251,8 @@ function _guardedNumOccsForLemma($mainLemma, $lemma) {
     // check for number of occurrences restriction
     $number = $dao->get()[0]["count"];
     if($number > MAX_OCCS) {
-        throw new Exception("Too many occurrences ($number) for mainLemma: '$mainLemma', lemma: '$lemma'."
-            ." Use more restrictive query.");
+        throw new Ph2DeafelException("Too many occurrences ($number) for mainLemma: '$mainLemma', lemma: '$lemma'."
+            ." Use more restrictive query.", $messageCode="too.manny.occurrences");
     }
 
     return $dao;
@@ -279,7 +279,7 @@ function getAllLemmata () {
 	$dao->orderby = "LemmaIdentifier COLLATE utf8_roman_ci";
 	$results = $dao->get();
 	foreach ($results as $lemma) {
-		$lemma_identifiers[] = array($lemma['LemmaIdentifier'], $lemma['MainLemmaIdentifier']);
+		$lemma_identifiers[] = array($lemma['MainLemmaIdentifier'], $lemma['LemmaIdentifier']);
 	}
 	return $lemma_identifiers;
 }
@@ -393,6 +393,26 @@ function _retrieveLemmaList($occurrenceID) {
       join Lemma l on (lo.lemmaId = l.lemmaId)
       where o.OccurrenceID = $occurrenceID");
     return $r;
+}
+
+/**
+ * Class: GearmanException
+ *
+ * @property-read  $ Prop description
+ * @property-read  $ Prop description
+ * @property-read  $ Prop description
+ */
+class Ph2DeafelException extends Exception {
+    /**
+     */
+    public $messageCode;
+
+    public function __construct($message, $messageCode, $code = 0, Exception $previous = null) {
+        $this->messageCode = $messageCode;
+        parent::__construct($message, $code, $previous);
+    }
+
+
 }
 
 
