@@ -357,6 +357,8 @@ var GraphTab = {
 		}
 
 		function resetForm () {
+			/* function to reset the whole assignment form.*/
+			// hide all selection boxes
 			$('#approved_new_graph').hide();
 			$('#approved_new_graphgroup').hide();
 			$('#existing_graphgroup_field').hide();
@@ -364,15 +366,18 @@ var GraphTab = {
 			$('#new_graphgroup_field').hide();
 			$('#approved_existing_graph').hide();
 			$('#approved_existing_graphgroup').hide();
+			// reset all parameters
 			chosen_graph_name_or_id = null;
 			chosen_descr = null;
 			chosen_graphgroup_number = null;
 			chosen_graphgroup_name = null;
+			// unlock and reset all buttons
 			new_graphgroup_button.removeAttr('disabled');
 			new_graph_button.removeAttr('disabled');
 			new_graph_identifier.removeAttr('disabled');
 			graph_description.removeAttr('disabled');
 			choose_existing_graph_button.removeAttr('disabled');
+			choose_existing_graphgroup_button.removeAttr('disabled');
 			new_graph_identifier.val("");
 			graph_description.val("");
 			new_graphgroup_name.val("");
@@ -382,7 +387,6 @@ var GraphTab = {
 			// new_graphgroup_name.removeAttr('disabled');
 			// new_graphgroup_number.removeAttr('disabled');
 			// new_graphgroup_button.removeAttr('disabled');
-			// choose_existing_graphgroup_button.removeAttr('disabled');
 		}
 
 	}
