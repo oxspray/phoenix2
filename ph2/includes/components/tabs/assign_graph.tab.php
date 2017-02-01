@@ -402,7 +402,6 @@ var GraphTab = {
 			// new_graphgroup_name.removeAttr('disabled');
 			// new_graphgroup_number.removeAttr('disabled');
 			// new_graphgroup_button.removeAttr('disabled');
-			// choose_existing_graphgroup_button.removeAttr('disabled');
 		}
 
 	}
