@@ -411,6 +411,13 @@ function assignOccurrencesToGraph ($get, $post) { global $ps;
 
 }
 
+function addVariant ($get, $post) { global $ps;
+	$name = json_decode($post['name']);
+
+	$variant = new Variant ( $name );
+
+}
+
 function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
 /* assigns a selection of occurrences to a graphgroup and connects it to the given graph */
 

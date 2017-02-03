@@ -52,7 +52,8 @@ var GraphTab = {
 
 		TEST_button.click( function(e) {
 			e.preventDefault();
-			console.log("chosen_graph_name_or_id:",chosen_graph_name_or_id, "chosen_descr:", chosen_descr, "chosen_graphgroup_number:", chosen_graphgroup_number, "chosen_graphgroup_name:", chosen_graphgroup_name);
+			// console.log("chosen_graph_name_or_id:",chosen_graph_name_or_id, "chosen_descr:", chosen_descr, "chosen_graphgroup_number:", chosen_graphgroup_number, "chosen_graphgroup_name:", chosen_graphgroup_name);
+			addVariant('testvariant1');
 		});
 
 		reset_all_button.click( function(e) {
@@ -346,6 +347,22 @@ var GraphTab = {
 			return val;
 		}
 
+		function addVariant ( name ) {
+			$.ajax({
+				url: 'actions/php/ajax.php?action=addVariant',
+				type: 'POST',
+				dataType: 'json',
+				data: {name: name },
+				success: function(data) {
+					console.log("blubb:", data);
+				},
+				error: function(data) {
+					alert('error: ' + JSON.stringify(data));
+				}
+			});
+
+		}
+
 		function selectionIsValid ( selector ) {
 			selector_value =  selector.val();
 			selector_text = existing_graph_selector.children('option:selected').text();
@@ -357,6 +374,12 @@ var GraphTab = {
 		}
 
 		function resetForm () {
+			// reset the chosen values
+			chosen_graph_name_or_id = null;
+			chosen_descr = null;
+			chosen_graphgroup_number = null;
+			chosen_graphgroup_name = null;
+			// reset the visual elements
 			$('#approved_new_graph').hide();
 			$('#approved_new_graphgroup').hide();
 			$('#existing_graphgroup_field').hide();
@@ -364,10 +387,6 @@ var GraphTab = {
 			$('#new_graphgroup_field').hide();
 			$('#approved_existing_graph').hide();
 			$('#approved_existing_graphgroup').hide();
-			chosen_graph_name_or_id = null;
-			chosen_descr = null;
-			chosen_graphgroup_number = null;
-			chosen_graphgroup_name = null;
 			new_graphgroup_button.removeAttr('disabled');
 			new_graph_button.removeAttr('disabled');
 			new_graph_identifier.removeAttr('disabled');
@@ -377,12 +396,6 @@ var GraphTab = {
 			graph_description.val("");
 			new_graphgroup_name.val("");
 			new_graphgroup_number.val("");
-
-			//evtl das noch
-			// new_graphgroup_name.removeAttr('disabled');
-			// new_graphgroup_number.removeAttr('disabled');
-			// new_graphgroup_button.removeAttr('disabled');
-			// choose_existing_graphgroup_button.removeAttr('disabled');
 		}
 
 	}
