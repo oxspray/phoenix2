@@ -64,8 +64,8 @@ var GraphTab = {
 			e.preventDefault();
 
 			var selected_occurrences = occ_selection_box.getSelected();
-			// select to correct field to get the values from for the final assignment
 
+			// select to correct field to get the values from for the final assignment
 			if ( chosen_graph_name_or_id == null && new_graph_identifier.val() != "" ) {
 				chosen_graph_name_or_id = new_graph_identifier.val();
 			}
@@ -84,19 +84,32 @@ var GraphTab = {
 
 			console.log("graph_name_id:", chosen_graph_name_or_id, "occ:", selected_occurrences, "descr:", chosen_descr, "gg_name:", chosen_graphgroup_name, "ggnum:", chosen_graphgroup_number);
 
+			// medieval validation process checking if every parameter has a value; alerts otherwise
 			if ( selected_occurrences != '[]' ) {
-				var countAssignedOccurrences = countExistingGraphAssignments(selected_occurrences);
-				if ( countAssignedOccurrences > 0 ) {
-					// display warning if at least one occurrence is already assigned to a Grapheme
-					if ( confirm( countAssignedOccurrences + " of the selected Occurrences are already assigned to a Grapheme. Press OK to overwrite their assignments with the selected Grapheme.") ) {
-						created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
-						created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, selected_occurrences, created_graph_id);
-						console.log("cr_gr_id:", created_graph_id, "cr_gg_id:", created_graphgroup_id);
+				if ( chosen_graph_name_or_id != null ) {
+					if ( chosen_graphgroup_number != null ) {
+						if ( chosen_graphgroup_name != null ) {
+							var countAssignedOccurrences = countExistingGraphAssignments(selected_occurrences);
+							if ( countAssignedOccurrences > 0 ) {
+								// display warning if at least one occurrence is already assigned to a Grapheme
+								if ( confirm( countAssignedOccurrences + " of the selected Occurrences are already assigned to a Grapheme. Press OK to overwrite their assignments with the selected Grapheme.") ) {
+									created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
+									created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, selected_occurrences, created_graph_id);
+									console.log("cr_gr_id:", created_graph_id, "cr_gg_id:", created_graphgroup_id);
+								}
+							} else {
+								created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
+								created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, selected_occurrences, created_graph_id);
+								console.log("cr_gr_id:", created_graph_id, "cr_gg_id:", created_graphgroup_id);
+							}
+						} else {
+						 alert("You have not given a name of the graphgroup.")
+						}
+					} else {
+						alert("You have not selected a graphgroup yet.")
 					}
 				} else {
-					created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
-					created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, selected_occurrences, created_graph_id);
-					console.log("cr_gr_id:", created_graph_id, "cr_gg_id:", created_graphgroup_id);
+					alert("Please select a Grapheme.");
 				}
 			} else {
 				alert('Please select at least one occurrence.');
@@ -261,7 +274,7 @@ var GraphTab = {
 				success: function(data) {
 					console.log("graphgroup_number: ", graphgroup_number, "occ_ID: ", occurrence_ids, "graphID", graph_identifier);
 					created_id = data;
-					pushNotification(1, 'Assignment successful: ' + $.parseJSON(occurrence_ids).length + ' Occurrences assigned to Graphgroup «' + graphgroup_number + '»');
+					pushNotification(1, 'Assignment successful: ' + $.parseJSON(occurrence_ids).length + ' Occurrences assigned to Graphgroup «' + graphgroup_number + ' (' + graphgroup_name + ')»');
 					// occ_selection_box.markSelectedAsLemmatized(lemma_identifier);
 					// search_controller.refresh_lemmata();
 				},
@@ -357,6 +370,8 @@ var GraphTab = {
 		}
 
 		function resetForm () {
+			/* function to reset the whole assignment form.*/
+			// hide all selection boxes
 			$('#approved_new_graph').hide();
 			$('#approved_new_graphgroup').hide();
 			$('#existing_graphgroup_field').hide();
@@ -364,15 +379,20 @@ var GraphTab = {
 			$('#new_graphgroup_field').hide();
 			$('#approved_existing_graph').hide();
 			$('#approved_existing_graphgroup').hide();
+			// reset all parameters
 			chosen_graph_name_or_id = null;
 			chosen_descr = null;
 			chosen_graphgroup_number = null;
 			chosen_graphgroup_name = null;
+			// unlock and reset all buttons
 			new_graphgroup_button.removeAttr('disabled');
 			new_graph_button.removeAttr('disabled');
 			new_graph_identifier.removeAttr('disabled');
 			graph_description.removeAttr('disabled');
 			choose_existing_graph_button.removeAttr('disabled');
+			choose_existing_graphgroup_button.removeAttr('disabled');
+			new_graphgroup_number.removeAttr('disabled');
+			new_graphgroup_name.removeAttr('disabled');
 			new_graph_identifier.val("");
 			graph_description.val("");
 			new_graphgroup_name.val("");
@@ -389,7 +409,7 @@ var GraphTab = {
 }
 
 </script>
-<div class="h300">
+<div class="h250">
 <!-- <div class="min-h100"> -->
     <form id="assign_graph_form" method="post" action="#">
 
@@ -411,7 +431,7 @@ var GraphTab = {
                     <!-- <br/><br/> -->
                     <!-- <input type="button" id="ok_button_existing" class="existing_graph_button" value="Assign Existing Grapheme" name="assign" /> -->
 										<br/>
-										<input type="button" id="choose_existing_graph_button" class="choose_button" value="Choose Existing Grapheme" name="assign" />
+										<input type="button" id="choose_existing_graph_button" class="choose_button" value="Choose" name="assign" />
 										<input type="button" id="new_graph_button" class="new_button" value="New" name="assign" />
 										<input type="button" id="cancel_existing_graph_button" class="cancel_button" value="Cancel" name="assign" />
                 </fieldset>
@@ -431,7 +451,7 @@ var GraphTab = {
                     <?php echo htmlGraphgroupSelectionDropdown($ps->getActiveProject(), selected_graph ,'graphgroup_id', NULL, 'graphgroup_selector'); ?>
 
                     <br/>
-                    <input type="button" id="choose_existing_graphgroup_button" class="choose_button" value="Choose Existing Graphgroup" name="assign" />
+                    <input type="button" id="choose_existing_graphgroup_button" class="choose_button" value="Choose" name="assign" />
 										<input type="button" id="new_graphgroup_button" class="new_button" value="New" name="assign" />
 										<input type="button" id="cancel_existing_graphgroup_button" class="cancel_button" value="Cancel" name="assign" />
                     <br/><br/>
@@ -447,7 +467,10 @@ var GraphTab = {
                 </fieldset> -->
 
               </div>
-
+							<!-- ASSIGN & RESET buttons -->
+							<input type="button" id="assign_button" class="button" value="ASSIGN" name="assign" title="Press button to create the new Assignment" style="display: inline; width: 500;" />
+							<input type="button" id="reset_all_button" class="button" value="RESET" name="assign" title="Press button to reset the form" style="display: inline; width: 500;" />
+							<!-- <input type="button" id="TEST_button" class="button" value="TEST" name="assign" title="Press button to reset the form" style="display: block; width: 300;" /> -->
             </div>
 
             <div id="right_column" class="w50">
@@ -475,10 +498,6 @@ var GraphTab = {
 								</fieldset>
 
               </div>
-							<!-- ASSIGN & RESET buttons -->
-							<input type="button" id="assign_button" class="button" value="ASSIGN" name="assign" title="Press button to create the new Assignment" style="display: block; width: 300;" />
-							<input type="button" id="reset_all_button" class="button" value="RESET" name="assign" title="Press button to reset the form" style="display: block; width: 300;" />
-							<input type="button" id="TEST_button" class="button" value="TEST" name="assign" title="Press button to reset the form" style="display: block; width: 300;" />
 
             </div>
 
