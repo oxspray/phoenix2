@@ -1,7 +1,7 @@
 <?php
 /*/
 Phoenix2
-Version 0.7 alpha, Build 11
+Version 0.7 alpha, Build 10
 ===
 Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
 Code by: Samuel Laeubli, University of Zurich
@@ -13,27 +13,6 @@ Description:
 Basic functions returning various HTML Code.
 ---
 /*/
-
-/**
- * Returns a warning messages if current workspace (dev or live) and the current database
- * (phoenix2 or phoenix2-text) do not match, that is, if dev is connected to the phoenix2 database,
- * or if live is connected to phoenix2-text database. Returns 'false' otherwise.
- */
-function workspaceDbMismatch() {
-
-    $cwd = getcwd();
-    $dev = true; // dev workspace?
-    if (strpos($cwd, 'workspace/live') !== false) {
-        $dev = false;
-    }
-    if (!$dev && PH2_DB_NAME == "phoenix2-test") {
-        return "Warning: Live workspace connected to test database!";
-    }
-    if ($dev && PH2_DB_NAME == "phoenix2") {
-        return "Warning: Test workspace connected to live database!";
-    }
-    return false;
-}
 
 //+
 function htmlUserTopBar ( $session )
@@ -178,8 +157,7 @@ element
 	$tb_LEMMA = $tb_LEMMA->get();
 	// modify resultset: token surface is enriched with concept type of lemma
 	foreach ($tb_LEMMA as $key => $value) {
-		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['LemmaIdentifier'] . ', ' .
-            $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
+		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
 	}
 	$resultset = new ResultSetTransformer($tb_LEMMA);
 
@@ -225,7 +203,6 @@ Returns a select-box (dropdown selection) listing all lemma types (concepts).
 
 } //htmlLemmaTypeSelectionDropdown
 
-//+
 function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown
@@ -270,6 +247,7 @@ function htmlGraphgroupSelectionDropdown ( $project_id, $graphgroup_id, $name='g
 /*/
 Returns a select-box (dropdown
 selection) listing all graphgroups of a given project
+EV TODO: not project but graph?. >> yes
 ---
 @param project_id: the project from which to select the graphgroups
 @type  project_id: int
@@ -305,6 +283,41 @@ element
 
 	return $html;
 } //htmlGraphSelectionDropdown
+
+//+
+// function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='' , $initial_selection=NULL )
+// /*/
+// Returns a select-box (dropdown
+// selection) listing all graphs of a given project.
+// ---
+// @param project_id: the project from which to select the graphs
+// @type  project_id: int
+// @param name: the name of the form element
+// @type  name: string
+// @param class: the class of the form element
+// @type  class: string
+// @param id: the id of the form element
+// @type  id: string
+// @param initial_selection: the ID of the Grapheme to be selected by default/on-load
+// @type  initial_selection: int
+// -
+// @return: the html code
+// @rtype:  string
+// /*/
+// {
+// 	$tb_GRAPH = new Table('GRAPH');
+// 	$tb_GRAPH->where = array('ProjectID' => $project_id);
+// 	$resultset = new ResultSetTransformer($tb_GRAPH->get());
+//
+// 	$class = toHtmlClass($class);
+// 	$id = toHtmlId($id);
+//
+// 	$html  = "<select name=\"$name\"$class$id>\n";
+//     $html .= $resultset->toDropdownSelection('Name', 'GraphID', $initial_selection);
+// 	$html .= "</select>";
+//
+// 	return $html;
+// } //htmlGraphSelectionDropdown
 
 //+
 function htmlTypeSelectionDropdown ( $project_id , $name='token_id' , $class='' , $id='' )
