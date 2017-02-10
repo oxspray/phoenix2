@@ -109,7 +109,7 @@ function _getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceI
 		$occ->occurrenceID = $row['OccurrenceID'];
 		$occ->surface = $row['Surface'];
 		$occ->lemma = $row['LemmaIdentifier'];
-		$occ->mainLemma = $row['MainLemmaIdentifier'];
+		$occ->mainLemma = empty($row['MainLemmaIdentifier']) ? null : $row['MainLemmaIdentifier']; // empty string -> null
 		$occ->divisio = $row['Div'];
 		$occ->sigel = $row['CiteID'];
 		$occ->year = $row['Year'];
