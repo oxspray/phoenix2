@@ -329,7 +329,7 @@ class Lemma
 			$this->_concept_short = $concept_short;
 			$this->_writeToDB();
 		} else {
-			die("ERROR updating lemma " . $this->getID() . ": $concept is not a valid concept");
+			die("ERROR updating lemma " . $this->getID() . ": $concept_short is not a valid concept");
 		}
 	} //setConcept
 	
@@ -410,6 +410,12 @@ class Lemma
 	{
 		// delete existing assignments
 		$dao = new Table('LEMMA_OCCURRENCE');
+
+		$existing_lo = $dao->get(array( 'OccurrenceID' => $occurrence_id ));
+		if ($existing_lo[0]['LemmaID'] == $this->_id) {
+		    return; // $occurrence_id alread assigned to this lemma; no change needed
+        }
+
 		$dao->delete( array( 'OccurrenceID' => $occurrence_id ) );
 		// write new assignment
 		$result = $dao->insert( array( 'OccurrenceID' => $occurrence_id, 'LemmaID' => $this->getID() ) );
