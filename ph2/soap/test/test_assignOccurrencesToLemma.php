@@ -252,6 +252,27 @@ function test_new_lemma_exists_multiple_occs_one_with_error() {
     result(__FUNCTION__, $failed);
 }
 
+function test_was_already_assigned_to_the_new_lemma() {
+    setUp();
+    $failed = true;
+
+    $occ1 = new Occurrence(1234, 140, 1); // 1234 is the token id, whatever that is
+    $projectId = 1;
+    $surface = "bla";
+    $morphVals = null;
+
+    $oldLemma = new Lemma('bla', CONCEPT_SHORT_C, $projectId, $surface, $morphVals, 'blaMain');
+    $oldLemma->assignOccurrenceID($occ1->getID());
+
+    assignOccurrencesToLemma(array($occ1->getID()), 'blaMain', 'bla');
+
+    assert($occ1->getLemmaID() == $oldLemma->getID(), "oldLemma != newLemma");
+
+    $failed = false;
+
+    result(__FUNCTION__, $failed);
+}
+
 /**
  * Asserts that $newLemma is has a different ID then $oldLemmaId, and that the $newLemma has the specified
  * $mainLemmaIdentifier, $lemmaIdentifier.
@@ -262,13 +283,14 @@ function _assertNewLemmaCorrectIdentifiers($newLemma, $oldLemmaId, $mainLemmaIde
     assert($newLemma->getIdentifier() == $lemmaIdentifier, "expected lemmaIdentifier $lemmaIdentifier");
 }
 
-test_occurrence_does_not_exist();
-test_occurrence_was_not_assigned_before();
-test_occurrence_assigned_to_more_than_one_old_lemma();
-test_newLemma_not_unique();
-test_new_lemma_does_not_exist();
-test_new_lemma_exists();
-test_new_lemma_exists_multiple_occs();
+//test_occurrence_does_not_exist();
+//test_occurrence_was_not_assigned_before();
+//test_occurrence_assigned_to_more_than_one_old_lemma();
+//test_newLemma_not_unique();
+//test_new_lemma_does_not_exist();
+//test_new_lemma_exists();
+//test_new_lemma_exists_multiple_occs();
+test_was_already_assigned_to_the_new_lemma();
 
 echo "tests done";
 
