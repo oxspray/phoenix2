@@ -283,13 +283,13 @@ function _assertNewLemmaCorrectIdentifiers($newLemma, $oldLemmaId, $mainLemmaIde
     assert($newLemma->getIdentifier() == $lemmaIdentifier, "expected lemmaIdentifier $lemmaIdentifier");
 }
 
-//test_occurrence_does_not_exist();
-//test_occurrence_was_not_assigned_before();
-//test_occurrence_assigned_to_more_than_one_old_lemma();
-//test_newLemma_not_unique();
-//test_new_lemma_does_not_exist();
-//test_new_lemma_exists();
-//test_new_lemma_exists_multiple_occs();
+test_occurrence_does_not_exist();
+test_occurrence_was_not_assigned_before();
+test_occurrence_assigned_to_more_than_one_old_lemma();
+test_newLemma_not_unique();
+test_new_lemma_does_not_exist();
+test_new_lemma_exists();
+test_new_lemma_exists_multiple_occs();
 test_was_already_assigned_to_the_new_lemma();
 
 echo "tests done";
