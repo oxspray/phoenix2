@@ -70,6 +70,31 @@ function test_occurrence_does_not_exist() {
     result(__FUNCTION__, false);
 }
 
+function test_occurrence_does_not_exist_but_other_occ_does() {
+    $failed = true;
+    setup();
+
+    $existingOcc = new Occurrence(1234, 140, 1); // 1234 is the token id, whatever that is
+    $projectId = 1;
+    $surface = "bla";
+    $morphVals = null;
+
+    $oldLemma = new Lemma('bla', CONCEPT_SHORT_C, $projectId, $surface, $morphVals, 'blaMain');
+    $oldLemma->assignOccurrenceID($existingOcc->getID());
+
+    $newLemma = new Lemma('blub', CONCEPT_SHORT_C, $projectId, $surface, $morphVals, 'blubMain');
+
+    $errorOccs = assignOccurrencesToLemma(array('123456', $existingOcc->getID()), "blub", "blub");
+
+    assert($errorOccs[0] = '123456');
+    assert($existingOcc->getLemmaID() != $oldLemma->getID(), "oldLemma == newLemma");
+    assert($existingOcc->getLemma()->getIdentifier() == "blub", "new lemma for existing occ must be 'blub'");
+
+    result(__FUNCTION__, false);
+}
+
+
+
 function test_occurrence_was_not_assigned_before() {
     setUp();
     $failed = true;
@@ -284,6 +309,7 @@ function _assertNewLemmaCorrectIdentifiers($newLemma, $oldLemmaId, $mainLemmaIde
 }
 
 test_occurrence_does_not_exist();
+test_occurrence_does_not_exist_but_other_occ_does();
 test_occurrence_was_not_assigned_before();
 test_occurrence_assigned_to_more_than_one_old_lemma();
 test_newLemma_not_unique();
