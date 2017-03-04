@@ -361,11 +361,16 @@ function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newL
         try {
             _assignOccurrenceToLemma($occurrenceID, $lemma);
         } catch (Exception $e) {
-            $errorOccs[] = array('id'=> $occurrenceID, 'error' => $e->getMessage());
+            if ($e->getCode() == 1) {
+                $nonExistentOccurrenceIds[] = $occurrenceID;
+            } else {
+                $errorOccs[] = array('id' => $occurrenceID, 'error' => $e->getMessage());
+            }
         }
     }
     $result['createdNewLemma'] = $lemmaCount == 0;
-    $result['lemma'] = new PH2Lemma($lemma);
+    $result['assignedToLemma'] = new PH2Lemma($lemma);
+    $result['nonExistentOccurrenceIds'] = $nonExistentOccurrenceIds;
     $result['errorOccurrences'] = $errorOccs;
     return $result;
 }
@@ -373,7 +378,7 @@ function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newL
 /**
  * Assigns the occurrence identified by $occurrenceID to $lemma. Removes occurrence from previously assigned lemma.
  *
- * @throws Exception with exception code 0 if the occurrence with $occurrenceID does not exist.
+ * @throws Exception with exception code 1 if the occurrence with $occurrenceID does not exist.
  */
 function _assignOccurrenceToLemma($occurrenceID, $lemma) {
 

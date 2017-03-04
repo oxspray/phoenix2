@@ -70,7 +70,8 @@ function test_occurrence_does_not_exist() {
     result(__FUNCTION__, false);
 }
 
-function test_occurrence_does_not_exist_but_other_occ_does() {
+function test_occurrence_does_not_exist_but_other_occ_does()
+{
     $failed = true;
     setup();
 
@@ -79,16 +80,20 @@ function test_occurrence_does_not_exist_but_other_occ_does() {
     $surface = "bla";
     $morphVals = null;
 
+    $idNonExistingOcc = 123456;
+
     $oldLemma = new Lemma('bla', CONCEPT_SHORT_C, $projectId, $surface, $morphVals, 'blaMain');
     $oldLemma->assignOccurrenceID($existingOcc->getID());
 
     $newLemma = new Lemma('blub', CONCEPT_SHORT_C, $projectId, $surface, $morphVals, 'blubMain');
 
-    $errorOccs = assignOccurrencesToLemma(array('123456', $existingOcc->getID()), "blub", "blub");
+    $result = assignOccurrencesToLemma(array($idNonExistingOcc, $existingOcc->getID()), "blub", "blub");
 
-    assert($errorOccs[0] = '123456');
     assert($existingOcc->getLemmaID() != $oldLemma->getID(), "oldLemma == newLemma");
     assert($existingOcc->getLemma()->getIdentifier() == "blub", "new lemma for existing occ must be 'blub'");
+
+    assert(sizeof($result['nonExistentOccurrenceIds']) == 1);
+    assert($result['nonExistentOccurrenceIds'][0] == $idNonExistingOcc);
 
     result(__FUNCTION__, false);
 }
