@@ -99,12 +99,17 @@ class MyAPI extends API {
         }
     }
 
-    protected function assignOccurrencesToLemma() {
 
-        $d = $this->retrieveJsonPostDataAsArray();
+    /**
+     * Expects application/x-www-form-urlencoded data
+     * @return json
+     * @throws Exception invalid request
+     */
+    protected function assignOccurrencesToLemma() {
+        $d = $_POST;
         $newMainLemmaIdentifier = $d['newMainLemmaIdentifier'];
         $newLemmaIdentifier = $d['newLemmaIdentifier'];
-        $occurrenceIDs = $d['occurrenceIDs'];
+        $occurrenceIDs = json_decode($d['occurrenceIDs']);
 
         if ($this->method == 'POST' && !empty($newMainLemmaIdentifier) && !empty($newLemmaIdentifier)) {
 
@@ -119,14 +124,6 @@ class MyAPI extends API {
         } else {
             throw new Exception("invalid request");
         }
-    }
-
-    private function retrieveJsonPostDataAsArray() {
-        // get the raw POST data
-        $rawData = file_get_contents("php://input");
-
-        // this returns null if not valid json
-        return json_decode($rawData, true);
     }
 }
 
