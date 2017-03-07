@@ -343,7 +343,7 @@ function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
 function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newLemmaIdentifier) {
 
     $dao = new Table('LEMMA');
-    $q = "select * from lemma where mainLemmaIdentifier = '$newMainLemmaIdentifier' 
+    $q = "select * from LEMMA where mainLemmaIdentifier = '$newMainLemmaIdentifier' 
           and lemmaIdentifier = '$newLemmaIdentifier'";
     $lemmaRows = $dao->query($q);
     $lemmaCount = count($lemmaRows);
