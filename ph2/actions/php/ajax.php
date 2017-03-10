@@ -692,6 +692,8 @@ function getGraphgroupsFromGraphID ($get, $post) { global $ps;
 }
 
 
+
+
 function addImageToText ($get, $post) { global $ps;
 /* reads the submitted form data (file input), stores the new image in the filesystem and database. */
 
@@ -1119,6 +1121,7 @@ function updateTextOrderNumber ($get, $post) { global $ps;
 	echo $text->setOrderNumber((int)$get['order']);
 
 }
+
 
 
 /// SAVE MODIFIED SESSION
