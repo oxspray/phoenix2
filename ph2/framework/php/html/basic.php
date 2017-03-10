@@ -13,8 +13,27 @@ Description:
 Basic functions returning various HTML Code.
 ---
 /*/
+/**
+ * Returns a warning messages if current workspace (dev or live) and the current database
+ * (phoenix2 or phoenix2-text) do not match, that is, if dev is connected to the phoenix2 database,
+ * or if live is connected to phoenix2-text database. Returns 'false' otherwise.
+ */
+function workspaceDbMismatch() {
+    $cwd = getcwd();
+    $dev = true; // dev workspace?
+    if (strpos($cwd, 'workspace/live') !== false) {
+        $dev = false;
+    }
+    if (!$dev && PH2_DB_NAME == "phoenix2-test") {
+        return "Warning: Live workspace connected to test database!";
+    }
+    if ($dev && PH2_DB_NAME == "phoenix2") {
+        return "Warning: Test workspace connected to live database!";
+    }
+    return false;
+}
 
-//+ 
+//+
 function htmlUserTopBar ( $session )
 /*/
 The Content visible at the very top of the
@@ -28,24 +47,24 @@ object
 	if ($session->getNickname() != 'guest') {
 		echo 'Logged in as ';
 	}
-	
+
 	echo '<a href="#' . $session->getUserID() .'">' . $session->getFullname() .'</a>';
-	
+
 	if ($session->getNickname() != 'guest') {
 		echo ' [<a href="?action=logout" title="logout">x</a>]';
 	}
-	
+
 } //htmlUserTopBar
 
-//+ 
+//+
 function htmlTopCorpusSelection ( )
 /*/
-The Selector visible at the very top of the GUI, showing information on the currently 
+The Selector visible at the very top of the GUI, showing information on the currently
 active Project and Corpus in the session.
 /*/
 {
 	global $ps;
-	
+
 	// display active project / corpus selection
 	$active_project = new Project($ps->getActiveProject());
 	$active_project_html = '<a class="item project" href="?action=redirect&module=prj.prj" title="active project">' . $active_project->getName() . '</a>';
@@ -64,11 +83,11 @@ active Project and Corpus in the session.
 		$active_corpus_html .= $item . "\n";
 	}
 	$active_corpus_html .= '</div>' . "\n";
-	
+
 	echo $active_project_html . $active_corpus_html;
 } //htmlTopCorpusSelection
 
-//+ 
+//+
 function htmlModuleStatusBarMessages ( $session )
 /*/
 The Messages with global scope
@@ -89,7 +108,7 @@ object
 	echo $html;
 } //htmlModuleStatusBarMessages
 
-//+ 
+//+
 function htmlCorpusSelectionDropdown ( $project_id , $name='corpus_id' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown
@@ -115,19 +134,19 @@ element
 	$tb_CORPORA = new Table('CORPUS');
 	$tb_CORPORA->where = array('ProjectID' => $project_id);
 	$resultset = new ResultSetTransformer($tb_CORPORA->get());
-	
+
 	if ($class!='') $class = ' class="' . $class . '"';
 	$id = toHtmlId($id);
-	
+
 	$html  = "<select name=\"$name\"$class$id>\n";
     $html .= $resultset->toDropdownSelection('Name', 'CorpusID');
 	$html .= "</select>";
-	
+
 	return $html;
-	
+
 } //htmlCorpusSelectionDropdown
 
-//+ 
+//+
 function htmlLemmaSelectionDropdown ( $project_id , $name='lemma_id' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown
@@ -160,18 +179,18 @@ element
 		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
 	}
 	$resultset = new ResultSetTransformer($tb_LEMMA);
-	
+
 	$class = toHtmlClass($class);
 	$id = toHtmlId($id);
-	
+
 	$html  = "<select name=\"$name\"$class$id>\n";
     $html .= $resultset->toDropdownSelection('LemmaIdentifier', 'LemmaID');
 	$html .= "</select>";
-	
+
 	return $html;
 } //htmlLemmaSelectionDropdown
 
-//+ 
+//+
 function htmlLemmaTypeSelectionDropdown ( $name='lemma_type' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown selection) listing all lemma types (concepts).
@@ -187,23 +206,23 @@ Returns a select-box (dropdown selection) listing all lemma types (concepts).
 @rtype:  string
 /*/
 {
-	
+
 	$dao = new Table('CONCEPT');
 	$concepts = $dao->get();
 	$resultset = new ResultSetTransformer($concepts);
-	
+
 	$class = toHtmlClass($class);
 	$id = toHtmlId($id);
-	
+
 	$html  = "<select name=\"$name\"$class$id>\n";
     $html .= $resultset->toDropdownSelection('Short', 'ConceptID', 3);
 	$html .= "</select>";
-	
-	return $html;	
-	
+
+	return $html;
+
 } //htmlLemmaTypeSelectionDropdown
 
-//+ 
+//+
 function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='' , $initial_selection=NULL )
 /*/
 Returns a select-box (dropdown
@@ -227,18 +246,59 @@ selection) listing all graphs of a given project.
 	$tb_GRAPH = new Table('GRAPH');
 	$tb_GRAPH->where = array('ProjectID' => $project_id);
 	$resultset = new ResultSetTransformer($tb_GRAPH->get());
-	
+
 	$class = toHtmlClass($class);
 	$id = toHtmlId($id);
-	
+
 	$html  = "<select name=\"$name\"$class$id>\n";
     $html .= $resultset->toDropdownSelection('Name', 'GraphID', $initial_selection);
 	$html .= "</select>";
-	
+
 	return $html;
 } //htmlGraphSelectionDropdown
 
-//+ 
+function htmlGraphgroupSelectionDropdown ( $project_id, $graphgroup_id, $name='graphgroup_id', $class='' , $id='' )
+/*/
+Returns a select-box (dropdown
+selection) listing all graphgroups of a given project
+EV TODO: not project but graph?. >> yes
+---
+@param project_id: the project from which to select the graphgroups
+@type  project_id: int
+@param name: the name of the
+form element
+@type  name: string
+@param class: the class of the form
+element
+@type  class: string
+@param id: the id of the form
+element
+@type  id: string
+-
+@return: the html code
+@rtype:  string
+/*/
+{
+	$tb_GRAPHGROUP = new Table('GRAPHGROUP');
+	$tb_GRAPHGROUP->select = "GraphgroupID, Name";
+	$tb_GRAPHGROUP->from =  'GRAPHGROUP';
+	// $tb_GRAPHGROUP->where = array('ProjectID' => $project_id);
+	$tb_GRAPHGROUP = $tb_GRAPHGROUP->get();
+
+
+	$resultset = new ResultSetTransformer($tb_GRAPHGROUP);
+
+	$class = toHtmlClass($class);
+	$id = toHtmlId($id);
+
+	$html  = "<select name=\"$name\"$class$id>\n";
+    $html .= $resultset->toDropdownSelection('Name', 'GraphgroupID');
+	$html .= "</select>";
+
+	return $html;
+} //htmlGraphgroupSelectionDropdown
+
+//+
 function htmlTypeSelectionDropdown ( $project_id , $name='token_id' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown selection) listing all types of a given project.
@@ -262,24 +322,24 @@ Returns a select-box (dropdown selection) listing all types of a given project.
 	$dao->where = "Name='occ'";
 	$dao->groupby = "Surface COLLATE utf8_unicode_ci";
 	$resultset = new ResultSetTransformer($dao->get());
-	
+
 	$class = toHtmlClass($class);
 	$id = toHtmlId($id);
-	
+
 	$html  = "<select name=\"$name\"$class$id>\n";
     $html .= $resultset->toDropdownSelection('Surface', 'TokenID');
 	$html .= "</select>";
-	
+
 	return $html;
 } //htmlTypeSelectionDropdown
 
-//+ 
+//+
 function htmlMorphSelectionDropdown ( $morphcategory_XMLTagName , $name , $class='' , $id='' , $preselection=FALSE , $none_option=FALSE )
 /*/
-Returns a select-box (dropdown selection) listing all Morphvalues of a given 
+Returns a select-box (dropdown selection) listing all Morphvalues of a given
 Morphcategory.
 ---
-@param morphcategory_XMLTagName: the XMLTagName (see Table MORPHCATEGORY) to select the 
+@param morphcategory_XMLTagName: the XMLTagName (see Table MORPHCATEGORY) to select the
 morphological values from
 @type  morphcategory_XMLTagName: string
 @param name: the name of the form element
@@ -301,43 +361,43 @@ morphological values from
 	$dao->select = "MorphvalueID, Value as Morphvalue";
 	$dao->from = "MORPHVALUE join MORPHCATEGORY on MORPHVALUE.MorphcategoryID=MORPHCATEGORY.MorphcategoryID";
 	$resultset = new ResultSetTransformer( $dao->get( array( 'XMLTagName' => $morphcategory_XMLTagName ) ) );
-	
+
 	$class = toHtmlClass($class);
 	$id = toHtmlId($id);
-	
+
 	$html  = "<select name=\"$name\"$class$id>\n";
 	//$html .= "<option value=\"-\">(select)</option>\n"; // add a default option
     $html .= $resultset->toDropdownSelection('Morphvalue', 'MorphvalueID', $preselection, $none_option);
 	$html .= "</select>";
-	
+
 	return $html;
 } //htmlMorphSelectionDropdown
 
-//+ 
+//+
 function modal ( $modal_name , $redirect=NULL )
 /*/
-prints the path (href) to a modal window with all needed parameters. Note that 
+prints the path (href) to a modal window with all needed parameters. Note that
 'rel="modal"' still has to be added to links pointing to a modal window!
 ---
 @param modal_name: the name of the modal to be loaded (without suffixes .modal.php)
 @type  modal_name: string
-@param redirect: the module signature of the module to be loaded after the modal action 
+@param redirect: the module signature of the module to be loaded after the modal action
 has been fired
 @type  redirect: string
 /*/
 {
-	echo getModal($modal_name, $redirect);	
+	echo getModal($modal_name, $redirect);
 } //modal
 
-//+ 
+//+
 function getModal ( $modal_name , $redirect=NULL )
 /*/
-returns the path (href) to a modal window with all needed parameters. Note that 
+returns the path (href) to a modal window with all needed parameters. Note that
 'rel="modal"' still has to be added to links pointing to a modal window!
 ---
 @param modal_name: the name of the modal to be loaded (without suffixes .modal.php)
 @type  modal_name: string
-@param redirect: the module signature of the module to be loaded after the modal action 
+@param redirect: the module signature of the module to be loaded after the modal action
 has been fired
 @type  redirect: string
 /*/
@@ -349,20 +409,20 @@ has been fired
 	return $href;
 } //getModal
 
-//+ 
+//+
 function htmlCheckboxCorporaSelection ( $classes , $include_select_all=FALSE , $project=NULL , $check_current_corpus=TRUE )
 /*/
-Returns a checkbox for each curpus in a specified project, optionally accompanied by a 
+Returns a checkbox for each curpus in a specified project, optionally accompanied by a
 'select all'-checkbox on top.
 ---
 @param classes: the class(es) to append to each checkbox except for the 'select all' box
 @type  classes: array(string)
 @param include_select_all: whether to include a 'select all'-checkbox on top
 @type  include_select_all: bool
-@param project: the project id to select the corpora from. If NULL, the active project of 
+@param project: the project id to select the corpora from. If NULL, the active project of
 the current user session is taken.
 @type  project: int
-@param check_current_corpus: if TRUE, the corpus that is active in the current session 
+@param check_current_corpus: if TRUE, the corpus that is active in the current session
 will be ticked by default.
 @type  check_current_corpus: bool
 -
@@ -377,13 +437,13 @@ will be ticked by default.
 		global $ps;
 		$project = $ps->getActiveProject();
 	}
-	
+
 	// include select all input if applicable
 	if ($include_select_all) {
 		$html .= '<input type="checkbox" class="select_all" rel="' . $classes[0] . '" name="select_all"/> ';
 		$html .= "select all<br />\n";
 	}
-	
+
 	// add the corpora checkboxes
 	$project = new Project( (int) $project );
 	foreach ($project->getAssignedCorpora() as $corpus) {
@@ -399,15 +459,15 @@ will be ticked by default.
 		$html .= $corpus->getName();
 		$html .= "</a><br />\n";
 	}
-	
+
 	echo $html;
-	
+
 } //htmlCheckboxCorporaSelection
 
-//+ 
+//+
 function toHtmlClass ( $classes )
 /*/
-transforms an array to a string that can be placed inside a html object, e.g. ' class="foo 
+transforms an array to a string that can be placed inside a html object, e.g. ' class="foo
 bar"'.
 ---
 @param classes: the array of classes
@@ -422,10 +482,10 @@ bar"'.
 	}
 } //toHtmlClass
 
-//+ 
+//+
 function toHtmlId ( $id )
 /*/
-transforms a simple string to a string that can be placed inside a html object, e.g. ' 
+transforms a simple string to a string that can be placed inside a html object, e.g. '
 id="foo"'.
 ---
 @param id: the id
