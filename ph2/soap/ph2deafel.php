@@ -17,6 +17,9 @@ define('LEFT_CONTEXT_WIDTH', 220);
 /** String size of the right lemma context. */
 define ('RIGHT_CONTEXT_WIDTH', 225);
 
+/** Maximum size length of string values. */
+define ('DEFAULT_MAX_LEN', '255');
+
 /** Maximum size of occurrence chunks. */
 define('CHUNK_SIZE', 500);
 
@@ -74,13 +77,14 @@ function _getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceI
 	$contextLeftQueryString = _getContextQueryString($mainLemma, $lemma, $occurrenceId, true);
 	$contextRightQueryString = _getContextQueryString($mainLemma, $lemma, $occurrenceId, false);
 
+	$maxLen = DEFAULT_MAX_LEN;
 	// TODO: the min(LemmaIdentifier) is still bad
 	$occsWithContext = "select * from (select O.OccurrenceID, O.TextID, O.Order, O.Div, T.Surface, TE.CiteID,
 		min(LemmaIdentifier) as LemmaIdentifier,
 		min(MainLemmaIdentifier) as MainLemmaIdentifier,
 		max(IF(XMLTagName = 'd0', substr(TD.Value,1,4), null)) AS Year,
 		max(IF(XMLTagName = 'd0', TD.Value, null)) as Date,
-		max(IF(XMLTagName = 'type', TD.Value, null)) as Type,
+		substring(max(IF(XMLTagName = 'type', TD.Value, null)), 1, $maxLen) as Type,
 		max(IF(XMLTagName = 'scripta', TD.Value, null)) as Scripta,
 		max(IF(XMLTagName = 'rd0', TD.Value, null)) as Scriptorium
 		from OCCURRENCE as O join TOKEN as T on O.TokenID=T.TokenID
