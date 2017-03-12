@@ -20,42 +20,42 @@ if($_GET['action']) {
 function searchTypes ($get, $post) {
 /*  searches the database for types (of type occ) matching the given string and returns a list with
     links pointing to them */
-   	
+
 	$regexp_query = $get['q'];
-	
+
 	$dao = new Table('TOKEN');
 	$dao->select = 'Surface, count(*) as Count, TokenID';
 	$dao->from = 'TOKEN natural join OCCURRENCE natural join TOKENTYPE';
 	$dao->where = "Surface REGEXP '$regexp_query' AND Name='occ'";
 	$dao->groupby = 'Surface';
 	$dao->orderby = 'Surface ASC';
-   
+
    	$result = array();
 	foreach($dao->get() as $occ_type) {
 		$result[] = array('tokenID' => $occ_type['TokenID'], 'surface' => $occ_type['Surface'], 'count' => $occ_type['Count']);
 	}
-    
+
     echo json_encode($result);
 }
 
 function getTokens ($get, $post) { global $ps;
 /* retrieves a list of all TOKENs from the database, grouped by their Tokentype */
-	
+
 	$dao = new Table('TOKEN');
 	$dao->select = 'distinct(Surface), TokenID, TokentypeID';
 	$dao->orderby = "SURFACE COLLATE utf8_roman_ci";
-	
+
 	if ($ps->filterIsActive()) {
 		// if only selected texts should be used
 		$dao->from = 'TOKEN natural join TOKENTYPE natural join OCCURRENCE';
-		
+
 		// convert text ids to sql string
 		$text_ids = '';
 		foreach ($ps->getFilterIncludedTexts() as $text_id) {
 			$text_ids .= $text_id . ',';
 		}
 		$text_ids = rtrim($text_ids, ',');
-		
+
 		$dao->where = "TextID in ($text_ids)";
 		$rows = $dao->get();
 	} else {
@@ -63,48 +63,48 @@ function getTokens ($get, $post) { global $ps;
 		$dao->from = 'TOKEN natural join TOKENTYPE';
 		$rows = $dao->get();
 	}
-	
+
 	$result = array();
 	foreach ($rows as $row) {
 		$result[$row['TokentypeID']][] = array($row['TokenID'], $row['Surface']);
 	} // result: [ 1: [TokenID, Surface], ..., 2: ..., n:, ... ]
-	
+
 	echo json_encode($result);
-	
+
 }
 
 function getTokentypes ($get, $post) { global $ps;
 	/* retrieves a list of all TOKENTYPEs from the database */
-	
+
 	$dao = new Table('TOKENTYPE');
-	
+
 	$result = array();
 	foreach ($dao->get() as $row) {
 		$result[] = array($row['TokentypeID'], $row['Name'], $row['Descr']);
 	} // result: [ [TokentypeID, Name, Descr], ... ]
-	
+
 	echo json_encode($result);
-	
+
 }
 
 function getLemmata ($get, $post) { global $ps;
 /* retrieves a list of all LEMMAta from the database, grouped by their CONCEPT */
-	
+
 	$dao = new Table('LEMMA');
 	$dao->select = 'distinct(LemmaID), MainLemmaIdentifier, LemmaIdentifier, ConceptID';
 	$dao->orderby = "LemmaIdentifier COLLATE utf8_roman_ci";
-	
-	if ($ps->filterIsActive()) {		
+
+	if ($ps->filterIsActive()) {
 		// if only selected texts should be used
 		$dao->from = 'LEMMA natural join LEMMA_OCCURRENCE natural join OCCURRENCE';
-		
+
 		// convert text ids to sql string
 		$text_ids = '';
 		foreach ($ps->getFilterIncludedTexts() as $text_id) {
 			$text_ids .= $text_id . ',';
 		}
 		$text_ids = rtrim($text_ids, ',');
-		
+
 		$dao->where = "TextID in ($text_ids)";
 		$rows = $dao->get();
 	} else {
@@ -112,21 +112,39 @@ function getLemmata ($get, $post) { global $ps;
 		$dao->from = 'LEMMA';
 		$rows = $dao->get();
 	}
-	
+
 	$result = array();
 	foreach ($rows as $row) {
 		$result[$row['ConceptID']][] = array($row['LemmaID'], $row['MainLemmaIdentifier'], $row['LemmaIdentifier']);
 	} // result: [ 1: [LemmaID, MainLemmaIdentifier, LemmaIdentifier], ..., 2: ..., n:, ... ]
-	
+
 	echo json_encode($result);
-	
+
+}
+
+function updateGraphgroupSelectionWithID ($get, $post) { global $ps;
+	/* returns a dropdown-selection (string, html) containing all graphgroups with the given graphID */
+
+	$id = $get['graphID']; 		// selected graphID
+	$id = (int)$id; 					//cast into int to ensure correct constructing of the Graph
+	$selected_graph = new Graph($id);
+	$graphgroups = $selected_graph->getGraphgroups();
+
+	$opts = "";
+	foreach($graphgroups as $gg) {
+		$name = $gg->getName();
+		$val = $gg->getNumber();
+		// concatenate the option line and add it to $opts
+		$opts .= '<option value="' . $val . '">' . $val . " (" . $name . ")" . '</option>';
+	}
+	echo json_encode($opts);
 }
 
 function getLemmatypes ($get, $post) { global $ps;
 	/* retrieves a list of all CONCEPTs from the database */
-	
+
 	$dao = new Table('CONCEPT');
-	
+
 	$result = array();
 	foreach ($dao->get() as $row) {
 		$descr = $row['Name'];
@@ -134,65 +152,65 @@ function getLemmatypes ($get, $post) { global $ps;
 			$descr .= ': ' . $row['Descr'];
 		}
 		$result[] = array($row['ConceptID'], $row['Short'], $descr);
-	} // result: [ [TokentypeID, Name, Descr], ... ]
-	
+	} // result: [ [ConceptID, Name(short), Descr], ... ]
+
 	echo json_encode($result);
-	
+
 }
 
 function getTextsAssignedToCorpus ($get, $post) {
 /*  Returns the IDs of all Texts assigned to a Text in the Database
     Format: JSON (array) */
-	
+
 	$corpus_id = $get['corpusID'];
-	
+
 	$dao = new Table('TEXT');
-	
+
 	$ids = array();
 	foreach ($dao->get( array('CorpusID' => $corpus_id) ) as $row) {
 		$ids[] = $row['TextID'];
 	}
-	
+
 	echo json_encode($ids);
-	
+
 }
 
 function getTextDetails ($get, $post) {
 /*  Returns Details on a text selected by its TextID
 	Format: JSON(array) */
-	
+
 	$text_id = $get['textID'];
-	
+
 	// basic text infos
 	$dao = new Table('TEXT');
 	$results_text = $dao->get( array('TextID' => $text_id) );
-	
+
 	// number of assigned Occurrences
 	$dao = new Table('OCCURRENCE');
 	$dao->select = "count(*) as Count";
 	$results_occ = $dao->get( array('TextID' => $text_id) );
-	
+
 	// number of assigned Lemmata
 	$dao = new Table('LEMMA_OCCURRENCE');
 	$dao->from = "LEMMA_OCCURRENCE natural join OCCURRENCE";
 	$dao->select = "count(*) as Count";
-	$results_lem = $dao->get( array('TextID' => $text_id) );	
-	
+	$results_lem = $dao->get( array('TextID' => $text_id) );
+
 	$details = array();
 	$details['ID'] = $results_text[0]['TextID'];
 	$details['Name'] = $results_text[0]['Name'];
 	$details['Description'] = $results_text[0]['TextDescr'];
 	$details['# Occ.'] = $results_occ[0]['Count'];
 	$details['# Lem.'] = $results_lem[0]['Count'];
-	
+
 	echo json_encode($details);
-	
+
 }
 
 function getOccurrenceContextAJAX ($get, $post) {
 /*	Returns the Surface and Context of an Occurrence, given its ID
 	Format: JSON(array) */
-	
+
 	echo json_encode(getOccurrenceContext($get['id']));
 
 }
@@ -200,10 +218,10 @@ function getOccurrenceContextAJAX ($get, $post) {
 function getOccurrences ($get, $post) { global $ps;
 /*  Returns the IDs of all Occurrences assigned to a Token OR Lemma in the Database (~Type)
     Format: JSON (array) */
-	
+
 	$token_id = $get['tokenID'];
 	$lemma_id = $get['lemmaID'];
-	
+
 	if ($token_id) {
 		$dao = new Table('OCCURRENCE');
 		$dao->where = "TokenID = $token_id";
@@ -211,7 +229,7 @@ function getOccurrences ($get, $post) { global $ps;
 		$dao = new Table('LEMMA_OCCURRENCE');
 		$dao->where = "LemmaID = $lemma_id";
 	}
-	
+
 	// in case only certain texts should be considered
 	if ($ps->filterIsActive()) {
 		// convert text ids to sql string
@@ -225,21 +243,21 @@ function getOccurrences ($get, $post) { global $ps;
 		}
 		$dao->where .= " and TextID in ($text_ids)";
 	}
-	
+
 	$ids = array();
 	foreach ($dao->get() as $row) {
 		$ids[] = $row['OccurrenceID'];
 	}
-	
+
 	echo json_encode($ids);
-	
+
 }
 
 function getNumberOfOccurrencesByEntityList ($get, $post) { global $ps;
 /* Returns the Number of Occurrences that have the Surface of the provided TokenIDs */
 
 	$exclude_lemmatized = $post['exclude_lemmatized'];
-	
+
 	if ($post['type'] == 'token') {
 		$sql_ids_list = '(' . expandArray($post['ids'],',') . ')';
 		$dao = new Table('OCCURRENCE');
@@ -253,7 +271,7 @@ function getNumberOfOccurrencesByEntityList ($get, $post) { global $ps;
 		$dao->groupby = "LemmaID";
 		$dao->where = "LemmaID in $sql_ids_list";
 	}
-	
+
 	// in case only certain texts should be considered
 	if ($ps->filterIsActive() || $exclude_lemmatized == 'true') {
 		if ($post['type'] == 'lemma') {
@@ -273,39 +291,39 @@ function getNumberOfOccurrencesByEntityList ($get, $post) { global $ps;
 			$dao->where .= " and LemmaID is NULL";
 		}
 	}
-	
+
 	$result = array();
 	foreach ($dao->get() as $row) {
 		$result[] = array( 'id' => $row['ItemID'], 'count' => $row['count'] );
 	}
-	
+
 	echo json_encode($result);
-	
+
 }
 
 function getMorphGroupsAssignedToLemma ($get, $post) {
 /*  Returns (ID, Surface, OccurrenceCount) of all Morphological Groups assigned to a Lemma (via Occurrences)
     Format: JSON (array) */
-	
+
 	# TODO
-	
+
 	# STUB
 	$stub = array( array( '' ), array( '' ) );
 	echo json_encode($stub);
-	
+
 }
 
 function sortOccurrences ($get, $post) {
 /* 	takes a list of Occurrences (OccurrenceIDs) and orders them by:
 		Corpus > Text > Surface > Order
 	returns the list of OccurrenceIDs in an order matching the above criteria. */
-	
+
 	$field = $get['field'];
 	$occ_ids = $get['occurrenceIDs'];
 	$sql_occ_ids_list = '(' . trim($occ_ids, "[]") . ')';
-	
+
 	switch ($field) {
-		
+
 		case 'citeform':
 			$dao = new Table('OCCURRENCE');
 			$dao->select = "OccurrenceID";
@@ -313,7 +331,7 @@ function sortOccurrences ($get, $post) {
 			$dao->where = "OccurrenceID in $sql_occ_ids_list";
 			$dao->orderby = "TEXT.CiteID COLLATE utf8_roman_ci ASC, TOKEN.Surface COLLATE utf8_roman_ci, OCCURRENCE.`Order` ASC";
 		break;
-		
+
 		case 'd0':
 		case 'rd0':
 			$dao = new Table('OCCURRENCE');
@@ -323,20 +341,20 @@ function sortOccurrences ($get, $post) {
 			$dao->orderby = "TEXT_DESCRIPTOR.`Value` COLLATE utf8_roman_ci ASC, TOKEN.Surface COLLATE utf8_roman_ci, OCCURRENCE.`Order` ASC";
 		break;
 	}
-	
-	
+
+
 	$ordered_occ_list = array();
 	foreach($dao->get() as $row) {
 		$ordered_occ_list[] = $row['OccurrenceID'];
 	}
-	
+
 	echo json_encode($ordered_occ_list);
 
 }
 
 function assignOccurrencesToLemma ($get, $post) { global $ps;
 /* Assigns a selection of occurrences to a Lemma @param graphgroup_id. Creates the lemma if it doesn't exist yet. */
-	
+
 	$lemma_id = json_decode($post['lemmaID']);
 	$lemma_identifier = $post['lemmaIdentifier'];
 	$lemma_concept = $post['conceptShort'];
@@ -348,25 +366,104 @@ function assignOccurrencesToLemma ($get, $post) { global $ps;
 	$occurrence_ids = json_decode($post['occurrenceIDs']);
 
 	assert($occurrence_ids);
-	
+
 	if ($lemma_id) {
 		$lemma = new Lemma( (int)$lemma_id );
 	} else {
 		$lemma = new Lemma( $lemma_identifier, $lemma_concept, $ps->getActiveProject(), NULL, $lemma_morphvalues );
 	}
-	
+
 	foreach( $occurrence_ids as $occurrence_id) {
 		$lemma->assignOccurrenceID($occurrence_id); //existing lemma assignment is deleted!
 	}
-	
+
+}
+
+function assignOccurrencesToGraph ($get, $post) { global $ps;
+/* Assigns a selection of occurrences to a graph @param graph_id. Creates the graph if it doesn't exist yet.
+	 graphIdentifier is either a 'name' or an 'ID', depending on if the graph exists already or not
+
+	 returns the created/used graphID */
+	$created_id = null;
+	$graph_id = json_decode($post['graphIdentifier']);
+	$graph_identifier = $post['graphIdentifier'];
+	$description = $post['descr'];
+	$occurrence_ids = $post['occurrenceIDs'];
+
+	assert($occurrence_ids);
+
+	if ($graph_id) {
+		$graph = new Graph( (int)$graph_id );
+		$created_id = $graph->getID();
+	} else {
+		$graph = new Graph( $graph_identifier, $description, $ps->getActiveProject() );
+		$created_id = $graph->getID();
+	}
+
+	foreach( $occurrence_ids as $occurrence_id) {
+		$graph->assignOccurrenceID($occurrence_id); //existing graph assignment is deleted!
+	}
+
+	echo json_encode($created_id);
+
+}
+
+function addVariant ($get, $post) { global $ps;
+	$name = json_decode($post['name']);
+
+	$variant = new Variant ( $name );
+
+}
+
+function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
+/* assigns a selection of occurrences to a graphgroup and connects it to the given graph */
+
+	$graphgroup_number = json_decode($post['graphgroupNumber']);
+	$occurrence_ids = json_decode($post['occurrenceIDs']);
+	$graph_identifier = json_decode($post['graphIdentifier']);
+	$graphgroup_name = $post['graphgroupName'];
+
+	assert($graphgroup_name);
+	assert($graphgroup_identfier);
+	assert($occurrence_ids);
+	assert($graph_id);
+
+	$graph = new Graph ( $graph_identifier );
+	// addGraphgroup creates an ID of the newly created Graphgroup (assigned to graphgroup_id)
+	$graphgroup_id = $graph->addGraphgroup($graphgroup_number, $graphgroup_name);
+
+	// add occurence IDs to Graphgroup (visible in table GRAPHGROUP_OCCURRENCE)
+	$graphgroup = new Graphgroup ( $graphgroup_id ); // access this newly created Graphgroup
+	$graphgroup->addOccurrence($occurrence_ids, TRUE); //2nd parameter: delete existing assignments first
+	// $graphgroup->setName($graphgroup_name);
+
+	echo json_encode($graphgroup_id);
+}
+
+function checkNameValidity ($get, $post) { global $ps;
+	/* function to check if a name is already given in the DB for the provided table */
+	$table = $get['table'];
+	$graphID = $get['graphID'];
+	$name = $get['name'];
+
+	$dao = new Table($table);
+	$dao->select = "Name";
+	$dao->from = $table;
+	$dao->where = "graphID = $graphID";
+
+	if ( $dao != null) {
+		return false;
+	} else {
+		return true; //returns true if no entries were found
+	}
 }
 
 function lemmaExists ($get, $post) { global $ps;
 /* Checks whether a lemma with @param identifier and @param type exists in the database */
-	
+
 	$identifier = $get['identifier'];
 	$concept = $get['concept'];
-	
+
 	$exists = FALSE;
 
 	$dao_concept = new Table('CONCEPT');
@@ -380,10 +477,26 @@ function lemmaExists ($get, $post) { global $ps;
 			$exists = TRUE;
 		}
 	}
-	
+
 	echo json_encode($exists);
 
 }
+
+function graphExists ($get, $post) { global $ps;
+/* Checks whether a graph with @param identifier exists in the database */
+
+	$identifier = $get['identifier'];
+
+	$exists = FALSE;
+
+	$dao_graph = new Table('GRAPH');
+	$rows = $dao_graph->get( array( 'ProjectID' => $ps->getActiveProject(), 'Name' => $identifier ) );
+	if (count($rows) > 0) {
+		$exists = TRUE;
+	}
+	echo json_encode($exists);
+}
+
 
 function countLemmaAssignments ($get, $post) { global $ps;
 /* returns the number of Occurrences in @param occurrenceIDs that have a Lemma assignment */
@@ -397,7 +510,25 @@ function countLemmaAssignments ($get, $post) { global $ps;
 
 	$rows = $dao->get();
 	$count = $rows[0]['c'];
-	
+
+	echo json_encode($count);
+
+}
+
+function countGraphAssignments ($get, $post) { global $ps;
+/* returns the number of Occurrences in @param occurrenceIDs that have a Graphgroup assignment */
+
+	$occurrence_ids = json_decode($post['occurrenceIDs']);
+	assert($occurrence_ids);
+
+	// graph occurences are stored in graphgroups only -> every graph is part of a graphgrop automatically.
+	$dao = new Table('GRAPHGROUP_OCCURRENCE');
+	$dao->select = "count(*) as c";
+	$dao->where = "OccurrenceID in (" . expandArray($occurrence_ids, ',') . ")";
+
+	$rows = $dao->get();
+	$count = $rows[0]['c'];
+
 	echo json_encode($count);
 
 }
@@ -410,7 +541,7 @@ function getGraphDetails ($get, $post) {
 
 	$graph_id = $get['id'];
 	$result = FALSE;
-	
+
 	$graph = new Graph( (int)$graph_id );
 	if ($graph->getName()) { // if the Graph exists, it has a name in the Database
 		$result['description'] = $graph->getDescription();
@@ -419,50 +550,50 @@ function getGraphDetails ($get, $post) {
 			$result['graphgroups'][] = array( 'ID' => $graphgroup->getID(), 'number' => $graphgroup->getNumber(), 'name' => $graphgroup->getName() );
 		}
 	}
-	
+
 	echo json_encode($result);
 
 }
 
 function createGraph ($get, $post) { global $ps;
 /*	creates a new Graph entity in the database. If @param graphgroup is provided, a new subgroup
-	will furthermore be associated with it. 
+	will furthermore be associated with it.
 	returns the new id of the graph and (if applicable) the graphgroup */
-	
+
 	$graph_name = $get['graphName'];
 	$graph_descr = $get['graphDescr'];
 	$graphgroup_number = $get['graphgroupNumber'];
 	$graphgroup_variant_name = $get['graphgroupVariantName'];
-	
+
 	assert($graph_name);
-	
+
 	$graph = new Graph($graph_name, $graph_descr);
 	$graph_id = $graph->getID();
 	if ($graphgroup_number) {
 		$graphgroup_id = $graph->addGraphgroup($graphgroup_number, $graphgroup_variant_name);
 	}
-	
+
 	$result = array();
 	$result['graphID'] = $graph_id;
 	if ($graphgroup_id) {
 		$result['graphgroupID'] = $graphgroup_id;
 	}
-	
+
 	echo json_encode($result);
-	
+
 }
 
 function createGraphgroup ($get, $post) { global $ps;
 /*	appends a new graphgroup to an existing graph.
 	returns the id of the new graphgroup. */
-	
+
 	$graph_id = $get['graphID'];
 	$graphgroup_number = $get['graphgroupNumber'];
 	$graphgroup_variant_name = $get['graphgroupVariantName'];
-	
+
 	assert($graph_id);
 	assert($graphgroup_number!=0);
-	
+
 	$graph = new Graph( (int)$graph_id );
 	if ($graph->graphgroupExists($graphgroup_number)) {
 		// graphgroup with given number already exists for this graph; abort
@@ -472,81 +603,74 @@ function createGraphgroup ($get, $post) { global $ps;
 		$graphgroup_id = $graph->addGraphgroup($graphgroup_number, $graphgroup_variant_name);
 		echo json_encode( array('graphgroupID' => $graphgroup_id) );
 	}
-	
-}
 
-function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
-/* assigns a selection of occurrences to a graphgroup @param graphgroup_id */
-	
-	$graphgroup_id = json_decode($post['graphgroupID']);
-	$occurrence_ids = json_decode($post['occurrenceIDs']);
-	
-	assert($graphgroup_id);
-	assert($occurrence_ids);
-	
-	$graphgroup = new Graphgroup( (int)$graphgroup_id );
-	$graphgroup->addOccurrence($occurrence_ids, TRUE); //2nd parameter: delete existing assignments first
-	
 }
 
 function getActiveGraphemeID ($get, $post) { global $ps;
 /* returns the Sessions Active Grapheme ID */
-	
+
 	echo json_encode( $ps->getActiveGrapheme() );
-	
+
 }
 
 function setActiveGraphemeID ($get, $post) { global $ps;
 /* sets the Sessions Active Grapheme ID
    #TODO: Fix */
-	
+
 	$graph_id = $get['graphID'];
 	assert($graph_id);
-	
+
 	$ps->setActiveGrapheme($graph_id);
-	
+
 }
 
 function getOccurrenceIDsByGrapheme ($get, $post) { global $ps;
 /* returns all OccurrenceIDs assigned to a Grapheme */
-	
+
 	$grapheme_id = (int)$get['graphID'];
-	
+
 	assert($grapheme_id);
-	
+
 	$graph = new Graph($grapheme_id);
 	echo json_encode( $graph->getOccurrenceIDs() );
 
 }
 
-function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
-/* returns all OccurrenceIDs assigned to a Graphgroup */
-	
-	$graphgroup_id = (int)$get['graphgroupID'];
-	
-	assert($graphgroup_id);
-	
-	$graphgroup = new Graphgroup($graphgroup_id);
-	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
-	
-}
+// function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
+// /* returns all OccurrenceIDs assigned to a Graphgroup */
+//
+// 	$graphgroup_id = (int)$get['graphgroupID'];
+//
+// 	assert($graphgroup_id);
+//
+// 	$graphgroup = new Graphgroup($graphgroup_id);
+// 	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
+//
+// }
 
 function getGraphSelectionDropdownHTML ($get, $post) { global $ps;
 /* returns the HTML code of a graph selection combobox */
 
 	echo htmlGraphSelectionDropdown($ps->getActiveProject(), 'graph_id', array('modulefield', 'text', 'small', 'combobox'), 'select_graph', $ps->getActiveGrapheme());
-	
+
+}
+
+function getGraphgroupSelectionDropdownHTML ($get, $post) { global $ps;
+/* returns the HTML code of a graph selection combobox */
+
+	echo htmlGraphgroupSelectionDropdown($ps->getActiveProject(), 'graphgroup_id', array('modulefield', 'text', 'small', 'combobox'), 'select_graphgroup', $ps->getActiveGrapheme());
+
 }
 
 function removeOccurrencesFromGraph ($get, $post) { global $ps;
 /* removes a selection of Occurrences from a Graph */
-	
+
 	$graph_id = $get['graphID'];
 	$occ_ids = json_decode($get['occurrenceIDs']);
-	
+
 	assert($graph_id);
 	assert($occ_ids);
-	
+
 	$graph = new Graph( (int)$graph_id );
 	$graph->removeOccurrences($occ_ids);
 
@@ -557,42 +681,32 @@ function getGraphgroupsFromGraphID ($get, $post) { global $ps;
 
 	$graph_id = (int)$get['graphID'];
 	$project_id = $ps->getActiveProject();
-	
+
 	assert($graph_id);
-	
+
 	$dao = new Table('GRAPH');
 	$result = $dao->query("select A.GraphgroupID, A.Number, A.Name, CountOcc, ProjectID from GRAPHGROUP as A left join (select count(*) as CountOcc, GraphgroupID from GRAPHGROUP_OCCURRENCE group by GraphgroupID) as B on A.GraphgroupID=B.GraphgroupID left join GRAPH as C on A.GraphID=C.GraphID where A.GraphID=$graph_id and C.ProjectID=$project_id order by Number ASC");
-	
+
 	echo json_encode( $result );
 
 }
 
-function deleteGraphgroup ($get, $post) { global $ps;
-/* deletes a graphgroup and removes all assigned occurrences from its parent graph */
 
-	$graph_id = (int)$get['graphID'];
-	$graphgroup_id = (int)$get['graphgroupID'];
-	assert($graph_id);
-	assert($graphgroup_id);
-	
-	$graph = new Graph($graph_id);
-	$graph->deleteGraphgroup($graphgroup_id);
 
-}
 
 function addImageToText ($get, $post) { global $ps;
 /* reads the submitted form data (file input), stores the new image in the filesystem and database. */
-	
+
 	$text_id = $post['textID'];
 	$title = ''; // can be adjusted afterwards
 	$order = 0;  // can be adjusted afterwards
 	$description = ''; // can be adjusted afterwards
 	//assert($_FILES['file']['name']);
 	assert($text_id);
-	
+
 	$db_filepath = PH2_FP_MEDIA . DIRECTORY_SEPARATOR . basename($_FILES['file']['name']);
 	$target_filepath = PH2_FP_BASE . DIRECTORY_SEPARATOR . $db_filepath;
-	
+
 	if (move_uploaded_file($_FILES['file']['tmp_name'], $target_filepath)) {
 		// upload successful; write to db
 		// register image
@@ -612,12 +726,12 @@ function getImagesAssignedToText ($get, $post) { global $ps;
 
 	$text_id = $get['textID'];
 	assert($text_id);
-	
+
 	$dao = new Table('TEXT_MEDIUM');
 	$dao->from = "TEXT_MEDIUM natural join MEDIUM";
 	$dao->orderby = "`Order` ASC";
 	$assigned_images = $dao->get( array('TextID' => $text_id, 'Type' => 'IMG') );
-	
+
 	echo json_encode($assigned_images);
 
 }
@@ -626,13 +740,13 @@ function loadImageDetails ($get, $post) { global $ps;
 /* gets an image's title, description, and order number, given its MediumID */
 
 	#TODO: Convert: Use Image() entity
-	
+
 	$medium_id = $get['mediumID'];
 	assert($medium_id);
-	
+
 	$dao = new Table('MEDIUM');
 	$rows = $dao->get( array('MediumID' => $medium_id) );
-	
+
 	echo json_encode( $rows[0] );
 
 }
@@ -641,21 +755,21 @@ function saveImageDetails ($get, $post) { global $ps;
 /* saves an image's title, description, and order number, according to its MediumID */
 
 	#TODO: Convert: Use Image() entity
-	
+
 	$medium_id = $get['mediumID'];
 	$title = $get['title'];
 	$order = $get['order'];
 	if ( empty($order) or $order == '' ) {
 		$order = 0;
 	}
-	
+
 	assert($medium_id);
 	#assert($title != '');
-	
+
 	$dao = new Table('MEDIUM');
-	$dao->where = array('MediumID' => $medium_id); 
+	$dao->where = array('MediumID' => $medium_id);
 	$dao->update( array('Title' => $title, 'Order' => $order, 'Descr' => $get['description']) );
-	
+
 }
 
 function deleteImage ($get, $post) { global $ps;
@@ -671,15 +785,15 @@ function uploadCorpus ($get, $post) { global $ps;
 	// ASSERTIONS
 	assert($_POST);
 	assert($_FILES);
-	
+
 	// ROUTINE
 	// check if no fields are empty
 	if ($_POST['name'] && $_FILES['corpusfile']) {
-		
+
 		// create new corpus
 		$corpus = new Corpus($post['name'], $ps->getActiveProject(), $post['comment']);
 		$corpus_id = $corpus->getID();
-		
+
 		if ($_FILES['corpusfile']['error'] > 0)
 		{
 			$ps->notifications->push(new Notification($_FILES["file"]["error"], 'err'));
@@ -693,7 +807,7 @@ function uploadCorpus ($get, $post) { global $ps;
 				echo 'error';
 			}
 		}
-	}	
+	}
 }
 
 function checkinCorpus ($get, $post) { global $ps;
@@ -701,22 +815,22 @@ function checkinCorpus ($get, $post) { global $ps;
 
 	$corpus_id = $get['corpus_id'];
 	$xml = $GLOBALS["HTTP_RAW_POST_DATA"];
-	
+
 	$corpus = new Corpus( (int)$corpus_id );
 	$success = $corpus->checkin($xml);
-	
+
 	echo $success; //don't json_encode!
-	
+
 }
 
 function AddTextFromXMLInputAJAX ( $get, $post ) { global $ps;
 /* takes an xml text submitted via form input and creates a corresponding entity on the system */
-	
+
 	$xml = $GLOBALS["HTTP_RAW_POST_DATA"];
-	
+
 	if($get['migrate'] == 'null') $get['migrate'] = FALSE;
 	if($get['tokenize'] == 'null') $get['tokenize'] = FALSE;
-	
+
 	$status = addTextFromXMLInput ( $xml , $get['name'] , $get['comment'] , $get['corpus_id'] , $get['migrate'] , $get['tokenize'] );
 	echo $status;
 }
@@ -727,28 +841,28 @@ function importTextFromXMLInputAJAX ( $get, $post ) { global $ps;
 	assert( !empty( $GLOBALS["HTTP_RAW_POST_DATA"] ) );
 	assert( !empty( $get['xsd_type'] ) );
 	assert( !empty( $get['corpus_id'] ) );
-	
+
 	$xml = $GLOBALS["HTTP_RAW_POST_DATA"];
-	
+
 	if($get['tokenize'] == 'null') $get['tokenize'] = FALSE;
 	if($get['comment'] == 'null') $get['comment'] = FALSE;
 	if($get['overwrite'] == 'null') $get['overwrite'] = FALSE;
-	
+
 	if ( $get['xsd_type'] == 'edit' ) {
 		// get the Text's ID
 		$dom = new DOMDocument();
 		$dom->loadXML($xml);
 		$checkout_id = $dom->documentElement->getAttribute('checkout_id');
-		
+
 		$dao = new Table('CHECKOUT');
 		$rows = $dao->get( array('Identifier' => $checkout_id) );
 		$text_id = (int)$rows[0]['TextID'];
-		
+
 		$text = new Text($text_id);
 		$status = $text->checkin($dom); //gets array( success?, log )
-		
+
 		echo $status[0];
-		
+
 	} else {
 		// use adequate XML-Parser
 		if ( $get['xsd_type'] == 'entry' ) {
@@ -760,21 +874,21 @@ function importTextFromXMLInputAJAX ( $get, $post ) { global $ps;
 		$status = addTextFromXMLInput ( $xml, $get['corpus_id'] , $get['migrate'] , $get['tokenize'] );
 		echo $status;
 	}
-	
-	
+
+
 
 }
 
 function uploadFile ($get, $post) { global $ps;
 /* handles the file upload from import.modal.php. Stores a file in a temp directory and eturns a pointer to the file for further processing. */
-	
+
 	// ASSERTIONS
 	assert($_FILES);
-	
+
 	// ROUTINE
 	// check if file is not empty
 	if ($_FILES['uploadfile']) {
-		
+
 		if ($_FILES['uploadfile']['error'] > 0)
 		{
 			$ps->notifications->push(new Notification($_FILES["file"]["error"], 'err'));
@@ -789,7 +903,7 @@ function uploadFile ($get, $post) { global $ps;
 					// xml file is not valid
 					echo json_encode( array( 'success' => FALSE, 'error' => $params ) ); // the error message of the file validation
 					unlink( PH2_FP_BASE . DIRECTORY_SEPARATOR . PH2_FP_TEMP_TEXT . DIRECTORY_SEPARATOR . $file_name );
-					
+
 				} else {
 					echo json_encode( array_merge( array( 'success' => TRUE, 'temp_file_name' => $file_name), $params ) );
 				}
@@ -811,46 +925,46 @@ function GetFilter ($get, $post) { global $ps;
 /* takes a filter identifier (string) and returns a list of associated values, saying whehter each value is allready active in the current SESSION */
 
 	$filter_identifier = $get['filter'];
-	
+
 	$active_values = $ps->getFilterValues($filter_identifier);
-	
+
 	$dao = new Table('DESCRIPTOR');
 	$available_descriptors = array();
 	foreach ($dao->get() as $descriptor) {
 		$available_descriptors[$descriptor['XMLTagName']] = $descriptor['DescriptorID'];
 	}
-	
+
 	$filter = array(); // Values
-	
-	
+
+
 	if ($filter_identifier == 'd0') {
-		
+
 		// FROM
-		
+
 		$checked = '';
 		$value = '';
-		
+
 		$filter_from = $ps->getFilterValues('d0-from');
 		if ($filter_from) {
 			$value = $filter_from[0];
 			$checked = 'checked="checked"';
 		}
 		$filter[] = array(FALSE, '<tr><td width="20"><input type="checkbox" id="checkbox_d0_from" class="value_checkbox"' . $checked . ' name="d0-from" value="' . $value . '" /></td><td class="leftalign value">from <input type="text" id="input_d0_from" class="inline_textfield small" value="' . $value . '" /><input type="button" id="update_d0_from" value="update" class="hidden" /></td></tr>');
-		
+
 		// TO
-		
+
 		$checked = '';
 		$value = '';
-		
+
 		$filter_to = $ps->getFilterValues('d0-to');
 		if ($filter_to) {
 			$value = $filter_to[0];
 			$checked = 'checked="checked"';
 		}
 		$filter[] = array(FALSE, '<tr><td width="20"><input type="checkbox" id="checkbox_d0_to" class="value_checkbox"' . $checked . ' name="d0-to" value="' . $value . '" /></td><td class="leftalign value">to&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="input_d0_to" class="inline_textfield small" value="' . $value . '" /><input type="button" id="update_d0_to" value="update" class="hidden" /></td></tr>');
-	
+
 	} else if (array_key_exists($filter_identifier, $available_descriptors)) {
-		
+
 		$dao = new Table('TEXT_DESCRIPTOR');
 		$dao->select= "distinct Value";
 		$dao->where = array('DescriptorID' => $available_descriptors[$filter_identifier]);
@@ -865,9 +979,9 @@ function GetFilter ($get, $post) { global $ps;
 			}
 			$filter[] = array($row['Value'], $filter_is_active);
 		}
-		
+
 	} else if ($filter_identifier == 'corpus') {
-		
+
 		$dao = new Table('CORPUS');
 		foreach ($dao->get() as $row) {
 			$filter_value = $row['Name'];
@@ -879,13 +993,13 @@ function GetFilter ($get, $post) { global $ps;
 			}
 			$filter[] = array($row['Name'], $filter_is_active);
 		}
-		
+
 	} else {
-	
-	
-		
+
+
+
 	}
-	
+
 	return $filter;
 
 }
@@ -901,9 +1015,9 @@ function GetFilterHTML ($get, $post) { global $ps;
 /* forms a HTML-block of checkboxes from the GetFilter()-Output */
 
 	$filter_values = GetFilter($get, $post);
-	
+
 	$html = '';
-	
+
 	foreach ($filter_values as $value) {
 		if ($value[0]) {
 			// marke active values as checked
@@ -916,7 +1030,7 @@ function GetFilterHTML ($get, $post) { global $ps;
 		}
 	}
 
-	echo $html; // for use via JS	
+	echo $html; // for use via JS
 
 }
 
@@ -925,7 +1039,7 @@ function AddFilter ($get, $post) { global $ps;
 
 	$ps->addFilter($get['filter'], $get['value']);
 	$ps->setFilterIsActive(TRUE);
-	
+
 }
 
 function RemoveFilter ($get, $post) { global $ps;
@@ -942,14 +1056,14 @@ function getActiveFilterValues ($get, $post) { global $ps;
 /* returns all values that are currently active in the SESSION's filter */
 
 	echo json_encode( $ps->getFilterValues( $get['filter'] ) );
-	
+
 }
 
 function SetFilterIsActive ($get, $post) { global $ps;
 /* turns ON or OFF the filter in the current SESSION */
 
 	$ps->setFilterIsActive( json_decode( $get['active'] ) );
-	
+
 }
 
 function GetActiveFilterIDs ($get, $post) { global $ps;
@@ -962,7 +1076,7 @@ function createCorpus ($get, $post) { global $ps;
 /* creates a Corpus and returns its ID */
 
 	assert( ! empty( $get['name'] ) );
-	
+
 	$corpus = new Corpus( $get['name'], $ps->getActiveProject() );
 	echo $corpus->getID();
 
@@ -981,10 +1095,10 @@ function getCorpusNameByTextID ($get, $post) { global $ps;
 /* returns the name of the corpus a text, given its TextID, is assigned to */
 
 	assert( ! empty( $get['id'] ) );
-	
+
 	$text = new Text( (int)$get['id'] );
 	$corpus_id = $text->getCorpusID();
-	
+
 	$corpus = new Corpus( (int)$corpus_id );
 	echo $corpus->getName();
 
@@ -1008,16 +1122,6 @@ function updateTextOrderNumber ($get, $post) { global $ps;
 
 }
 
-function isGuest  ($get, $post) { global $ps;
-/* returns TRUE if the user of this session is a guest; FALSE otherwise */
-
-	if ($ps->getNickname() == 'guest') {
-		echo json_encode(TRUE);
-	} else {
-		echo json_encode(FALSE);
-	}
-
-}
 
 
 /// SAVE MODIFIED SESSION
