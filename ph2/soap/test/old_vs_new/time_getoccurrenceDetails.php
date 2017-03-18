@@ -6,13 +6,13 @@
  * Time: 19:55
  */
 
-// run relative to parent dir
-chdir('..');
+require_once('ph2deafel_old.php');
 
+chdir('../..');
 require_once('ph2deafel.php');
 
 $withContext = true;
-$occurrenceIds = getOccurrenceIDs('metre');
+$occurrenceIds = getOccurrenceIDs(null, 'metre');
 
 $start = microtime(true);
 foreach ($occurrenceIds as $occurrenceId) {

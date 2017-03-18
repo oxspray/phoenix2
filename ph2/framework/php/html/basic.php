@@ -1,7 +1,7 @@
 <?php
 /*/
 Phoenix2
-Version 0.7 alpha, Build 11
+Version 0.7 alpha, Build 10
 ===
 Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
 Code by: Samuel Laeubli, University of Zurich
@@ -178,8 +178,7 @@ element
 	$tb_LEMMA = $tb_LEMMA->get();
 	// modify resultset: token surface is enriched with concept type of lemma
 	foreach ($tb_LEMMA as $key => $value) {
-		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['LemmaIdentifier'] . ', ' .
-            $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
+		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
 	}
 	$resultset = new ResultSetTransformer($tb_LEMMA);
 
@@ -225,36 +224,39 @@ Returns a select-box (dropdown selection) listing all lemma types (concepts).
 
 } //htmlLemmaTypeSelectionDropdown
 
-//+
-function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='' , $initial_selection=NULL )
+function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown
 selection) listing all graphs of a given project.
 ---
 @param project_id: the project from which to select the graphs
 @type  project_id: int
-@param name: the name of the form element
+@param name: the name of the
+form element
 @type  name: string
-@param class: the class of the form element
+@param class: the class of the form
+element
 @type  class: string
-@param id: the id of the form element
+@param id: the id of the form
+element
 @type  id: string
-@param initial_selection: the ID of the Grapheme to be selected by default/on-load
-@type  initial_selection: int
 -
 @return: the html code
 @rtype:  string
 /*/
 {
 	$tb_GRAPH = new Table('GRAPH');
+	$tb_GRAPH->select = "GraphID, Name";
+	$tb_GRAPH->from =  'GRAPH';
 	$tb_GRAPH->where = array('ProjectID' => $project_id);
-	$resultset = new ResultSetTransformer($tb_GRAPH->get());
+	$tb_GRAPH = $tb_GRAPH->get();
+	$resultset = new ResultSetTransformer($tb_GRAPH);
 
 	$class = toHtmlClass($class);
 	$id = toHtmlId($id);
 
 	$html  = "<select name=\"$name\"$class$id>\n";
-    $html .= $resultset->toDropdownSelection('Name', 'GraphID', $initial_selection);
+    $html .= $resultset->toDropdownSelection('Name', 'GraphID');
 	$html .= "</select>";
 
 	return $html;
@@ -301,7 +303,6 @@ element
 	return $html;
 } //htmlGraphgroupSelectionDropdown
 
-//+
 function htmlTypeSelectionDropdown ( $project_id , $name='token_id' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown selection) listing all types of a given project.

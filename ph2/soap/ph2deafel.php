@@ -17,6 +17,9 @@ define('LEFT_CONTEXT_WIDTH', 220);
 /** String size of the right lemma context. */
 define ('RIGHT_CONTEXT_WIDTH', 225);
 
+/** Maximum size length of string values. */
+define ('DEFAULT_MAX_LEN', '255');
+
 /** Maximum size of occurrence chunks. */
 define('CHUNK_SIZE', 500);
 
@@ -74,13 +77,14 @@ function _getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceI
 	$contextLeftQueryString = _getContextQueryString($mainLemma, $lemma, $occurrenceId, true);
 	$contextRightQueryString = _getContextQueryString($mainLemma, $lemma, $occurrenceId, false);
 
+	$maxLen = DEFAULT_MAX_LEN;
 	// TODO: the min(LemmaIdentifier) is still bad
 	$occsWithContext = "select * from (select O.OccurrenceID, O.TextID, O.Order, O.Div, T.Surface, TE.CiteID,
 		min(LemmaIdentifier) as LemmaIdentifier,
 		min(MainLemmaIdentifier) as MainLemmaIdentifier,
 		max(IF(XMLTagName = 'd0', substr(TD.Value,1,4), null)) AS Year,
 		max(IF(XMLTagName = 'd0', TD.Value, null)) as Date,
-		max(IF(XMLTagName = 'type', TD.Value, null)) as Type,
+		substring(max(IF(XMLTagName = 'type', TD.Value, null)), 1, $maxLen) as Type,
 		max(IF(XMLTagName = 'scripta', TD.Value, null)) as Scripta,
 		max(IF(XMLTagName = 'rd0', TD.Value, null)) as Scriptorium
 		from OCCURRENCE as O join TOKEN as T on O.TokenID=T.TokenID
@@ -109,7 +113,7 @@ function _getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceI
 		$occ->occurrenceID = $row['OccurrenceID'];
 		$occ->surface = $row['Surface'];
 		$occ->lemma = $row['LemmaIdentifier'];
-		$occ->mainLemma = $row['MainLemmaIdentifier'];
+		$occ->mainLemma = empty($row['MainLemmaIdentifier']) ? null : $row['MainLemmaIdentifier']; // empty string -> null
 		$occ->divisio = $row['Div'];
 		$occ->sigel = $row['CiteID'];
 		$occ->year = $row['Year'];
@@ -343,7 +347,7 @@ function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
 function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newLemmaIdentifier) {
 
     $dao = new Table('LEMMA');
-    $q = "select * from lemma where mainLemmaIdentifier = '$newMainLemmaIdentifier' 
+    $q = "select * from LEMMA where mainLemmaIdentifier = '$newMainLemmaIdentifier' 
           and lemmaIdentifier = '$newLemmaIdentifier'";
     $lemmaRows = $dao->query($q);
     $lemmaCount = count($lemmaRows);
@@ -361,11 +365,16 @@ function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newL
         try {
             _assignOccurrenceToLemma($occurrenceID, $lemma);
         } catch (Exception $e) {
-            $errorOccs[] = array('id'=> $occurrenceID, 'error' => $e->getMessage());
+            if ($e->getCode() == 1) {
+                $nonExistentOccurrenceIds[] = $occurrenceID;
+            } else {
+                $errorOccs[] = array('id' => $occurrenceID, 'error' => $e->getMessage());
+            }
         }
     }
     $result['createdNewLemma'] = $lemmaCount == 0;
-    $result['lemma'] = new PH2Lemma($lemma);
+    $result['assignedToLemma'] = new PH2Lemma($lemma);
+    $result['nonExistentOccurrenceIds'] = $nonExistentOccurrenceIds;
     $result['errorOccurrences'] = $errorOccs;
     return $result;
 }
@@ -373,7 +382,7 @@ function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newL
 /**
  * Assigns the occurrence identified by $occurrenceID to $lemma. Removes occurrence from previously assigned lemma.
  *
- * @throws Exception with exception code 0 if the occurrence with $occurrenceID does not exist.
+ * @throws Exception with exception code 1 if the occurrence with $occurrenceID does not exist.
  */
 function _assignOccurrenceToLemma($occurrenceID, $lemma) {
 

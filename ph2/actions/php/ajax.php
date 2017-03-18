@@ -136,11 +136,8 @@ function updateGraphgroupSelectionWithID ($get, $post) { global $ps;
 		$val = $gg->getNumber();
 		// concatenate the option line and add it to $opts
 		$opts .= '<option value="' . $val . '">' . $val . " (" . $name . ")" . '</option>';
-
 	}
-
 	echo json_encode($opts);
-
 }
 
 function getLemmatypes ($get, $post) { global $ps;
@@ -641,7 +638,6 @@ function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
 
 	$graphgroup = new Graphgroup($graphgroup_id);
 	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
-
 }
 
 function getGraphSelectionDropdownHTML ($get, $post) { global $ps;
@@ -689,7 +685,7 @@ function getGraphgroupsFromGraphID ($get, $post) { global $ps;
 
 function deleteGraphgroup ($get, $post) { global $ps;
 /* deletes a graphgroup and removes all assigned occurrences from its parent graph */
-
+                                         
 	$graph_id = (int)$get['graphID'];
 	$graphgroup_id = (int)$get['graphgroupID'];
 	assert($graph_id);
@@ -697,7 +693,6 @@ function deleteGraphgroup ($get, $post) { global $ps;
 
 	$graph = new Graph($graph_id);
 	$graph->deleteGraphgroup($graphgroup_id);
-
 }
 
 function addImageToText ($get, $post) { global $ps;
@@ -1128,16 +1123,6 @@ function updateTextOrderNumber ($get, $post) { global $ps;
 
 }
 
-function isGuest  ($get, $post) { global $ps;
-/* returns TRUE if the user of this session is a guest; FALSE otherwise */
-
-	if ($ps->getNickname() == 'guest') {
-		echo json_encode(TRUE);
-	} else {
-		echo json_encode(FALSE);
-	}
-
-}
 
 
 /// SAVE MODIFIED SESSION
