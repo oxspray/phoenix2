@@ -632,17 +632,17 @@ function getOccurrenceIDsByGrapheme ($get, $post) { global $ps;
 
 }
 
-// function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
-// /* returns all OccurrenceIDs assigned to a Graphgroup */
-//
-// 	$graphgroup_id = (int)$get['graphgroupID'];
-//
-// 	assert($graphgroup_id);
-//
-// 	$graphgroup = new Graphgroup($graphgroup_id);
-// 	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
-//
-// }
+function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
+/* returns all OccurrenceIDs assigned to a Graphgroup */
+
+	$graphgroup_id = (int)$get['graphgroupID'];
+
+	assert($graphgroup_id);
+
+	$graphgroup = new Graphgroup($graphgroup_id);
+	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
+
+}
 
 function getGraphSelectionDropdownHTML ($get, $post) { global $ps;
 /* returns the HTML code of a graph selection combobox */
