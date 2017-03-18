@@ -632,17 +632,17 @@ function getOccurrenceIDsByGrapheme ($get, $post) { global $ps;
 
 }
 
-// function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
-// /* returns all OccurrenceIDs assigned to a Graphgroup */
-//
-// 	$graphgroup_id = (int)$get['graphgroupID'];
-//
-// 	assert($graphgroup_id);
-//
-// 	$graphgroup = new Graphgroup($graphgroup_id);
-// 	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
-//
-// }
+function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
+/* returns all OccurrenceIDs assigned to a Graphgroup */
+
+	$graphgroup_id = (int)$get['graphgroupID'];
+
+	assert($graphgroup_id);
+
+	$graphgroup = new Graphgroup($graphgroup_id);
+	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
+
+}
 
 function getGraphSelectionDropdownHTML ($get, $post) { global $ps;
 /* returns the HTML code of a graph selection combobox */
@@ -687,18 +687,18 @@ function getGraphgroupsFromGraphID ($get, $post) { global $ps;
 
 }
 
-// function deleteGraphgroup ($get, $post) { global $ps;
-// /* deletes a graphgroup and removes all assigned occurrences from its parent graph */
-//
-// 	$graph_id = (int)$get['graphID'];
-// 	$graphgroup_id = (int)$get['graphgroupID'];
-// 	assert($graph_id);
-// 	assert($graphgroup_id);
-//
-// 	$graph = new Graph($graph_id);
-// 	$graph->deleteGraphgroup($graphgroup_id);
-//
-// }
+function deleteGraphgroup ($get, $post) { global $ps;
+/* deletes a graphgroup and removes all assigned occurrences from its parent graph */
+
+	$graph_id = (int)$get['graphID'];
+	$graphgroup_id = (int)$get['graphgroupID'];
+	assert($graph_id);
+	assert($graphgroup_id);
+
+	$graph = new Graph($graph_id);
+	$graph->deleteGraphgroup($graphgroup_id);
+
+}
 
 function addImageToText ($get, $post) { global $ps;
 /* reads the submitted form data (file input), stores the new image in the filesystem and database. */
@@ -1128,16 +1128,16 @@ function updateTextOrderNumber ($get, $post) { global $ps;
 
 }
 
-// function isGuest  ($get, $post) { global $ps;
-// /* returns TRUE if the user of this session is a guest; FALSE otherwise */
-//
-// 	if ($ps->getNickname() == 'guest') {
-// 		echo json_encode(TRUE);
-// 	} else {
-// 		echo json_encode(FALSE);
-// 	}
-//
-// }
+function isGuest  ($get, $post) { global $ps;
+/* returns TRUE if the user of this session is a guest; FALSE otherwise */
+
+	if ($ps->getNickname() == 'guest') {
+		echo json_encode(TRUE);
+	} else {
+		echo json_encode(FALSE);
+	}
+
+}
 
 
 /// SAVE MODIFIED SESSION
