@@ -223,7 +223,7 @@ Returns a select-box (dropdown selection) listing all lemma types (concepts).
 } //htmlLemmaTypeSelectionDropdown
 
 //+
-function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='' , $initial_selection=NULL )
+function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown
 selection) listing all graphs of a given project.
@@ -236,22 +236,23 @@ selection) listing all graphs of a given project.
 @type  class: string
 @param id: the id of the form element
 @type  id: string
-@param initial_selection: the ID of the Grapheme to be selected by default/on-load
-@type  initial_selection: int
 -
 @return: the html code
 @rtype:  string
 /*/
 {
 	$tb_GRAPH = new Table('GRAPH');
+	$tb_GRAPH->select = "GraphID, Name";
+	$tb_GRAPH->from =  'GRAPH';
 	$tb_GRAPH->where = array('ProjectID' => $project_id);
-	$resultset = new ResultSetTransformer($tb_GRAPH->get());
+	$tb_GRAPH = $tb_GRAPH->get();
+	$resultset = new ResultSetTransformer($tb_GRAPH);
 
 	$class = toHtmlClass($class);
 	$id = toHtmlId($id);
 
 	$html  = "<select name=\"$name\"$class$id>\n";
-    $html .= $resultset->toDropdownSelection('Name', 'GraphID', $initial_selection);
+    $html .= $resultset->toDropdownSelection('Name', 'GraphID');
 	$html .= "</select>";
 
 	return $html;
