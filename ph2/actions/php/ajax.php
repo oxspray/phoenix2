@@ -408,13 +408,6 @@ function assignOccurrencesToGraph ($get, $post) { global $ps;
 
 }
 
-function addVariant ($get, $post) { global $ps;
-	$name = json_decode($post['name']);
-
-	$variant = new Variant ( $name );
-
-}
-
 function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
 /* assigns a selection of occurrences to a graphgroup and connects it to the given graph */
 
@@ -636,17 +629,16 @@ function getOccurrenceIDsByGrapheme ($get, $post) { global $ps;
 
 }
 
-// function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
-// /* returns all OccurrenceIDs assigned to a Graphgroup */
-//
-// 	$graphgroup_id = (int)$get['graphgroupID'];
-//
-// 	assert($graphgroup_id);
-//
-// 	$graphgroup = new Graphgroup($graphgroup_id);
-// 	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
-//
-// }
+function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
+/* returns all OccurrenceIDs assigned to a Graphgroup */
+
+	$graphgroup_id = (int)$get['graphgroupID'];
+
+	assert($graphgroup_id);
+
+	$graphgroup = new Graphgroup($graphgroup_id);
+	echo json_encode( $graphgroup->getAssignedOccurrenceIDs() );
+}
 
 function getGraphSelectionDropdownHTML ($get, $post) { global $ps;
 /* returns the HTML code of a graph selection combobox */
@@ -691,8 +683,17 @@ function getGraphgroupsFromGraphID ($get, $post) { global $ps;
 
 }
 
+function deleteGraphgroup ($get, $post) { global $ps;
+/* deletes a graphgroup and removes all assigned occurrences from its parent graph */
+                                         
+	$graph_id = (int)$get['graphID'];
+	$graphgroup_id = (int)$get['graphgroupID'];
+	assert($graph_id);
+	assert($graphgroup_id);
 
-
+	$graph = new Graph($graph_id);
+	$graph->deleteGraphgroup($graphgroup_id);
+}
 
 function addImageToText ($get, $post) { global $ps;
 /* reads the submitted form data (file input), stores the new image in the filesystem and database. */
