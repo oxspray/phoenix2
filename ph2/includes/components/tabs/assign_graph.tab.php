@@ -157,7 +157,7 @@ var GraphTab = {
 		choose_existing_graphgroup_button.click( function(e) {
 			e.preventDefault();
 			chosen_graphgroup_number = existing_graphgroup_selector.val();
-			chosen_graphgroup_name = existing_graphgroup_selector.children('option:selected').text();
+			chosen_graphgroup_name = $('#graphgroup_selector option:selected').attr('name');
 			console.log(selectionIsValid(existing_graphgroup_selector));
 			console.log("num:", chosen_graphgroup_number, "name:", chosen_graphgroup_name)
 			$('#new_graphgroup_field').fadeOut();

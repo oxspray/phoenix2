@@ -135,7 +135,7 @@ function updateGraphgroupSelectionWithID ($get, $post) { global $ps;
 		$name = $gg->getName();
 		$val = $gg->getNumber();
 		// concatenate the option line and add it to $opts
-		$opts .= '<option value="' . $val . '">' . $val . " (" . $name . ")" . '</option>';
+		$opts .= '<option value="' . $val . '" name="' . $name .'">' . $val . " (" . $name . ")" . '</option>';
 
 	}
 
