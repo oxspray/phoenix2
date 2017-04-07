@@ -18,14 +18,14 @@ Grapheme Head properties.
 ?>
 <script type="text/javascript">
 	$(document).ready( function() {
-		
+
 		var occurrences = PH2Component.OccContextBox('occbox1');
 		var detailswindow = PH2Component.DetailsWindow('detailswindow', 'ann_gra_gra_details_load', 'ann_gra_gra_details_save', true);
-		
+
 		// get and load OccurrenceIDs of active Grapheme ($ps)
 		occurrences.clear();
 		var active_graph_id;
-		
+
 		$.getJSON('actions/php/ajax.php?action=getActiveGraphemeID', function(session_graph_id) {
 			active_graph_id = session_graph_id;
 			// load details of active grapheme
@@ -34,10 +34,10 @@ Grapheme Head properties.
 				occurrences.addMultiple(occurrence_ids);
 			});
 		});
-		
+
 		var form1_save_button = $('#form1_save');
 		var form1_name_field = $('#form1 input[name="name"]');
-		
+
 		form1_save_button.click( function() {
 			if (form1_save_button.hasClass('disabled') == true) {
 				// disabled
@@ -58,13 +58,13 @@ Grapheme Head properties.
 				});
 			}
 		});
-		
+
 		$('#form1_reset').click( function() {
 			restoreForm('form1');
 			checkNameField();
 		});
-		
-		
+
+
 		$('#occ_action').submit( function(e) {
 			e.preventDefault();
 			// switch action
@@ -81,9 +81,9 @@ Grapheme Head properties.
 				$('#export_button').trigger('click');
 			}
 		});
-		
-		
-		
+
+
+
 		// FIELD VALIDATION
 		function nameAllreadyExists () {
 			// check if name allready exists
@@ -102,7 +102,7 @@ Grapheme Head properties.
 			}
 			return false;
 		}
-		
+
 		function checkNameField () {
 			if (nameAllreadyExists()) {
 				form1_name_field.addClass('invalid');
@@ -112,11 +112,11 @@ Grapheme Head properties.
 				form1_save_button.removeClass('disabled');
 			}
 		}
-		
+
 		form1_name_field.keyup( function() {
 			checkNameField();
 		});
-		
+
 	});
 </script>
 
@@ -129,7 +129,7 @@ Grapheme Head properties.
 	<div class="w100">
         <div class="modulebox OccContextBox" id="occbox1">
             <div class="title">Occurrences</div>
-            
+
             <div class="title_extension">
                 <form id="occ_action" action="" method="post">
                     <select id="select_action" name="select_action">
@@ -149,37 +149,36 @@ Grapheme Head properties.
                 	<?php include('includes/components/tabs/export_search_results.tab.php'); ?>
                 </div>
                 <!-- end tabs -->
-                
+
                 <div id="occ_progress" class="hidden">loading <span id="current"></span>/<span id="total"></span></div>
                 <table>
                     <thead>
                       <tr>
-                        <td><input type="checkbox" class="select_all" rel="occ_selection" name=""/></td>
-                        <th><a href="#" class="tooltipp" title="Corpus ID. Hover to display the name of the corpus.">Crp</a></th>
-                        <th><a href="#" class="sort" id="sort_by_text" title="Click to sort results by Text ID.">Txt</a></th>
-                        <th class="wider"><a href="#" class="tooltipp" title="Text Section. Hover to display the corresponding description.">Sct</a></th>
-                        <th><a href="#" class="tooltipp" title="Involved text division.">Div</a></th>
-                        <th class="widest"><a href="#" class="tooltipp" title="Order number.">Num</a></th>
-                        <th class="padded">Context</th>
+						  <td><input type="checkbox" class="select_all" rel="occ_selection" name=""/></td>
+                          <th class="widest"><a href="#" class="sort" id="sort_by_text" title="Click to sort results by CiteID (zitf.)">CiteID</a></th>
+                          <th><a href="#" class="sort" id="sort_by_d0" title="Click to sort results by date <d0>.">Date</a></th>
+  						  <th class="widest"><a href="#" class="sort" id="sort_by_rd0" title="Click to sort results by editor <rd0>.">Red.</a></th>
+                          <th><a href="#" class="tooltipp" title="Involved text division.">Div</a></th>
+                          <th class="padded">Context</th>
                       </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
-            
+
             	<div id="occ_matches_meta" class="h300">
                 	<table>
                     	<!-- occ meta lines -->
                     </table>
                 </div>
-                
+
             	<div id="occ_matches" class="scrollbox h300">
                 	<!-- occ context lines -->
               	</div>
-                
+
             </div>
         </div>
     </div>
-    
+
     <div class="w66">
         <div class="modulebox" id="detailswindow">
             <div class="title">Grapheme Head: Details</div>
@@ -189,24 +188,24 @@ Grapheme Head properties.
                 <a href="#" class="restore_button" title="Discard changes and restore original values">Restore</a>
             </div>
             <div class="body">
-            
+
                 <form class="mainform" id="form1" action="" method="post">
-                    <fieldset>	
-                    
+                    <fieldset>
+
                         <label for="Name">Bezeichnung</label>
                         <input type="text" class="text normal required" name="Name" value="" />
-                        
+
                         <label for="Description">Beschreibung</label>
                         <input type="text" class="text w75" name="Description" value="" />
-                        
+
                         <label for="Comment">Kommentar</label>
                         <textarea name="Comment" class="w98"></textarea>
-                        
+
                    	</fieldset>
                 </form>
             </div>
        </div>
    	</div>
-    
-    
+
+
 </div>

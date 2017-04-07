@@ -21,7 +21,7 @@ Define grapheme variants (groups) and assign occurrences.
 		var matchingOccurrences = PH2Component.OccContextBox('occbox1');
 		var variantDetailsWindow = PH2Component.DetailsWindow('detailswindow1', 'ann_gra_grp_variants_load', 'ann_gra_grp_variants_save', false);
 		var variantsGroupSelector = PH2Component.GroupSelectorGraphvariants('groupselector1', matchingOccurrences, variantDetailsWindow);
-		
+
 		// handle action buttons for occbox1
 		$('#occ_action').submit( function(e) {
 			e.preventDefault();
@@ -37,9 +37,11 @@ Define grapheme variants (groups) and assign occurrences.
 				$.get( action_url );
 				// confirm to user
 				pushNotification(1, 'The selected Occurrences have been removed from this Grapheme.');
+			} else if (action == 'export_occurrences') {
+				$('#export_button').trigger('click');
 			}
-		});		
-		
+		});
+
 	});
 </script>
 
@@ -53,50 +55,55 @@ Define grapheme variants (groups) and assign occurrences.
     <div class="w100">
         <div class="modulebox OccContextBox" id="occbox1">
             <div class="title">Assigned Occurrences</div>
-            
+
             <div class="title_extension">
             	<form id="occ_action" action="" method="post">
                     <select id="select_action" name="select_action">
                         <option value="remove_occurrences">Remove Selected</option>
+						<option value="export_occurrences">Export Selected</option>
                         <!--<option value="2">Reassign Selected</option>-->
                     </select>
                     <input type="submit" class="button" value="OK" />
                 </form>
+				<a href="#" class="tablink invisible" rel="tab1" id="export_button" title="Export selected Occurrences">Export</a>
             </div>
 
             <div class="body">
             	<!-- tabs -->
+				<div id="tab1" class="tab hidden">
+                	<?php include('includes/components/tabs/export_search_results.tab.php'); ?>
+                </div>
                 <!-- end tabs -->
-                
+
                 <div id="occ_progress" class="hidden">loading <span id="current"></span>/<span id="total"></span></div>
                 <table>
                     <thead>
                       <tr>
-                        <td><input type="checkbox" class="select_all" rel="occ_selection" name=""/></td>
-                        <th><a href="#" class="tooltipp" title="Corpus ID. Hover to display the name of the corpus.">Crp</a></th>
-                        <th><a href="#" class="tooltipp" title="Text ID. Hover to display the name of the text.">Txt</a></th>
-                        <th class="wider"><a href="#" class="tooltipp" title="Text Section. Hover to display the corresponding description.">Sct</a></th>
-                        <th><a href="#" class="tooltipp" title="Involved text division.">Div</a></th>
-                        <th class="padded">Context</th>
+						<td><input type="checkbox" class="select_all" rel="occ_selection" name=""/></td>
+  						<th class="widest"><a href="#" class="sort" id="sort_by_text" title="Click to sort results by CiteID (zitf.)">CiteID</a></th>
+  						<th><a href="#" class="sort" id="sort_by_d0" title="Click to sort results by date <d0>.">Date</a></th>
+  						<th class="widest"><a href="#" class="sort" id="sort_by_rd0" title="Click to sort results by editor <rd0>.">Red.</a></th>
+  						<th><a href="#" class="tooltipp" title="Involved text division.">Div</a></th>
+  						<th class="padded">Context</th>
                       </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
-            
+
             	<div id="occ_matches_meta" class="h200">
                 	<table>
                     	<!-- occ meta lines -->
                     </table>
                 </div>
-                
+
             	<div id="occ_matches" class="scrollbox h200">
                 	<!-- occ context lines -->
               	</div>
-                
+
             </div>
         </div>
     </div>
-                
+
     <div class="w33">
         <div class="modulebox GroupSelector Graphvariants" id="groupselector1">
             <div class="title">Variants</div>
@@ -105,7 +112,7 @@ Define grapheme variants (groups) and assign occurrences.
                 <a href="#" class="tablink" rel="tab2" id="delete_variant_tab_button" title="Delete selected variant">Delete</a>
             </div>
             <div class="body">
-            
+
             <!-- tabs -->
             	<div id="tab1" class="tab hidden">
                 	<form id="add_variant_form">
@@ -131,7 +138,7 @@ Define grapheme variants (groups) and assign occurrences.
                     </form>
                 </div>
             <!-- end tabs -->
-            
+
                 <table class="selectable" id="groups">
                     <thead>
                         <tr>
@@ -148,7 +155,7 @@ Define grapheme variants (groups) and assign occurrences.
             </div>
         </div>
     </div>
-    
+
     <div class="w66">
         <div class="modulebox" id="detailswindow1">
             <div class="title">Variant Details</div>
@@ -174,7 +181,7 @@ Define grapheme variants (groups) and assign occurrences.
         </div>
 
     </div>
-    
+
 </div>
 
 </div>
