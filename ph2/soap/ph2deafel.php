@@ -96,7 +96,7 @@ function _getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceI
 		left join LEMMA_MORPHVALUE as LM on L.LemmaID=LM.LemmaID
 		left join MORPHVALUE as M on LM.MorphvalueID = M.MorphvalueID
 		where ".
-        _filterProjectId(_whereClause($mainLemma, $lemma, $occurrenceId)).
+        _filterPrjCpt(_whereClause($mainLemma, $lemma, $occurrenceId)).
 		" group by O.OccurrenceID) A ";
 	if ($withContext) {
 		$occsWithContext = $occsWithContext.
@@ -217,17 +217,20 @@ function _getNumberOfOccurrences($mainLemma, $lemma) {
 	$dao = new Table('Occurrence');
     $dao->select = "count(*) as occ_count";
     $dao->from = "LEMMA l natural join LEMMA_OCCURRENCE lo";
-    $dao->where = _filterProjectId(toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma,
+    $dao->where = _filterPrjCpt(toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma,
         'LemmaIdentifier' => $lemma)));
     return $dao->get()[0]['occ_count'];
 }
 
-function _filterProjectId($whereClause, $and=true) {
-
+/**
+ * Adds predicates to $whereClause to select only Lemma.ProjectID=1 and ConceptID in (3, 5, 6).
+ */
+function _filterPrjCpt($whereClause, $and=true) {
+    $predicate = "ProjectID=1 and ConceptID in (3, 5, 6)";
     if ($and) {
-        return $whereClause . " and ProjectID=1";
+        return $whereClause . "and $predicate";
     }
-    return $whereClause . " ProjectID=1";
+    return $whereClause . " $predicate";
 }
 
 # WEBSERVICE FUNCTIONS
@@ -264,7 +267,7 @@ function _guardedOccurrenceIdsForLemma($mainLemma, $lemma, $guardValue, $guarded
     $dao->select = "count(OccurrenceID) as count";
     $dao->from = 'LEMMA_OCCURRENCE natural join LEMMA natural join OCCURRENCE';
     $dao->orderby = 'OccurrenceId asc';
-    $dao->where = _filterProjectId(toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma,
+    $dao->where = _filterPrjCpt(toSQLStringOptional(array('MainLemmaIdentifier' => $mainLemma,
         'LemmaIdentifier' => $lemma)));
 
     // check for number of occurrences restriction
@@ -296,7 +299,7 @@ function getAllLemmata () {
 	$dao->select = "distinct(LemmaID), LemmaIdentifier, MainLemmaIdentifier";
 	$dao->from = "LEMMA natural join LEMMA_OCCURRENCE";
 	$dao->orderby = "LemmaIdentifier COLLATE utf8_roman_ci";
-	$dao->where = _filterProjectId(" ", false);
+	$dao->where = _filterPrjCpt(" ", false);
 	error_log($dao->where);
 	$results = $dao->get();
 	foreach ($results as $lemma) {
@@ -359,7 +362,7 @@ function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
 function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newLemmaIdentifier) {
 
     $dao = new Table('LEMMA');
-    $q = _filterProjectId("select * from LEMMA where mainLemmaIdentifier = '$newMainLemmaIdentifier' 
+    $q = _filterPrjCpt("select * from LEMMA where mainLemmaIdentifier = '$newMainLemmaIdentifier' 
           and lemmaIdentifier = '$newLemmaIdentifier'");
     $lemmaRows = $dao->query($q);
     $lemmaCount = count($lemmaRows);
@@ -414,7 +417,7 @@ function _assignOccurrenceToLemma($occurrenceID, $lemma) {
  */
 function _retrieveLemmaList($occurrenceID) {
     $dao = new Table('LEMMA_OCCURRENCE');
-    $r = $dao->query(_filterProjectId("select l.LemmaId as LemmaID
+    $r = $dao->query(_filterPrjCpt("select l.LemmaId as LemmaID
       from Occurrence o join Lemma_Occurrence lo on (o.OccurrenceID = lo.OccurrenceID)
       join Lemma l on (lo.lemmaId = l.lemmaId)
       where o.OccurrenceID = $occurrenceID"));
