@@ -26,7 +26,7 @@ try {
     echo $e->getMessage();
 }
 
-$occs = getOccurrenceIDs("%", "le");
+$occs = getOccurrenceIDs("%", "avoir");
 
 // just a basic check
 assert(count($occs) > 20);
