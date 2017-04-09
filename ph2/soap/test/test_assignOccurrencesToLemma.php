@@ -29,7 +29,7 @@ function result($method, $failed) {
 }
 
 define('CONCEPT_SHORT_C', 'c');
-define('CONCEPT_SHORT_P', 'p');
+define('CONCEPT_SHORT_CL', 'cl');
 
 function setUp() {
     $dao = new Table('OCCURRENCE');
@@ -43,7 +43,7 @@ function setUp() {
 
     $dao = new Table('Concept');
     $dao->insert(array('Short' => CONCEPT_SHORT_C, 'Name' => 'concept'));
-    $dao->insert(array('Short' => CONCEPT_SHORT_P, 'Name' => 'person'));
+    $dao->insert(array('Short' => CONCEPT_SHORT_CL, 'Name' => 'person'));
 }
 
 function _getLemma($mainLemma, $lemma) {
@@ -131,7 +131,7 @@ function test_occurrence_assigned_to_more_than_one_old_lemma() {
     $mainLemmaIdentifier = "blub";
 
     $lemma1 = new Lemma('blub1', CONCEPT_SHORT_C, $projectId, $surface, $morphVals, $mainLemmaIdentifier);
-    $lemma2 = new Lemma('blub2', CONCEPT_SHORT_P, $projectId, $surface, $morphVals, $mainLemmaIdentifier);
+    $lemma2 = new Lemma('blub2', CONCEPT_SHORT_CL, $projectId, $surface, $morphVals, $mainLemmaIdentifier);
 
     $occ = new Occurrence(1234, 140, 1); // 1234 is the token id, whatever that is
 
@@ -150,7 +150,7 @@ function test_newLemma_not_unique() {
     $failed = true;
 
     $lemma1 = new Lemma('blub', CONCEPT_SHORT_C, 1, null, null, "blubMain");
-    $lemma2 = new Lemma('blub', CONCEPT_SHORT_P, 1, null, null, "blubMain");
+    $lemma2 = new Lemma('blub', CONCEPT_SHORT_CL, 1, null, null, "blubMain");
 
     $occ = new Occurrence(1234, 140, 1); // 1234 is the token id, whatever that is
 
@@ -194,6 +194,38 @@ function test_new_lemma_does_not_exist() {
 
 }
 
+function test_assign_with_apostrophe() {
+    setUp();
+    $failed = true;
+
+    $occ = new Occurrence(1234, 140, 1); // 1234 is the token id, whatever that is
+    $projectId = 1;
+    $surface = "bla";
+    $morphVals = null;
+
+    $oldLemma = new Lemma('bla', CONCEPT_SHORT_C, $projectId, $surface, $morphVals, 'blaMain');
+    $oldLemma->assignOccurrenceID($occ->getID());
+
+    $beforeLemma = $occ->getLemma();
+    assert($beforeLemma->getID() == $oldLemma->getID(), "precondition: occ must be assigned to blub, blub");
+    assert(!_getLemma('blubMain', 'blub'), 'precondition: lemma blub, blub must not exist');
+
+    $mlApostrophe = 'blub\'Main';
+    assignOccurrencesToLemma(array($occ->getID()), $mlApostrophe, 'blub');
+
+    $newLemma = $occ->getLemma();
+    _assertNewLemmaCorrectIdentifiers($newLemma, $oldLemma->getID(), $mlApostrophe, 'blub');
+
+    // other values must have been copied from old assigned lemma
+    assert($newLemma->getProjectID() == DEFAULT_PROJECT_ID, "projectId");
+    assert($newLemma->getConcept() == DEFAULT_CONCEPT, "concept");
+    assert($newLemma->getSurface() == DEFAULT_SURFACE, "surface");
+    $failed = false;
+
+    result(__FUNCTION__, $failed);
+
+}
+
 function test_new_lemma_exists() {
     setUp();
     $failed = true;
@@ -208,7 +240,7 @@ function test_new_lemma_exists() {
     $oldLemma->assignOccurrenceID($occ->getID());
 
     // create new lemma
-    $newLemma = new Lemma('blub', CONCEPT_SHORT_P, 2, 'newSurface', $morphVals, 'blubMain');
+    $newLemma = new Lemma('blub', CONCEPT_SHORT_CL, 2, 'newSurface', $morphVals, 'blubMain');
 
     $beforeLemma = $occ->getLemma();
     assert($beforeLemma->getID() == $oldLemma->getID(), "precondition: occ must be assigned to blub, blub");
@@ -220,7 +252,7 @@ function test_new_lemma_exists() {
 
     // other values must be the same as before
     assert($newLemma->getProjectID() == 2, "projectId");
-    assert($newLemma->getConcept() == CONCEPT_SHORT_P, "concept");
+    assert($newLemma->getConcept() == CONCEPT_SHORT_CL, "concept");
     assert($newLemma->getSurface() == newSurface, "surface");
     $failed = false;
 
@@ -243,7 +275,7 @@ function test_new_lemma_exists_multiple_occs() {
     $oldLemma->assignOccurrenceID($occ2->getID());
 
     // create new lemma
-    $newLemma = new Lemma('blub', CONCEPT_SHORT_P, 2, 'newSurface', $morphVals, 'blubMain');
+    $newLemma = new Lemma('blub', CONCEPT_SHORT_CL, 2, 'newSurface', $morphVals, 'blubMain');
 
     assignOccurrencesToLemma(array($occ1->getID(), $occ2->getID()), 'blubMain', 'blub');
 
@@ -270,7 +302,7 @@ function test_new_lemma_exists_multiple_occs_one_with_error() {
     $oldLemma->assignOccurrenceID($occ2->getID());
 
     // create new lemma
-    new Lemma('blub', CONCEPT_SHORT_P, 2, 'newSurface', $morphVals, 'blubMain');
+    new Lemma('blub', CONCEPT_SHORT_CL, 2, 'newSurface', $morphVals, 'blubMain');
 
     assignOccurrencesToLemma(array($occ1->getID(), $occ2->getID()), 'blubMain', 'blub');
 
@@ -322,6 +354,7 @@ test_new_lemma_does_not_exist();
 test_new_lemma_exists();
 test_new_lemma_exists_multiple_occs();
 test_was_already_assigned_to_the_new_lemma();
+test_assign_with_apostrophe();
 
 echo "tests done";
 

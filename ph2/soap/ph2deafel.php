@@ -222,6 +222,10 @@ function _getNumberOfOccurrences($mainLemma, $lemma) {
     return $dao->get()[0]['occ_count'];
 }
 
+function _esc($unescapedString) {
+    return mysql_escape_string($unescapedString);
+}
+
 /**
  * Adds predicates to $whereClause to select only Lemma.ProjectID=1 and ConceptID in (3, 5, 6).
  */
@@ -361,9 +365,13 @@ function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
  */
 function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newLemmaIdentifier) {
 
+    $dummy = new Table('CONCEPT');
+    $dummy->query(""); // FIXME: workaround: apparently we need a db conn before calling mysql_real_escape_string
+    $ml = _esc($newMainLemmaIdentifier);
+    $l = _esc($newLemmaIdentifier);
     $dao = new Table('LEMMA');
-    $q = _filterPrjCpt("select * from LEMMA where mainLemmaIdentifier = '$newMainLemmaIdentifier' 
-          and lemmaIdentifier = '$newLemmaIdentifier'");
+    // we only _esc() for this query. For the potential insert statement dbcore.php escapes again.
+    $q = _filterPrjCpt("select * from LEMMA where mainLemmaIdentifier = '$ml' and lemmaIdentifier = '$l'");
     $lemmaRows = $dao->query($q);
     $lemmaCount = count($lemmaRows);
 
