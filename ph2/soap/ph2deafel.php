@@ -228,7 +228,7 @@ function _getNumberOfOccurrences($mainLemma, $lemma) {
 function _filterPrjCpt($whereClause, $and=true) {
     $predicate = "ProjectID=1 and ConceptID in (3, 5, 6)";
     if ($and) {
-        return $whereClause . "and $predicate";
+        return $whereClause . " and $predicate";
     }
     return $whereClause . " $predicate";
 }
