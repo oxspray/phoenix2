@@ -214,6 +214,14 @@ var PH2Component = {
 			occurrence_match.attr('title', lemma + ' (Lemma)');
 		}
 		
+		var _hideGroup = function (selected_graph_id) {
+			// removes all selected occurrences from this box
+ +			$.getJSON('actions/php/ajax.php?action=getOccurrenceIDsByGrapheme&graphID=' + selected_graph_id, function(occurrence_ids) {
+ +				$.each(occurrence_ids, function(i) {
+ +					_removeOccurrence(this);
+ +				});
+ +			});
+		}
 		
 		// sorts all displayed Lines according to ajax.php?sortOccurrencesByText
 		var _sort_results = function ( field ) {
@@ -487,6 +495,9 @@ var PH2Component = {
 				for (var i = 0; i < selected_occurrence_ids.length; i++) {
 					_mark_as_lemmatized(selected_occurrence_ids[i], lemma);
 				}
+			},
+			hideGroup: function(selected_graph_id) {
+				return _hideGroup(selected_graph_id);
 			}
 			
 		}

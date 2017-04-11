@@ -35,6 +35,7 @@ var GraphTab = {
 		// main buttons (assign & reset)
 		var reset_all_button = $('#reset_all_button');
 		var assign_button = $('#assign_button');
+		var hide_grouped_occurrences_button = $('#hide_grouped_occurrences_button');
 		var TEST_button = $('#TEST_button');
 
 		// "form elements" to build the components for the final assignment.
@@ -54,6 +55,16 @@ var GraphTab = {
 			e.preventDefault();
 			console.log("chosen_graph_name_or_id:",chosen_graph_name_or_id, "chosen_descr:", chosen_descr, "chosen_graphgroup_number:", chosen_graphgroup_number, "chosen_graphgroup_name:", chosen_graphgroup_name);
 		});
+
+		hide_grouped_occurrences_button.click( function(e) {
+ +			e.preventDefault();
+ +			if (chosen_graph_name_or_id != null) {
+ +				// hide the Occurrences assigned to the selected Grapheme
+ +				occ_selection_box.hideGroup(chosen_graph_name_or_id);
+ +			} else {
+ +				alert("Please choose a Grapheme first, before you hide the assigned Occurrences (ALPHA NOTE: This is not reversible, you have to reload the page if you want the to reappear)");
+ +			}
+ +		});
 
 		reset_all_button.click( function(e) {
 			e.preventDefault();
@@ -469,6 +480,7 @@ var GraphTab = {
 							<!-- ASSIGN & RESET buttons -->
 							<input type="button" id="assign_button" class="button" value="ASSIGN" name="assign" title="Press button to create the new Assignment" style="display: inline; width: 500;" />
 							<input type="button" id="reset_all_button" class="button" value="RESET" name="assign" title="Press button to reset the form" style="display: inline; width: 500;" />
+							<input type="button" id="hide_grouped_occurrences_button" class="button" value="HIDE GROUPED" name="assign" title="Press button to hide already assigned Occurrences" style="display: inline; width: 500;" />
 							<!-- <input type="button" id="TEST_button" class="button" value="TEST" name="assign" title="Press button to reset the form" style="display: block; width: 300;" /> -->
             </div>
 
