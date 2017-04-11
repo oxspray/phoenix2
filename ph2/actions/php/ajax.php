@@ -419,21 +419,18 @@ function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
 	$graph_identifier = json_decode($post['graphIdentifier']);
 	$graphgroup_name = $post['graphgroupName'];
 
-	assert($graphgroup_name);
-	assert($graphgroup_identfier);
 	assert($occurrence_ids);
-	assert($graph_id);
 
-	$graph = new Graph ( $graph_identifier );
+	$graph = new Graph ( (int)$graph_identifier );
 	// addGraphgroup creates an ID of the newly created Graphgroup (assigned to graphgroup_id)
-	$graphgroup_id = $graph->addGraphgroup($graphgroup_number, $graphgroup_name);
-
+	$graphgroup_id = $graph->addGraphgroup($graphgroup_number, $name=$graphgroup_name);
 	// add occurence IDs to Graphgroup (visible in table GRAPHGROUP_OCCURRENCE)
 	$graphgroup = new Graphgroup ( $graphgroup_id ); // access this newly created Graphgroup
 	$graphgroup->addOccurrence($occurrence_ids, TRUE); //2nd parameter: delete existing assignments first
 	// $graphgroup->setName($graphgroup_name);
-
+	
 	echo json_encode($graphgroup_id);
+		
 }
 
 function checkNameValidity ($get, $post) { global $ps;

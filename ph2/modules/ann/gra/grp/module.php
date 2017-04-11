@@ -170,7 +170,7 @@ Define grapheme variants (groups) and assign occurrences.
                         <label for="f1">Bezeichnung</label>
                         <input type="text" class="text small required" name="Name" value="" />
                         <label class="inline" for="f2">Nummer:</label>
-                        <input type="text" class="text tiny required digits_and_points_only" name="Number" value="" />
+                        <input type="text" class="text tiny required" name="Number" value="" />
                     </fieldset>
                     <!-- <fieldset>
                     <legend>Weitere Felder</legend>
