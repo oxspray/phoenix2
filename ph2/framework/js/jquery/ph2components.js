@@ -216,46 +216,58 @@ var PH2Component = {
 		
 		
 		// sorts all displayed Lines according to ajax.php?sortOccurrencesByText
-		var _sort_results = function( field ) {
-			// get all currently displayed OccurrenceIDs
-			$.getJSON('actions/php/ajax.php?action=sortOccurrences&field=' + field + '&occurrenceIDs=' + _displayed_occurrences, function(ordered_occ_ids) {
-				// create new (empty) containers
-				//alert(occ_matches_meta.html());
-				//alert(''+_occ_matches_meta_empty_container.html());
-				var new_matches_container = _occ_matches_empty_container.clone();
-				var new_meta_container = _occ_matches_meta_empty_container.clone();
-				//alert(''+new_meta_container.html());
-				// fill in old data ordered according to retreived list
-				for (var i in ordered_occ_ids) {
-						var id = ordered_occ_ids[i];
-						var occ_matches_meta_checkbox = occ_matches_meta.find('input#checkbox-' + id)
-						// find in current listing
-						var current_meta_line = occ_matches_meta_checkbox.parent().parent();
-						var current_context_line = occ_matches.find('pre span.match#' + id).parent();
-						// add to new listing
-						new_meta_container.append(current_meta_line.clone());
-						new_matches_container.append(current_context_line.clone());
-						// check meta checkbox if applicable
-						if (occ_matches_meta_checkbox.attr('checked')) {
-							new_meta_container.find('input#checkbox-' + id).attr('checked', true);
-						}
-				}
-				// replace the old with the new listing
-				occ_matches_meta.hide().html(new_meta_container.html()).fadeIn();
-				occ_matches.hide().html(new_matches_container.html()).fadeIn();
-				// re-bind fancybox text-popups
-				occ_matches_meta.find('td.txtZitf a').each( function() {
-					$(this).fancybox( { 'titleShow':false, 'showNavArrows':false } );
-				});
-				// re-bind checkbox crosslinks
-				for (var i in ordered_occ_ids) {
-						var id = ordered_occ_ids[i];
-						bindCheckboxToOccSpan(id);
-				}
-				// replace _displayed_occurrences with the current order
-				_displayed_occurrences = ordered_occ_ids;
+		var _sort_results = function ( field ) {
+			var ordered_occ_ids = null;
+			$.ajax({
+				url: 'actions/php/ajax.php?action=sortOccurrences',
+				type: 'POST',
+				dataType: 'json',
+				data: {field: field, occurrenceIDs: _displayed_occurrences},
+				success: function(data) {
+					ordered_occ_ids = data;
+					pushNotification(1, 'Occurrences sorted by: ' + field );
+				},
+				error: function(data) {
+					alert('error: ' + JSON.stringify(data));
+				},
+				async: false
 			});
-			// make sure contexts are loaded for matches that are still pending
+			// create new (empty) containers
+			//alert(occ_matches_meta.html());
+			//alert(''+_occ_matches_meta_empty_container.html());
+			var new_matches_container = _occ_matches_empty_container.clone();
+			var new_meta_container = _occ_matches_meta_empty_container.clone();
+			//alert(''+new_meta_container.html());
+			// fill in old data ordered according to retreived list
+			for (var i in ordered_occ_ids) {
+				var id = ordered_occ_ids[i];
+				var occ_matches_meta_checkbox = occ_matches_meta.find('input#checkbox-' + id)
+				// find in current listing
+				var current_meta_line = occ_matches_meta_checkbox.parent().parent();
+				var current_context_line = occ_matches.find('pre span.match#' + id).parent();
+				// add to new listing
+				new_meta_container.append(current_meta_line.clone());
+				new_matches_container.append(current_context_line.clone());
+				// check meta checkbox if applicable
+				if (occ_matches_meta_checkbox.attr('checked')) {
+					new_meta_container.find('input#checkbox-' + id).attr('checked', true);
+				}
+			}
+			// replace the old with the new listing
+			occ_matches_meta.hide().html(new_meta_container.html()).fadeIn();
+			occ_matches.hide().html(new_matches_container.html()).fadeIn();
+			// re-bind fancybox text-popups
+			occ_matches_meta.find('td.txtZitf a').each( function() {
+				$(this).fancybox( { 'titleShow':false, 'showNavArrows':false } );
+			});
+			// re-bind checkbox crosslinks
+			for (var i in ordered_occ_ids) {
+				var id = ordered_occ_ids[i];
+				bindCheckboxToOccSpan(id);
+			}
+			// replace _displayed_occurrences with the current order
+			_displayed_occurrences = ordered_occ_ids;
+		// make sure contexts are loaded for matches that are still pending
 			_load_pending_visible_occurrences();
 		}
 		

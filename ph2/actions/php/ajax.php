@@ -320,9 +320,8 @@ function sortOccurrences ($get, $post) {
 /* 	takes a list of Occurrences (OccurrenceIDs) and orders them by:
 		Corpus > Text > Surface > Order
 	returns the list of OccurrenceIDs in an order matching the above criteria. */
-
-	$field = $get['field'];
-	$occ_ids = $get['occurrenceIDs'];
+	$occ_ids = json_encode($post['occurrenceIDs']);
+	$field = $post['field'];
 	$sql_occ_ids_list = '(' . trim($occ_ids, "[]") . ')';
 
 	switch ($field) {
@@ -340,7 +339,7 @@ function sortOccurrences ($get, $post) {
 			$dao = new Table('OCCURRENCE');
 			$dao->select = "OccurrenceID";
 			$dao->from = "OCCURRENCE natural join TOKEN join TEXT on OCCURRENCE.TextID = TEXT.TextID join CORPUS on TEXT.CorpusID = CORPUS.CorpusID join TEXT_DESCRIPTOR on TEXT.TextID=TEXT_DESCRIPTOR.TextID join DESCRIPTOR on TEXT_DESCRIPTOR.DescriptorID=DESCRIPTOR.DescriptorID";
-			$dao->where = "OccurrenceID in $sql_occ_ids_list AND XMLTagName='" . $get['field'] . "'";
+			$dao->where = "OccurrenceID in $sql_occ_ids_list AND XMLTagName='" . $field . "'";
 			$dao->orderby = "TEXT_DESCRIPTOR.`Value` COLLATE utf8_roman_ci ASC, TOKEN.Surface COLLATE utf8_roman_ci, OCCURRENCE.`Order` ASC";
 		break;
 	}
