@@ -216,11 +216,11 @@ var PH2Component = {
 		
 		var _hideGroup = function (selected_graph_id) {
 			// removes all selected occurrences from this box
- +			$.getJSON('actions/php/ajax.php?action=getOccurrenceIDsByGrapheme&graphID=' + selected_graph_id, function(occurrence_ids) {
- +				$.each(occurrence_ids, function(i) {
- +					_removeOccurrence(this);
- +				});
- +			});
+			$.getJSON('actions/php/ajax.php?action=getOccurrenceIDsByGrapheme&graphID=' + selected_graph_id, function(occurrence_ids) {
+				$.each(occurrence_ids, function(i) {
+					_removeOccurrence(this);
+ 				});
+ 			});
 		}
 		
 		// sorts all displayed Lines according to ajax.php?sortOccurrencesByText
