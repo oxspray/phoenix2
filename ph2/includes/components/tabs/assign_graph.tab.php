@@ -110,7 +110,7 @@ var GraphTab = {
 									surface = getSurfaceByOccurrenceID(occ);
 									div = getDivByOccurrenceID(occ);
 									// if there is an Occurrence already assigned, ask to overwrite existing Grapheme-assignment.
-									if ( confirm ("The Occurrence '" + surface + "' in div '" + div + "' has already been assigned to this Grapheme. Press continue to accept overwriting.")) {
+									if ( confirm ("The Occurrence '" + surface + "' in div '" + div + "' has already been assigned to this Grapheme. Press 'OK' to overwrite existing assignment.")) {
 										// overwrite only the assignment of this Occurrence to this Graph. Assignments to other Graphs aren't affected by this procedure.
 										relevant_graphgroups = getGraphgroupsByGraphID(chosen_graph_name_or_id);
 										created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
