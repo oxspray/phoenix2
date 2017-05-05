@@ -105,6 +105,7 @@ var GraphTab = {
 							// check if any of the selected are already assigned to this Grapheme
 							for ( i = 0; i < selected.length; i++ ) {
 								occ = selected[i];
+								str_occ = occ;
 								occ = parseInt(occ);
 								if (grapheme_occurrences.includes(occ) ) {
 									surface = getSurfaceByOccurrenceID(occ);
@@ -113,12 +114,12 @@ var GraphTab = {
 									if ( confirm ("The Occurrence '" + surface + "' in div '" + div + "' has already been assigned to this Grapheme. Press 'OK' to overwrite existing assignment.")) {
 										// overwrite only the assignment of this Occurrence to this Graph. Assignments to other Graphs aren't affected by this procedure.
 										relevant_graphgroups = getGraphgroupsByGraphID(chosen_graph_name_or_id);
-										created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
-										created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, selected_occurrences, created_graph_id, relevant_graphgroups);
+										created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, str_occ, chosen_descr);
+										created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, str_occ, created_graph_id, relevant_graphgroups);
 									}
 								} else {
-									created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
-									created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, selected_occurrences, created_graph_id, relevant_graphgroups);
+									created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, str_occ, chosen_descr);
+									created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, str_occ, created_graph_id, relevant_graphgroups);
 								}
 							}
 						} else {
