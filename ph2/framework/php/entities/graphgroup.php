@@ -52,7 +52,7 @@ class Graphgroup
 	// PUBLIC FUNCTIONS
 	// ----------------
 	//+ 
-	function addOccurrence ( $occurrenceID , $deleteExistingAssignments=TRUE )
+	function addOccurrence ( $occurrenceID , $deleteExistingAssignments=TRUE, $graphgroupsToOverwrite=NULL )
 	/*/
 	add an Occurrence to this Graphgroup
 	---
@@ -62,6 +62,9 @@ class Graphgroup
 	@param deleteExistingAssignments: By default, all existing assignments of an occurrence 
 	are deleted before it is added to a new Graphgroup.
 	@type  deleteExistingAssignments: bool
+	@param graphgroupsToOverwrite: If an array of GraphgroupIDs is given, all GRAPHGROUP_OCCURRENCE entries
+	with the given OccurrenceID and the corresponding GraphgroupID are deleted before it is added to a new Graphgroup.
+	@type  graphgroupsToOverwrite: array
 	/*/
 	{
 		$dao = new Table('GRAPHGROUP_OCCURRENCE');
@@ -72,6 +75,12 @@ class Graphgroup
 			if ($deleteExistingAssignments == TRUE) {
 				// delete all existing assignments
 				$dao->delete("OccurrenceID=$id");
+			}
+			if ($graphgroupsToOverwrite != null) {
+				foreach ($graphgroupsToOverwrite as $gg_id) {
+					$relevant_db_entry = array('GraphgroupID' => $gg_id, 'OccurrenceID' => $id);
+					$dao->delete($relevant_db_entry);
+				}
 			}
 			$dao->insert( array('GraphgroupID' => $this->_id, 'OccurrenceID' => $id) );
 		}

@@ -143,6 +143,22 @@ function updateGraphgroupSelectionWithID ($get, $post) { global $ps;
 
 }
 
+function getGraphgroupsWithID ($get, $post) { global $ps;
+	/* retrieves a list of all GraphgroupIDs of a given Grapheme from the database */
+	$id = $get['graphID']; 		// selected graphID
+	$id = (int)$id; 					//cast into int to ensure correct constructing of the Graph
+	$selected_graph = new Graph($id);
+	$graphgroups = $selected_graph->getGraphgroups();
+	$out = array();
+
+	foreach($graphgroups as $gg) {
+		$out[] = $gg->getID();
+	}
+
+	echo json_encode($out);
+
+}
+
 function getLemmatypes ($get, $post) { global $ps;
 	/* retrieves a list of all CONCEPTs from the database */
 
@@ -417,6 +433,7 @@ function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
 	$occurrence_ids = json_decode($post['occurrenceIDs']);
 	$graph_identifier = json_decode($post['graphIdentifier']);
 	$graphgroup_name = $post['graphgroupName'];
+	$overwrite = $post['relevantGraphgroups'];
 
 	assert($occurrence_ids);
 
@@ -425,8 +442,11 @@ function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
 	$graphgroup_id = $graph->addGraphgroup($graphgroup_number, $name=$graphgroup_name);
 	// add occurence IDs to Graphgroup (visible in table GRAPHGROUP_OCCURRENCE)
 	$graphgroup = new Graphgroup ( $graphgroup_id ); // access this newly created Graphgroup
-	$graphgroup->addOccurrence($occurrence_ids, TRUE); //2nd parameter: delete existing assignments first
-	// $graphgroup->setName($graphgroup_name);
+	if ($overwrite) {
+		$graphgroup->addOccurrence($occurrence_ids, FALSE, $overwrite); // 3rd parameter: overwrite existing graph-assignments first
+	} else {
+		$graphgroup->addOccurrence($occurrence_ids, FALSE); //2nd parameter: delete existing assignments first
+	}
 	
 	echo json_encode($graphgroup_id);
 		
@@ -625,6 +645,31 @@ function getOccurrenceIDsByGrapheme ($get, $post) { global $ps;
 
 	$graph = new Graph($grapheme_id);
 	echo json_encode( $graph->getOccurrenceIDs() );
+
+}
+
+function getSurfaceByOccurrenceID ($get, $post) { global $ps;
+/* removes a selection of Occurrences from a Graph */
+
+	// $occ_ids = json_decode($get['occurrenceIDs']);
+	$occ_id = $get["OccurrenceID"];
+	$occ_id = (int)$occ_id;
+
+	$occ = new Occurrence( $occ_id );
+	$surface = $occ->getSurface( );
+	echo json_encode($surface);
+
+}
+
+function getDivByOccurrenceID ($get, $post) { global $ps;
+/* removes a selection of Occurrences from a Graph */
+
+	$occ_id = $get["OccurrenceID"];
+	$occ_id = (int)$occ_id;
+
+	$occ = new Occurrence( $occ_id );
+	$div = $occ->getDiv( );
+	echo json_encode($div);
 
 }
 
