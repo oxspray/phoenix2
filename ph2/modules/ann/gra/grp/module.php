@@ -39,6 +39,8 @@ Define grapheme variants (groups) and assign occurrences.
 				pushNotification(1, 'The selected Occurrences have been removed from this Grapheme.');
 			} else if (action == 'export_occurrences') {
 				$('#export_button').trigger('click');
+			} else if (action == 'reassign_occurrences') {
+				$('#reassign_button').trigger('click');
 			}
 		});
 
@@ -61,17 +63,22 @@ Define grapheme variants (groups) and assign occurrences.
                     <select id="select_action" name="select_action">
                         <option value="remove_occurrences">Remove Selected</option>
 						<option value="export_occurrences">Export Selected</option>
+						<option value="reassign_occurrences">Reassign Selected</option>
                         <!--<option value="2">Reassign Selected</option>-->
                     </select>
                     <input type="submit" class="button" value="OK" />
                 </form>
 				<a href="#" class="tablink invisible" rel="tab1" id="export_button" title="Export selected Occurrences">Export</a>
+				<a href="#" class="tablink invisible" rel="tab2" id="reassign_button" title="Reassign selected Occurrences">Reassign</a>
             </div>
 
             <div class="body">
             	<!-- tabs -->
 				<div id="tab1" class="tab hidden">
                 	<?php include('includes/components/tabs/export_search_results.tab.php'); ?>
+                </div>
+				<div id="tab2" class="tab hidden">
+					<?php include('includes/components/tabs/reassign_occurrence.tab.php'); ?>
                 </div>
                 <!-- end tabs -->
 
