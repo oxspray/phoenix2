@@ -452,6 +452,44 @@ function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
 		
 }
 
+function reassignOccurrencesToGraphgroup ($get, $post) { global $ps;
+/* reassigns a selection of occurrences to a graphgroup */
+
+	$new_graphgroup_number = json_decode($post['newGraphgroupNumber']);
+	$occurrence_ids = json_decode($post['occurrenceIDs']);
+	$active_graph_id = json_decode($post['activeGraphID']);
+	$new_graphgroup_id = null;
+
+	assert($occurrence_ids);
+
+	$dao = new Table('GRAPHGROUP');
+	$dao->select = "`GraphgroupID`";
+	$dao->where = "`GraphID` = " . $active_graph_id . " AND `Number` = " . $new_graphgroup_number ;
+	$rows = $dao->get();
+	$new_graphgroup_id = $rows[0]['GraphgroupID'];
+
+	if ($new_graphgroup_id) {
+		$dao = new Table('GRAPHGROUP_OCCURRENCE');
+		$dao->from = "`GRAPHGROUP_OCCURRENCE` natural join `GRAPHGROUP`";
+		$dao->where = "`OccurrenceID` in (" . expandArray($occurrence_ids, ',') . ") AND `GraphID` = " . $active_graph_id;
+		$rows = $dao->get();
+
+		foreach($rows as $row) {
+			$existing_graphgroup_id = $row['GraphgroupID'];
+			$occ_id = $row['OccurrenceID'];
+			if ($existing_graphgroup_id != $new_graphgroup_id) {
+				$dao = new Table('GRAPHGROUP_OCCURRENCE');
+				$dao->delete( array('OccurrenceID' => (int)$occ_id, 'GraphgroupID' => (int)$existing_graphgroup_id) );
+				$new_graphgroup = new Graphgroup( (int)$new_graphgroup_id );
+				$new_graphgroup->addOccurrence( (int)$occ_id, FALSE);
+			}
+		}
+		die(json_encode(array('message' => 'SUCCESS')));
+	} else {
+		die(json_encode(array('message' => 'ERROR')));
+	}
+}
+
 function checkNameValidity ($get, $post) { global $ps;
 	/* function to check if a name is already given in the DB for the provided table */
 	$table = $get['table'];
