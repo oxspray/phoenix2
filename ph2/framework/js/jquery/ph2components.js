@@ -93,6 +93,7 @@ var PH2Component = {
 		var _sort_by_rd0_button = container.find('#sort_by_rd0');
 		var _export_csv_button = container.find('#export_csv');
 		var _export_xls_button = container.find('#export_xls');
+		var _reassign_occurrences = container.find('#reassign_occurrences');
 		var _number_of_context_chars = 221;
 		var _context_placeholder = '';
 		var _displayed_occurrences = []; //the OccurrenceID of each line that is displayed
@@ -102,6 +103,23 @@ var PH2Component = {
 		var _view_text_url;
 		var _view_text_url_target;
 		var _view_text_rel;
+		var _active_grapheme = function () {
+			// load Grapheme that is active in the current session
+			graph_id = null;
+			$.ajax({
+				url: 'actions/php/ajax.php?action=getActiveGraphemeID',
+				async: false,
+				dataType: 'json',
+				success: function(session_graph_id) {
+					if (session_graph_id == parseInt(session_graph_id,10)) {
+						graph_id = session_graph_id;
+					} else {
+						return;
+					}
+				}
+			});
+			return graph_id;
+		}
 		
 		//Private methods
 		// toggle selected/not selected for a matching occurrence line
@@ -360,6 +378,34 @@ var PH2Component = {
 			}
 		}
 		
+		var _handleReassign = function (selfref, e) {
+			var selected_lines = _getSelected();
+			if (selected_lines != '[]') {
+				new_number = container.find('input[name=new_Number]').val();
+				$.ajax({
+					url: 'actions/php/ajax.php?action=reassignOccurrencesToGraphgroup',
+					type: 'POST',
+					dataType: 'json',
+					data: {newGraphgroupNumber: new_number, occurrenceIDs: selected_lines, activeGraphID: _active_grapheme },
+					success: function(data) {
+						if (data['message'] == 'SUCCESS') {
+							pushNotification(1, 'Occurrences reassigned to: ' + new_number );
+							_removeSelected();
+						} else if (data['message'] == 'ERROR') {
+							pushNotification(4, 'Reassignment failed: ' + new_number + ' doesnt exist' );
+						}
+					},
+					error: function(data) {
+						alert('error: ' + JSON.stringify(data));
+					},
+					async: false
+				});
+			} else {
+				alert('Please select at least one match to be reassigned');
+				e.preventDefault();
+			}
+		}
+
 		var _hide_lemmatized_results = function () {
 			occ_matches.find('pre span.lemmatized').each(function() {
 				$(this).parent().fadeOut();
@@ -418,6 +464,10 @@ var PH2Component = {
 		// bind xls export button
 		_export_xls_button.click( function(e) {
 			_handleExportButton(this, e, 'ExportXLS');
+		});
+		// reassign occurrences
+		_reassign_occurrences.click( function(e) {
+			_handleReassign(this, e);
 		});
 		// bind the resize event of occ_matches to occ_matches_meta
 		occ_matches.resize( function() {
@@ -683,7 +733,7 @@ var PH2Component = {
 				_result_box.fadeIn();
 			}
 		}
-		
+
 		function _hide_lemmatized_results () {
 			_associatedDisplay.hideLemmatizedResults();
 		}
