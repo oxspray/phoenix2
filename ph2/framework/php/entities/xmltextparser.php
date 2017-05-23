@@ -213,65 +213,70 @@ class XMLTextParser
 	//+ 
 	function import ( )
 	/*/
-	Parses the input_xml (string) in EDIT format and returns the output_xml (DOMDocument). The 
-	original Text that input_xml belongs to is deleted after the import, both in the DB and on 
+	Parses the input_xml (string) in EDIT format and returns the output_xml (DOMDocument). The
+	original Text that input_xml belongs to is deleted after the import, both in the DB and on
 	the filesystem.
 	/*/
 	{
 		// put the parser into update mode
-		$this->_mode = 'update'; // this causes all db entries to be stored in $this->_import_db_entries rather than being written to the DB directly		
-		
-		// get the old 
-		
+		$this->_mode = 'update'; // this causes all db entries to be stored in $this->_import_db_entries rather than being written to the DB directly
+
+		// get the old
+
 		// convert xml input string to DOMDocument
 		$dom_input_xml = $this->_prepare_input_xml();
-		
+
 		// parse the xml
 		$this->_parse_loop($dom_input_xml, $this->_output_xml);
-		
+
 		// (re-) add the default namespace to the root node
 		$this->_output_xml->documentElement->setAttribute('xmlns', PH2_URI_STORAGE);
-		
-		
+
+
 		// MAKE TRANSFORMATIONS IN DATABASE (delete old text, transfer annotations, ...)
-		
-		// 1: Delete Lemma, Morphology, and Textsection annotations of the old text. If they are to be preserved, they will be re-inserted because of the annotations found in the new XML.
+
+		// 1: Delete annotations, but keep the old Order number of the affected Occurrences to re-map the Graphgroup annotations to the new Occurrences later
 		$dao = new Table('LEMMA_OCCURRENCE');
-		$rows = $dao->query( "select l.OccurrenceID from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join LEMMA_OCCURRENCE as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
+		$rows = $dao->query( "select l.OccurrenceID, o.Order, l.LemmaID from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join LEMMA_OCCURRENCE as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
+		$mappings_order_lemma = array();
 		$affected_occ_ids = array();
 		foreach ($rows as $row) {
+			$mappings_order_lemma[ $row['Order'] ] = $row['LemmaID'];
 			$affected_occ_ids[] = $row['OccurrenceID'];
 		}
 		if (count($affected_occ_ids) > 0) {
 			$dao->delete( "OccurrenceID in (" . expandArray( $affected_occ_ids, ',' ) . ")" );
 		}
 		unset($dao);
-		
+
 		$dao = new Table('OCCURRENCE_MORPHVALUE');
-		$rows = $dao->query( "select l.OccurrenceID from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join OCCURRENCE_MORPHVALUE as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
+		$rows = $dao->query( "select l.OccurrenceID, o.Order, l.MorphvalueID from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join OCCURRENCE_MORPHVALUE as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
+		$mappings_order_morphvalue = array();
 		$affected_occ_ids = array();
 		foreach ($rows as $row) {
+			$mappings_order_morphvalue[ $row['Order'] ] = $row['MorphvalueID'];
 			$affected_occ_ids[] = $row['OccurrenceID'];
 		}
 		if (count($affected_occ_ids) > 0) {
 			$dao->delete( "OccurrenceID in (" . expandArray( $affected_occ_ids, ',' ) . ")" );
 		}
 		unset($dao);
-		
+
 		$dao = new Table('OCCURRENCE_TEXTSECTION');
-		$rows = $dao->query( "select l.OccurrenceID from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join OCCURRENCE_TEXTSECTION as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
+		$rows = $dao->query( "select l.OccurrenceID, o.Order, l.TextsectionID from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join OCCURRENCE_TEXTSECTION as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
+		$mappings_order_textsection = array();
 		$affected_occ_ids = array();
 		foreach ($rows as $row) {
+			$mappings_order_textsection[ $row['Order'] ] = $row['TextsectionID'];
 			$affected_occ_ids[] = $row['OccurrenceID'];
 		}
 		if (count($affected_occ_ids) > 0) {
 			$dao->delete( "OccurrenceID in (" . expandArray( $affected_occ_ids, ',' ) . ")" );
 		}
 		unset($dao);
-		
-		// 2: Delete Graphgroup annotations, but keep the old Order number of the affected Occurrences to re-map the Graphgroup annotations to the new Occurrences later
+
 		$dao = new Table('GRAPHGROUP_OCCURRENCE');
-		$rows = $dao->query( "select l.OccurrenceID, l.GraphgroupID, o.Order from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join GRAPHGROUP_OCCURRENCE as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
+		$rows = $dao->query( "select l.OccurrenceID, o.Order, l.GraphgroupID from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join GRAPHGROUP_OCCURRENCE as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
 		$mappings_order_graphgroup = array(); // key: old order number, value: graphgroupdID
 		$affected_occ_ids = array();
 		foreach ($rows as $row) {
@@ -282,8 +287,8 @@ class XMLTextParser
 			$dao->delete( "OccurrenceID in (" . expandArray( $affected_occ_ids, ',' ) . ")" );
 		}
 		unset($dao);
-		
-		// 3: Delete old TEXT_DESCRIPTOR entries and insert the new ones (<an> section)
+
+		// 2: Delete old TEXT_DESCRIPTOR entries and insert the new ones (<an> section)
 		$dao = new Table('TEXT_DESCRIPTOR');
 		$dao->delete( array( 'TextID' => $this->_created_text_entity->getID() ) );
 		foreach($this->_import_db_entries['TEXT_DESCRIPTOR'] as $text_descriptor) {
@@ -291,21 +296,21 @@ class XMLTextParser
 		}
 		unset($dao);
 		
-		// 4: Delete all Occurrences that are associated to the old Text
+		// 3: Delete all Occurrences that are associated to the old Text
 		// OccurrenceIDs are preserved for all tokens that haven't changed in a text
 		$dao = new Table('OCCURRENCE');
-		// 4.1.: Get the mapping of Order -> OccurrenceID for all Occurrences of the old Text
+		// 3.1.: Get the mapping of Order -> OccurrenceID for all Occurrences of the old Text
 		$dao->select = '`OccurrenceID`, `Order`';
 		$rows = $dao->get( array( 'TextID' => $this->_created_text_entity->getID() ) );
 		$mappings_old_order_occ_id = array();
 		foreach ($rows as $row) {
 			$mappings_old_order_occ_id[ $row['Order'] ] = $row['OccurrenceID'];
 		}
-		// 4.2.: Delete the Occurrences of the old Text				
+		// 3.2.: Delete the Occurrences of the old Text
 		$dao->delete( array( 'TextID' => $this->_created_text_entity->getID() ) );
-		
-		// 5: Insert the new Occurrences that were prepared during $this->_parse_loop
-		
+
+		// 4: Insert the new Occurrences that were prepared during $this->_parse_loop
+
 		// create the new Occurrence in the database
 		// - overrides the Occurrence object for performance reasons
 		// - uses existing OccurrenceIDs for tokens that have not changed; lowest available OccurrenceID otherwise
@@ -314,11 +319,12 @@ class XMLTextParser
 		$new_occurrences = array(); // the Occurrences that have been inserted or updated externally
 		foreach ( $this->_import_db_entries['Occurrences'] as $new_occurrence ) {
 			if ( in_array($new_occurrence['Order'], $new_order_numbers_with_old_order_number) ) {
+				// echo $new_occurrence['Order'] . " in " . $new_order_numbers_with_old_order_number[$new_occurrence['Order']];
 				// Occurrence is EXISTING: It has not been changed in the Text
 				$old_order_nr = $mappings_new_order_old_order[ $new_occurrence['Order'] ];
 				$old_occurrence_id = $mappings_old_order_occ_id[ $old_order_nr ];
 				$new_occurrence['OccurrenceID'] = $old_occurrence_id; // i.e., the Occurrence ID will be preserved for Occurrences that have not been changed externally
-				#echo "Existing: OccurrenceID: $old_occurrence_id, Order: $old_order_nr -> " . $new_occurrence['Order'] . "\n<br/>";
+
 				// insert existing tokens
 				$dao->insert($new_occurrence);
 			} else {
@@ -328,73 +334,17 @@ class XMLTextParser
 		}
 		// insert new tokens
 		$new_occurrence_ids = $dao->insertRowsAtLowestPossibleID('OccurrenceID', $new_occurrences);
-		
+
 		// get an updated mapping of new_order_nr -> new_occ_id
 		$rows = $dao->get( array( 'TextID' => $this->_created_text_entity->getID() ) );
 		$mappings_new_order_new_occ_id = array();
 		foreach ($rows as $row) {
 			$mappings_new_order_new_occ_id[ $row['Order'] ] = $row['OccurrenceID'];
-		}		
-		
-		// create the morph dao (override Occurrence object for performance reasons)
-		// get all morphological categories that are available in the system (DB)
-		$dao_assignment = new Table('OCCURRENCE_MORPHVALUE');
-		$dao_cat = new Table('MORPHCATEGORY');
-		$rows = $dao_cat->query('select XMLTagName as cat, Value as val, MorphvalueID from MORPHVALUE as v join MORPHCATEGORY as c on v.MorphcategoryID=c.MorphcategoryID'); // gets all valid combinations of morphological attributes
-		$valid_combinations = array();
-		foreach ($rows as $row) {
-			if ( ! array_key_exists($row['cat'], $valid_combinations) ) {
-				$valid_combinations[ $row['cat'] ] = array();
-			}
-			$valid_combinations[ $row['cat'] ][$row['val']] = $row['MorphvalueID'];
 		}
 		
-		// add annotations to the occurrences
-		foreach ($this->_import_db_entries['Annotations'] as $annotation) {
-			// get the relevant occurrence id
-			$occurrence_id = $mappings_new_order_new_occ_id[ $annotation['Order'] ];
-			$lemma_like_object = $annotation['Lemma_like_object'];
-			$morph = $annotation['Morph'];
-			// write MORPH annotations
-			foreach ($morph as $morph_cat => $morph_val) {
-				// check if $category is valid (= an existing morphological category) according to the DB
-				if ( array_key_exists($morph_cat, $valid_combinations) ) {
-					// check if $value is valid for $category
-					if ( array_key_exists($morph_val, $valid_combinations[$morph_cat]) ) {
-						// write the entry
-						$dao_assignment->insert( array( 'OccurrenceID' => $occurrence_id, 'MorphvalueID' => $valid_combinations[$morph_cat][$morph_val] ) );
-					} else {
-						die("ERROR: $morph_val is not a valid value for the morphological category '$morph_cat'."); #TODO
-					}
-				} else {
-					die("ERROR: $morph_cat is no valid morphological category."); #TODO
-				}
-			}
-			print_r($lemma_like_object);
-			// write LEMMA annotations
-			if ( array_key_exists('identifier', $lemma_like_object) ) {
-				// check for completeness
-				if ( ! array_key_exists('concept', $lemma_like_object) ) {
-					// assume 'c' if no concept is given
-					$lemma_like_object['concept'] = 'c';
-				}
-				// create or load the lemma
-				$lemma = new Lemma( $lemma_like_object['identifier'], $lemma_like_object['concept'] );
-				// assign the new occurrence to the lemma
-				$lemma->assignOccurrenceID( $occurrence_id );
-				// set lemma_pos and lemma_gen (morphology for lemma)
-				if ( array_key_exists('lemma_pos', $lemma_like_object) ) {
-					$lemma->setMorphAttribute( 'lemma_pos', $lemma_like_object['lemma_pos'] );
-				}
-				if ( array_key_exists('lemma_gen', $lemma_like_object) ) {
-					$lemma->setMorphAttribute( 'lemma_gen', $lemma_like_object['lemma_gen'] );
-				} else {
-					$lemma->removeMorphAttribute('lemma_gen');
-				}
-			}
-		}
-		
-		// 6: Re-link annotations that were not exportet to the XML (right now, this is just GRAPHGROUP)
+		// 5: Re-link annotations that were not exported to the XML (new: all except "n" and "type")
+		$dao_occ = new Table('OCCURRENCE');
+		// Graphgroup
 		$mappings_new_order_graphgroup = array();
 		foreach ($mappings_order_graphgroup as $old_order => $graphgroup) {
 			if ($this->_import_token_order_mappings[$old_order]) {
@@ -403,26 +353,91 @@ class XMLTextParser
 		}
 		if (count($mappings_new_order_graphgroup) > 0 ) {
 			// get the OccurrenceIDs that are associated with the new OrderIDs
-			$dao_occ = new Table('OCCURRENCE');
 			$rows = $dao_occ->query( "select OccurrenceID, `Order` from OCCURRENCE where `Order` in (" . expandArray( array_keys($mappings_new_order_graphgroup), ',' ) . ") and TextID=" . $this->_created_text_entity->getID() );
-			$mappings_new_order_new_occ_id = array();
+			$mappings_new_order_new_occ_id_graphgroup = array();
 			foreach ($rows as $row) {
-				$mappings_new_order_new_occ_id[ $row['Order'] ] = $row['OccurrenceID'];
+				$mappings_new_order_new_occ_id_graphgroup[ $row['Order'] ] = $row['OccurrenceID'];
 			}
-			unset($dao_occ);
 			// insert
 			$dao = new Table('GRAPHGROUP_OCCURRENCE');
 			foreach ($mappings_new_order_graphgroup as $new_order => $graphgroup_id) {
-				$dao->insert( array( 'OccurrenceID' => $mappings_new_order_new_occ_id[ $new_order ], 'GraphgroupID' => $graphgroup_id) );
+				$dao->insert( array( 'OccurrenceID' => $mappings_new_order_new_occ_id_graphgroup[ $new_order ], 'GraphgroupID' => $graphgroup_id) );
 			}
 			unset($dao);
 		}
 		
-		echo $this->_output_xml->saveXML();
+		// Lemma
+		$mappings_new_order_lemma = array();
+		foreach ($mappings_order_lemma as $old_order => $lemma) {
+			if ($this->_import_token_order_mappings[$old_order]) {
+				$mappings_new_order_lemma[ $this->_import_token_order_mappings[$old_order] ] = $lemma;
+			}
+		}
+		if (count($mappings_new_order_lemma) > 0 ) {
+			// get the OccurrenceIDs that are associated with the new OrderIDs
+			$rows = $dao_occ->query( "select OccurrenceID, `Order` from OCCURRENCE where `Order` in (" . expandArray( array_keys($mappings_new_order_lemma), ',' ) . ") and TextID=" . $this->_created_text_entity->getID() );
+			$mappings_new_order_new_occ_id_lemma = array();
+			foreach ($rows as $row) {
+				$mappings_new_order_new_occ_id_lemma[ $row['Order'] ] = $row['OccurrenceID'];
+			}
+			// insert
+			$dao = new Table('LEMMA_OCCURRENCE');
+			foreach ($mappings_new_order_lemma as $new_order => $lemma_id) {
+				$dao->insert( array( 'OccurrenceID' => $mappings_new_order_new_occ_id[ $new_order ], 'LemmaID' => $lemma_id) );
+			}
+			unset($dao);
+		}
 		
+		// Morphvalues
+		$mappings_new_order_morphvalue = array();
+		foreach ($mappings_order_morphvalue as $old_order => $morphvalue) {
+			if ($this->_import_token_order_mappings[$old_order]) {
+				$mappings_new_order_morphvalue[ $this->_import_token_order_mappings[$old_order] ] = $morphvalue;
+			}
+		}
+		if (count($mappings_new_order_morphvalue) > 0 ) {
+			// get the OccurrenceIDs that are associated with the new OrderIDs
+			$rows = $dao_occ->query( "select OccurrenceID, `Order` from OCCURRENCE where `Order` in (" . expandArray( array_keys($mappings_new_order_morphvalue), ',' ) . ") and TextID=" . $this->_created_text_entity->getID() );
+			$mappings_new_order_new_occ_id_morphvalue = array();
+			foreach ($rows as $row) {
+				$mappings_new_order_new_occ_id_morphvalue[ $row['Order'] ] = $row['OccurrenceID'];
+			}
+			// insert
+			$dao = new Table('OCCURRENCE_MORPHVALUE');
+			foreach ($mappings_new_order_morphvalue as $new_order => $morphvalue_id) {
+				$dao->insert( array( 'OccurrenceID' => $mappings_new_order_new_occ_id_morphvalue[ $new_order ], 'MorphvalueID' => $morphvalue_id) );
+			}
+			unset($dao);
+		}
+
+		// Textsection
+		$mappings_new_order_textsection = array();
+		foreach ($mappings_order_textsection as $old_order => $textsection) {
+			if ($this->_import_token_order_mappings[$old_order]) {
+				$mappings_new_order_textsection[ $this->_import_token_order_mappings[$old_order] ] = $textsection;
+			}
+		}
+		if (count($mappings_new_order_textsection) > 0 ) {
+			// get the OccurrenceIDs that are associated with the new OrderIDs
+			$rows = $dao_occ->query( "select OccurrenceID, `Order` from OCCURRENCE where `Order` in (" . expandArray( array_keys($mappings_new_order_textsection), ',' ) . ") and TextID=" . $this->_created_text_entity->getID() );
+			$mappings_new_order_new_occ_id_textsection = array();
+			foreach ($rows as $row) {
+				$mappings_new_order_new_occ_id_textsection[ $row['Order'] ] = $row['OccurrenceID'];
+			}
+			// insert
+			$dao = new Table('OCCURRENCE_TEXTSECTION');
+			foreach ($mappings_new_order_textsection as $new_order => $textsection_id) {
+				$dao->insert( array( 'OccurrenceID' => $mappings_new_order_new_occ_id_textsection[ $new_order ], 'TextsectionID' => $textsection_id) );
+			}
+			unset($dao);
+		}
+
+		unset($dao_occ);
+		// echo $this->_output_xml->saveXML();
+
 		// write xml in STORAGE format to filesystem
 		return $this->_write_output_xml_to_file();
-		
+
 	} //import
 	
 	//+ 
@@ -520,7 +535,7 @@ class XMLTextParser
 	//+ 
 	protected function _parse_loop ( $input_node , $root )
 	/*/
-	Iterates over each node of the DOMDocument-representation of the input xml (converted by 
+	Iterates over each node of the DOMDocument-representation of the input xml (converted by
 	_prepare_xml_input) and passes it to the respective parser.
 	---
 	@param input_node: the DOMDocument-representation of the input node to parse
@@ -530,9 +545,6 @@ class XMLTextParser
 	/*/
 	{
 		foreach ($input_node->childNodes as $child) {
-			
-			echo "PARSING $child->nodeName<br/><br/>\n\n";
-			
 			// compose parser name
 			$parser_name = $this->_parse_function_prefix . $child->nodeName;
 			// try to call a parser associated with the node's name
@@ -545,7 +557,7 @@ class XMLTextParser
 				$root->appendChild($this->_default_parse($child));
 			}
 		}
-		
+
 	} //_parse_loop
 	
 	//+ 
@@ -898,17 +910,17 @@ class XMLTextParser
 				$right_bracket = ']';
 			}
 		}
-		
+
 		$input_node->nodeValue = $left_bracket . $token_surface . $right_bracket;
 		$occ_surface = $left_bracket . $occ_surface . $right_bracket;
 		#echo($input_node->nodeValue ."<br/>\n");
-		
+
 		// ENTITY: create Occurrence
 		$occ_order = $this->_getNextTokenOrderNumber();
 		$occ_surface = trim($occ_surface); // so trailing whitespaces and linebreaks are deleted
 		$occ_type = $input_node->getAttribute('type');
 		$token_id = checkAddToken($occ_surface, $occ_type, $this->_cached_dao_TOKEN, $this->_cached_dao_TOKENTYPE);
-		
+
 		if ($this->_mode == 'update') {
 			$annotations = array();
 			$annotations['Order'] = $occ_order;
@@ -925,27 +937,6 @@ class XMLTextParser
 						$old_occ_order = $input_node->attributes->item($i)->nodeValue;
 						$this->_import_token_order_mappings[$old_occ_order] = $occ_order;
 						break;
-					// lemma
-					case 'lemma':
-						$annotations['Lemma_like_object']['identifier'] = $input_node->attributes->item($i)->nodeValue;
-						$input_node->removeAttributeNode($input_node->attributes->item($i)); // delete the attribute (conversion to STORAGE format)
-						break;
-					case 'lemma_pos':
-					// lemma Part-of-Speech
-						$annotations['Lemma_like_object']['lemma_pos'] = $input_node->attributes->item($i)->nodeValue;
-						$input_node->removeAttributeNode($input_node->attributes->item($i)); // delete the attribute (conversion to STORAGE format)
-						break;
-					case 'lemma_gen':
-					// lemma Genus
-						$annotations['Lemma_like_object']['lemma_gen'] = $input_node->attributes->item($i)->nodeValue;
-						$input_node->removeAttributeNode($input_node->attributes->item($i)); // delete the attribute (conversion to STORAGE format)
-						break;
-					// concept
-					case 'concept':
-						$annotations['Lemma_like_object']['concept'] = $input_node->attributes->item($i)->nodeValue;
-						$input_node->removeAttributeNode($input_node->attributes->item($i)); // delete the attribute (conversion to STORAGE format)
-						break;
-					// type (skip)
 					case 'type':
 						break;
 					// morphology (all other attributes)
@@ -956,15 +947,15 @@ class XMLTextParser
 				}
 			}
 			$this->_import_db_entries['Annotations'][] = $annotations;
-		
+
 		} else {
 			// write to db
 			$occ = new Occurrence($token_id, $this->_created_text_entity->getID(), $occ_order, $this->__div, NULL, $this->__sectionIDs);
 		}
-		
+
 		// XML: copy <token> and adjust its attributes
 		$new_token_node = $this->_copy_node($input_node, TRUE);
-		
+
 		// XMLSchemaMigration: Save old word number(s) in Migration Table for Occurrences (mig_OCCURRENCE)
 		if ($new_token_node->getAttribute('oldn')) {
 			// if the token has an old word number parameter, add all of its parts to the translation table
@@ -974,15 +965,15 @@ class XMLTextParser
 			}
 			$new_token_node->removeAttribute('oldn');
 		}
-		
+
 		// the new Occurrence order number inside the document
 		$new_token_node->setAttribute('n', $occ_order);
-		
+
 		return $new_token_node;
-		
+
 	} //_parse_token
-	
-	//+ 
+
+	//+
 	protected function _parse_fue ( $input_node )
 	/*/
 	parser for fue-tag. The comment will be appended to the Occurrence proceeding it.
@@ -1001,18 +992,18 @@ class XMLTextParser
 			$occ->setComment($input_node->textContent);
 		}
 		*/
-		
+
 		// XML: copy <fue>
 		$new_root = $this->_copy_node($input_node, FALSE);
 		// recur with the children of $input_node
 		$this->_parse_loop($input_node, $new_root);
-		
+
 		return $new_root;
 	} //_parse_fue
-	
+
 	// PRIVATE FUNCTIONS
 	// -----------------
-	
+
 }
 
 ?>

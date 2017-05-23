@@ -783,24 +783,6 @@ class Text
 	@rtype:  DOMDocument
 	/*/
 	{
-		
-		// first, re-sort the _getCheckoutAnnotation output by token order number
-		$annotations = $this->_getCheckoutAnnotations();
-		$ordered_annotations = array();
-		$annotation_categories = array_keys($annotations);
-		// all annotations for token 13 will be accessible as $ordered_annotations[13]
-		// e.g., the lemma value can be accessed as $ordered_annotations[13]['lemma']
-		foreach( $annotation_categories as $annotation_category ) {
-			foreach( $annotations[$annotation_category] as $order => $value ) {
-				// create sub-array for each order number
-				if( ! array_key_exists($order, $ordered_annotations) ) {
-					$ordered_annotations[$order] = array();
-				}
-				$ordered_annotations[$order][$annotation_category] = $value;
-			}
-		}
-		
-		// get the DOM representation of this text
 		$dom = $this->getXML($as_DOM=TRUE);
 		
 		// remove the STORAGE namespace
@@ -811,24 +793,9 @@ class Text
 		// reload the document without namespace
 		$dom = new DOMDocument();
 		$dom->loadXML($xml_string_without_namespace);
-		$xpath = new DOMXPath($dom);
 		
 		// set the new namespace
 		$dom->documentElement->setAttribute('xmlns', PH2_URI_EDIT);
-		
-		// register a temporary namespace for xpath
-		$rootNamespace = $dom->lookupNamespaceUri($dom->namespaceURI);
-		$xpath->registerNamespace('ph2', $rootNamespace);
-		
-		// iterate over all tokens that need to be enriched with an annotation
-		foreach ($ordered_annotations as $order => $annotations) {
-			$xpath_results = $xpath->query("//token[@n='$order']");
-			$token_node = $xpath_results->item(0);
-			// add annotations
-			foreach ($annotations as $attribute_name => $attribute_value) {
-				$token_node->setAttribute($attribute_name, $attribute_value);
-			}
-		}
 		
 		#NOTE: Ensure <?xml version="1.0" encoding="UTF-8"... header to prevent UTF8 characters from being encoded as entities
 		#NOTE: This representation does not validate against the EDIT XSD yet as the checkoud_id-attribute of the root element is missing. It will be added when checking out a text via $this->checkout().
