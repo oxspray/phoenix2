@@ -149,7 +149,7 @@ var PH2Component = {
 				rd0Long = rd0;
 				rd0Short = rd0;
 			}
-			occ_matches_meta.append('<tr' + status + '> <td><input type="checkbox" class="occ_selection" name="selected_occ[]" id="checkbox-' + occurrenceID + '" /></td> <td class="txtZitf widest"><a href="#">' + txtZitf + '</a></td> <td class="d0 wider"><a class="tooltipp" href="#">' + d0 + '</a></td> <td class="rd0 widest"> <a class="tooltipp" href="#" title="' + rd0Long + '">' + rd0Short + '</a></td> <td class="divID">' + divID + '</td> </tr>');
+			occ_matches_meta.append('<tr' + status + '> <td><input type="checkbox" class="occ_selection" name="selected_occ[]" id="checkbox-' + occurrenceID + '" /></td> <td class="txtZitf maxwidth"><a href="#">' + txtZitf + '</a></td> <td class="d0 wider"><a class="tooltipp" href="#">' + d0 + '</a></td> <td class="rd0 wider"> <a class="tooltipp" href="#" title="' + rd0Long + '">' + rd0Short + '</a></td> <td class="divID">' + divID + '</td> </tr>');
 		}
 		// add an occurrence-context-line
 		var addOccLine = function(occurrenceID, occurrenceSurface, leftContext, rightContext, pending) {
@@ -196,7 +196,7 @@ var PH2Component = {
 					var current_meta_line = occ_matches_meta.find('input#checkbox-' + occurrence_id).parent().parent();
 					current_meta_line.children('td.corpusID').html(meta.corpusID);
 					current_meta_line.find('td.txtZitf a')
-						.html(meta.zitfShort)
+						.html(meta.zitfFull)
 						.attr('href', _view_text_url + meta.textID + '&occ_order_number=' + meta.order)
 						.attr('title',"Click to view " + meta.zitfFull)
 						.attr('rel', _view_text_rel)

@@ -87,8 +87,8 @@ Define grapheme variants (groups) and assign occurrences.
                     <thead>
                       <tr>
 						<td><input type="checkbox" class="select_all" rel="occ_selection" name=""/></td>
-  						<th class="widest"><a href="#" class="sort" id="sort_by_text" title="Click to sort results by CiteID (zitf.)">CiteID</a></th>
-  						<th><a href="#" class="sort" id="sort_by_d0" title="Click to sort results by date <d0>.">Date</a></th>
+						<th class="maxwidth"><a href="#" class="sort" id="sort_by_text" title="Click to sort results by CiteID (zitf.)">CiteID</a></th>
+  						<th class="wider"><a href="#" class="sort" id="sort_by_d0" title="Click to sort results by date <d0>.">Date</a></th>
   						<th class="widest"><a href="#" class="sort" id="sort_by_rd0" title="Click to sort results by editor <rd0>.">Red.</a></th>
   						<th><a href="#" class="tooltipp" title="Involved text division.">Div</a></th>
   						<th class="padded">Context</th>
