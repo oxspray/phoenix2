@@ -342,9 +342,12 @@ function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
 	$chunkRange = _getChunkRange($chunk, CHUNK_SIZE, count($occurrenceIds));
 	$occurrences = array();
 
+	// TODO: speed up by using 'select limit' instead of selecting each occurrenceId separately
 	for ($i = $chunkRange[0]; $i <= $chunkRange[1]; ++$i) {
 		$occurrenceId = $occurrenceIds[$i];
-		$occurrences[] = _getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceId, $withContext)[0];
+        $occ = _getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceId, $withContext)[0];
+        if($occ!=null)
+            $occurrences[] = $occ;
 	}
 	return $occurrences;
 
