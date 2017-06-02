@@ -54,15 +54,31 @@ if ($ps->getNickname() == 'guest') {
 		// bind clear results button
 		$('#clear_button').click( function() {
 			searchController.clear_results();
+			cleanEmptyTokens();
 		});
-		
+
 		// bind custom tab for types/lemmata browser
 		$('.tablink_custom').click( function() {
 			$('.tab_custom').hide();
 			var target = '#' + $(this).attr('rel')
 			$(target).fadeIn();
 		});
-		
+
+		function cleanEmptyTokens () {
+			$.ajax({
+				url: 'actions/php/ajax.php?action=cleanEmptyTokens',
+				type: 'POST',
+				dataType: 'json',
+				data: {},
+				success: function(data) {
+				},
+				error: function(data) {
+					alert('error: ' + JSON.stringify(data));
+				},
+				async: false
+			});
+		}
+
 	});
 </script>
 <div id="mod_top">
