@@ -122,6 +122,30 @@ function getLemmata ($get, $post) { global $ps;
 
 }
 
+function cleanEmptyLemmata ($get, $post) { global $ps;
+/* removes all 'empty' lemmata form the database i.e. all lemmata without any occurences assigned to them */
+
+	// retrieve lemmata, which mustn't be deleted
+	$dao = new Table('LEMMA_OCCURRENCE');
+	$dao->select = 'distinct(LemmaID)';
+	$filled_lemma_ids = array();
+	foreach ($dao->get() as $row) {
+		$filled_lemma_ids[] = $row['LemmaID'];
+	}
+
+	// get lemmata, which must be deleted (i.e. are 'empty')
+	$dao = new Table('LEMMA');
+	$dao->select = 'distinct(LemmaID)';
+	$empty_lemma_ids = array();
+	foreach ($dao->get() as $row) {
+		// if LemmaID is empty i.e. not in in LEMMA_OCCURRENCE Table
+		if ( !in_array($row['LemmaID'], $filled_lemma_ids) ) {
+			$dao->delete( array('LemmaID' => $row['LemmaID']) );
+		}
+	}
+
+}
+
 function updateGraphgroupSelectionWithID ($get, $post) { global $ps;
 	/* returns a dropdown-selection (string, html) containing all graphgroups with the given graphID */
 

@@ -18,6 +18,7 @@ var LemmaTab = {
 		// define targets
 		var existing_lemma_ok_button = $('#ok_button_existing');
 		var existing_lemma_cancel_button = $('#cancel_button_existing');
+		var existing_lemma_clean_button = $('#clean_button_empty_lemmata');
 		var existing_lemma_selector = $('#lemma_id');
 		existing_lemma_selector.combobox(); // convert to combobox
 		var existing_lemma_selector_input = $('#lemma_id-input');
@@ -54,6 +55,15 @@ var LemmaTab = {
 			}
 		});
 		
+		existing_lemma_clean_button.click( function(e) {
+			e.preventDefault();
+			// clean DB from 'empty' Lemmata i.e. Lemmata, which have no Occurrence assigned to them.
+			if (confirm("You're about to delete all Lemmata, which have no assigned Occurrences. This action is irreversible. All 'empty' Lemmata will be deleted.")) {
+				// clean the DB from empty Lemmata
+				cleanEmptyLemmata();
+			}
+		});
+
 		new_lemma_ok_button.click( function(e) {
 			e.preventDefault();
 			// check if at least one occurrence has been selected
@@ -189,6 +199,22 @@ var LemmaTab = {
 			return count;
 		}
 		
+		function cleanEmptyLemmata () {
+			$.ajax({
+				url: 'actions/php/ajax.php?action=cleanEmptyLemmata',
+				type: 'POST',
+				dataType: 'json',
+				data: {},
+				success: function(data) {
+					pushNotification(1, 'Lemma cleanup successful: All empty Lemmata were removed from the database.');
+				},
+				error: function(data) {
+					alert('error: ' + JSON.stringify(data));
+				},
+				async: false
+			});
+		}
+
 		function existingLemmaSelectionIsValid () {
 			// checks if the text-content of the dropdown box for existing lemmata is properly synchronized with the underlying set of options
 			// and is not empty
@@ -222,6 +248,8 @@ var LemmaTab = {
                     <br/><br/>
                     <input type="button" id="ok_button_existing" class="button" value="Assign Existing Lemma" name="assign" />
                 	<input type="button" id="cancel_button_existing" class="button" value="Cancel" name="cancel" />
+					<br/><br/>
+					<input type="button" id="clean_button_empty_lemmata" class="button" value="Clean Empty Lemmata" name="clean" />
                 </fieldset>
             
               </div>
