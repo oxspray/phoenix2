@@ -115,13 +115,13 @@ Define grapheme variants (groups) and assign occurrences.
         <div class="modulebox GroupSelector Graphvariants" id="groupselector1">
             <div class="title">Variants</div>
             <div class="title_extension">
-            	<a href="#" class="tablink" rel="tab1" id="add_variant_tab_button" title="Add variant">Add</a>
-                <a href="#" class="tablink" rel="tab2" id="delete_variant_tab_button" title="Delete selected variant">Delete</a>
+            	<a href="#" class="tablink" rel="tab3" id="add_variant_tab_button" title="Add variant">Add</a>
+                <a href="#" class="tablink" rel="tab4" id="delete_variant_tab_button" title="Delete selected variant">Delete</a>
             </div>
             <div class="body">
 
             <!-- tabs -->
-            	<div id="tab1" class="tab hidden">
+            	<div id="tab3" class="tab hidden">
                 	<form id="add_variant_form">
                         <fieldset>
                             <label class="inline" for="f1">Bezeichnung:</label>
@@ -134,7 +134,7 @@ Define grapheme variants (groups) and assign occurrences.
                         </fieldset>
                     </form>
                 </div>
-                <div id="tab2" class="tab hidden">
+                <div id="tab4" class="tab hidden">
                 	<p>By confirming this operation, the variant <span id="active_variant_name" class="bold"></span> will be deleted. This operation is not reversible. Note that all occurrences that are currently assigned to this variant will be removed from the Grapheme. To avoid this, please re-assign the occurrences to another variant beforehand.</p>
                 	<form id="delete_variant_form">
                         <br />
