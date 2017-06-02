@@ -149,7 +149,7 @@ function cleanEmptyLemmata ($get, $post) { global $ps;
 function cleanEmptyTokens ($get, $post) { global $ps;
 /* removes all 'empty' tokens from the database i.e. all Tokens without any occurences assigned to them */
 
-	// retrieve tokens, which mustn't be deleted
+	// delete Tokens, which aren't mentioned in OCCURRENCE
 	$dao = new Table('TOKEN');
 	$dao->select = 'TokenID';
 	$dao->where = "TokenID not in (SELECT TokenID from OCCURRENCE)";
