@@ -169,6 +169,11 @@ function html_filter_skeleton ( $id, $name, $checkboxes_html = '' ) {
 		}
 		
 		function remove_checkboxes (id) {
+			checkboxes = $('#' + id).find('.value_checkbox');
+			$.each(checkboxes, function() {
+				filter = $(this).attr('name');
+				$.getJSON('actions/php/ajax.php?action=RemoveFilter&filter=' + filter, function() {});
+			});
 			$('#' + id).find('.checkboxes').html('');
 		}
 		
