@@ -125,23 +125,22 @@ function getLemmata ($get, $post) { global $ps;
 function cleanEmptyLemmata ($get, $post) { global $ps;
 /* removes all 'empty' lemmata form the database i.e. all lemmata without any occurences assigned to them */
 
-	// retrieve lemmata, which mustn't be deleted
-	$dao = new Table('LEMMA_OCCURRENCE');
-	$dao->select = 'distinct(LemmaID)';
-	$filled_lemma_ids = array();
+	/* delete all LEMMA entries without any Occurrence assigned to them */
+	$dao = new Table('LEMMA');
+	$dao->select = 'LemmaID';
+	$dao->where = "LemmaID not in (SELECT LemmaID from LEMMA_OCCURRENCE)";
 	foreach ($dao->get() as $row) {
-		$filled_lemma_ids[] = $row['LemmaID'];
+		$dao->delete( array('LemmaID' => $row['LemmaID']) );
 	}
 
-	// get lemmata, which must be deleted (i.e. are 'empty')
-	$dao = new Table('LEMMA');
-	$dao->select = 'distinct(LemmaID)';
-	$empty_lemma_ids = array();
+	/* do the counter-operation as well:
+	delete all LEMMA_OCCURRENCE entries with invalid LemmaIDs
+	(i.e. Lemmata which don't exist anymore) */
+	$dao = new Table('LEMMA_OCCURRENCE');
+	$dao->select = 'LemmaID';
+	$dao->where = "LemmaID not in (SELECT LemmaID from LEMMA)";
 	foreach ($dao->get() as $row) {
-		// if LemmaID is empty i.e. not in in LEMMA_OCCURRENCE Table
-		if ( !in_array($row['LemmaID'], $filled_lemma_ids) ) {
-			$dao->delete( array('LemmaID' => $row['LemmaID']) );
-		}
+		$dao->delete( array('LemmaID' => $row['LemmaID']) );
 	}
 
 }
