@@ -35,7 +35,7 @@ class XMLTextTokenizer
 	{
 		//definitions
 		$this->INTERPUNCTUATION_CHARS = array( '.', ',', ':', ';', '|', '?' );
-		$this->IN_TOKEN_TAGS = array ( "maj", "abr", "zwt", "sup" );
+		$this->IN_TOKEN_TAGS = array ( "cif", "maj", "abr", "zwt", "sup" );
 		$this->OFF_STREAM_MARKERS = array ( "fue", "ful" );
 		$this->INTER_WORD_SEPARATOR_CHARS = array ( '-', '\'' );
 		$this->REPLACEMENTS = array ( "<rest>\s*" => '[', "\s*<\/rest>" => ']' );

@@ -253,7 +253,22 @@ $(document).ready( function() {
 					$dao->from = "TEXT as t 
 					join (select TextID, Value as d0 from DESCRIPTOR natural join TEXT_DESCRIPTOR where XMLTagName='d0') as d on t.TextID=d.TextID
 					join (select TextID, Value as rd0 from DESCRIPTOR natural join TEXT_DESCRIPTOR where XMLTagName='rd0') as r on t.TextID=r.TextID";
-					$dao->orderby = "t.Order, CAST(SUBSTRING(t.CiteID,LOCATE(' ',t.CiteID)+1) AS SIGNED) ASC";
+					// $dao->orderby = "t.Order, CAST(SUBSTRING(t.CiteID,LOCATE(' ',t.CiteID)+1) AS SIGNED) ASC";
+					// depending on the order, choose the ordering. (if 'o' is given)
+					// 1 = CiteID; 2 = Date; 3 = Editor
+					if (isset($_REQUEST['o'])) {
+						 $o = $_REQUEST['o'];
+						 if ($o == 2) {
+							 $dao->orderby = "d.d0 ASC";
+						 } elseif ($o == 3) {
+							 $dao->orderby = "r.rd0 ASC";
+						 } else {
+							 $dao->orderby = "CiteID ASC";
+						 }
+					 // in case no order is set
+					 } else {
+						 $dao->orderby = "CiteID ASC";
+					 }
 					$results = $dao->get( array('CorpusID' => $corpus->getID()) );
 					
 					// get the IDs of all Texts which are currently checked out
@@ -291,7 +306,7 @@ $(document).ready( function() {
 						$id = $a_start . $row['CiteID'] . $a_end;
 						$d0 = $a_start . $row['d0'] . $a_end;
 						$rd0 = $a_start . $row['rd0'] . $a_end;
-						$results_with_links[] = array('ID' => $row['TextID'], 'Ord.' => '<div style="width:60px;"><input name="order-number-text-'.$row['TextID'].'" class="hybrid textordernumber left" value="'.$order_nr.'" tabindex="'.$tabindex.'" /><a class="icon ok inline right" style="display:none"  title="saved">&nbsp;</a></div>', 'Actions' => $actions, 'CiteID' => $id, 'Date' => $d0, 'Editor' => $rd0);
+						$results_with_links[] = array('ID' => $row['TextID'], 'Actions' => $actions, 'CiteID' => $id, 'Date' => $d0, 'Editor' => $rd0);
 						$tabindex++;
 					}
 					// print the html

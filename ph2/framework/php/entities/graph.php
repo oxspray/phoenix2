@@ -128,7 +128,7 @@ class Graph
 	@rtype:  bool
 	/*/
 	{
-		assert(endsWith($number, '.'));
+		// assert(endsWith($number, '.'));
 		
 		// get all associated Graphgroups
 		$dao = new Table('GRAPHGROUP');

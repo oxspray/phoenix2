@@ -152,7 +152,9 @@ class XMLTextParser
 		$output_xml = html_entity_decode($this->_output_xml->saveXML(), ENT_NOQUOTES, 'UTF-8');
 		// ugly but true: ampersands have to be re-encoded
 		$output_xml = str_replace('&', '&amp;', $output_xml);
-		
+		// hack to get rid of <default: > tags
+		$output_xml = str_replace('<default:', '<', $output_xml);
+		$output_xml = str_replace('</default:', '</', $output_xml);
 		return $output_xml;
 		
 	} //getOutputXML

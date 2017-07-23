@@ -14,10 +14,14 @@
                         <xsd:element ref="fue"/>
                         <xsd:element ref="ful"/>
                         <xsd:element ref="maj"/>
+                        <xsd:element ref="cif"/>
                         <xsd:element ref="sup"/>
                         <xsd:element ref="lat"/>
                         <xsd:element ref="zw"/>
                         <xsd:element ref="zwt"/>
+                        <xsd:element ref="fol"/>
+                        <xsd:element ref="lin"/>
+                        <xsd:element ref="cap"/>
                     </xsd:choice>
                 </xsd:extension>
             </xsd:complexContent>
@@ -61,9 +65,12 @@
                             <xsd:element ref="cor"/>
                             <xsd:element ref="dat"/>
                             <xsd:element ref="vid"/>
+                            <xsd:element ref="tit"/>
                             <xsd:element name="div" type="divType" maxOccurs="unbounded"/>
                             <xsd:element maxOccurs="unbounded" ref="par"/>
                             <xsd:element ref="zw"/>
+                            <xsd:element ref="cap"/>
+                            <xsd:element ref="lat"/>
                         </xsd:choice>
                     </xsd:complexType>
                 </xsd:element>
@@ -129,6 +136,7 @@
             <xsd:enumeration value="lp"/>
             <xsd:enumeration value="cp"/>
             <xsd:enumeration value="cl"/>
+            <xsd:enumeration value="lat"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="posType">

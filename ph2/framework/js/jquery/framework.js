@@ -610,7 +610,7 @@ function validateFormFields (html_form_id) {
 	});
 	// fields with digits and points only
 	_form.find('.digits_and_points_only').each( function() {
-		var regex=/(\d+\.)+/g;
+		var regex=/(\d+\.?)+/g;
 		var matches = regex.exec($(this).val());
 		if (matches && matches[0] == $(this).val()) {
 			// all fine
