@@ -117,8 +117,43 @@ function getLemmata ($get, $post) { global $ps;
 	foreach ($rows as $row) {
 		$result[$row['ConceptID']][] = array($row['LemmaID'], $row['MainLemmaIdentifier'], $row['LemmaIdentifier']);
 	} // result: [ 1: [LemmaID, MainLemmaIdentifier, LemmaIdentifier], ..., 2: ..., n:, ... ]
-
 	echo json_encode($result);
+
+}
+
+function cleanEmptyLemmata ($get, $post) { global $ps;
+/* removes all 'empty' lemmata form the database i.e. all lemmata without any occurences assigned to them */
+
+	/* delete all LEMMA entries without any Occurrence assigned to them */
+	$dao = new Table('LEMMA');
+	$dao->select = 'LemmaID';
+	$dao->where = "LemmaID not in (SELECT LemmaID from LEMMA_OCCURRENCE)";
+	foreach ($dao->get() as $row) {
+		$dao->delete( array('LemmaID' => $row['LemmaID']) );
+	}
+
+	/* do the counter-operation as well:
+	delete all LEMMA_OCCURRENCE entries with invalid LemmaIDs
+	(i.e. Lemmata which don't exist anymore) */
+	$dao = new Table('LEMMA_OCCURRENCE');
+	$dao->select = 'LemmaID';
+	$dao->where = "LemmaID not in (SELECT LemmaID from LEMMA)";
+	foreach ($dao->get() as $row) {
+		$dao->delete( array('LemmaID' => $row['LemmaID']) );
+	}
+
+}
+
+function cleanEmptyTokens ($get, $post) { global $ps;
+/* removes all 'empty' tokens from the database i.e. all Tokens without any occurences assigned to them */
+
+	// delete Tokens, which aren't mentioned in OCCURRENCE
+	$dao = new Table('TOKEN');
+	$dao->select = 'TokenID';
+	$dao->where = "TokenID not in (SELECT TokenID from OCCURRENCE)";
+	foreach ($dao->get() as $row) {
+		$dao->delete( array('TokenID' => $row['TokenID']) );
+	}
 
 }
 
@@ -135,9 +170,28 @@ function updateGraphgroupSelectionWithID ($get, $post) { global $ps;
 		$name = $gg->getName();
 		$val = $gg->getNumber();
 		// concatenate the option line and add it to $opts
-		$opts .= '<option value="' . $val . '">' . $val . " (" . $name . ")" . '</option>';
+		$opts .= '<option value="' . $val . '" name="' . $name .'">' . $val . " (" . $name . ")" . '</option>';
+
 	}
+
 	echo json_encode($opts);
+
+}
+
+function getGraphgroupsWithID ($get, $post) { global $ps;
+	/* retrieves a list of all GraphgroupIDs of a given Grapheme from the database */
+	$id = $get['graphID']; 		// selected graphID
+	$id = (int)$id; 					//cast into int to ensure correct constructing of the Graph
+	$selected_graph = new Graph($id);
+	$graphgroups = $selected_graph->getGraphgroups();
+	$out = array();
+
+	foreach($graphgroups as $gg) {
+		$out[] = $gg->getID();
+	}
+
+	echo json_encode($out);
+
 }
 
 function getLemmatypes ($get, $post) { global $ps;
@@ -317,9 +371,8 @@ function sortOccurrences ($get, $post) {
 /* 	takes a list of Occurrences (OccurrenceIDs) and orders them by:
 		Corpus > Text > Surface > Order
 	returns the list of OccurrenceIDs in an order matching the above criteria. */
-
-	$field = $get['field'];
-	$occ_ids = $get['occurrenceIDs'];
+	$occ_ids = json_encode($post['occurrenceIDs']);
+	$field = $post['field'];
 	$sql_occ_ids_list = '(' . trim($occ_ids, "[]") . ')';
 
 	switch ($field) {
@@ -337,7 +390,7 @@ function sortOccurrences ($get, $post) {
 			$dao = new Table('OCCURRENCE');
 			$dao->select = "OccurrenceID";
 			$dao->from = "OCCURRENCE natural join TOKEN join TEXT on OCCURRENCE.TextID = TEXT.TextID join CORPUS on TEXT.CorpusID = CORPUS.CorpusID join TEXT_DESCRIPTOR on TEXT.TextID=TEXT_DESCRIPTOR.TextID join DESCRIPTOR on TEXT_DESCRIPTOR.DescriptorID=DESCRIPTOR.DescriptorID";
-			$dao->where = "OccurrenceID in $sql_occ_ids_list AND XMLTagName='" . $get['field'] . "'";
+			$dao->where = "OccurrenceID in $sql_occ_ids_list AND XMLTagName='" . $field . "'";
 			$dao->orderby = "TEXT_DESCRIPTOR.`Value` COLLATE utf8_roman_ci ASC, TOKEN.Surface COLLATE utf8_roman_ci, OCCURRENCE.`Order` ASC";
 		break;
 	}
@@ -415,22 +468,61 @@ function assignOccurrencesToGraphgroup ($get, $post) { global $ps;
 	$occurrence_ids = json_decode($post['occurrenceIDs']);
 	$graph_identifier = json_decode($post['graphIdentifier']);
 	$graphgroup_name = $post['graphgroupName'];
+	$overwrite = $post['relevantGraphgroups'];
 
-	assert($graphgroup_name);
-	assert($graphgroup_identfier);
 	assert($occurrence_ids);
-	assert($graph_id);
 
-	$graph = new Graph ( $graph_identifier );
+	$graph = new Graph ( (int)$graph_identifier );
 	// addGraphgroup creates an ID of the newly created Graphgroup (assigned to graphgroup_id)
-	$graphgroup_id = $graph->addGraphgroup($graphgroup_number, $graphgroup_name);
-
+	$graphgroup_id = $graph->addGraphgroup($graphgroup_number, $name=$graphgroup_name);
 	// add occurence IDs to Graphgroup (visible in table GRAPHGROUP_OCCURRENCE)
 	$graphgroup = new Graphgroup ( $graphgroup_id ); // access this newly created Graphgroup
-	$graphgroup->addOccurrence($occurrence_ids, TRUE); //2nd parameter: delete existing assignments first
-	// $graphgroup->setName($graphgroup_name);
+	if ($overwrite) {
+		$graphgroup->addOccurrence($occurrence_ids, FALSE, $overwrite); // 3rd parameter: overwrite existing graph-assignments first
+	} else {
+		$graphgroup->addOccurrence($occurrence_ids, FALSE); //2nd parameter: delete existing assignments first
+	}
 
 	echo json_encode($graphgroup_id);
+
+}
+
+function reassignOccurrencesToGraphgroup ($get, $post) { global $ps;
+/* reassigns a selection of occurrences to a graphgroup */
+
+	$new_graphgroup_number = json_decode($post['newGraphgroupNumber']);
+	$occurrence_ids = json_decode($post['occurrenceIDs']);
+	$active_graph_id = json_decode($post['activeGraphID']);
+	$new_graphgroup_id = null;
+
+	assert($occurrence_ids);
+
+	$dao = new Table('GRAPHGROUP');
+	$dao->select = "`GraphgroupID`";
+	$dao->where = "`GraphID` = " . $active_graph_id . " AND `Number` = " . $new_graphgroup_number ;
+	$rows = $dao->get();
+	$new_graphgroup_id = $rows[0]['GraphgroupID'];
+
+	if ($new_graphgroup_id) {
+		$dao = new Table('GRAPHGROUP_OCCURRENCE');
+		$dao->from = "`GRAPHGROUP_OCCURRENCE` natural join `GRAPHGROUP`";
+		$dao->where = "`OccurrenceID` in (" . expandArray($occurrence_ids, ',') . ") AND `GraphID` = " . $active_graph_id;
+		$rows = $dao->get();
+
+		foreach($rows as $row) {
+			$existing_graphgroup_id = $row['GraphgroupID'];
+			$occ_id = $row['OccurrenceID'];
+			if ($existing_graphgroup_id != $new_graphgroup_id) {
+				$dao = new Table('GRAPHGROUP_OCCURRENCE');
+				$dao->delete( array('OccurrenceID' => (int)$occ_id, 'GraphgroupID' => (int)$existing_graphgroup_id) );
+				$new_graphgroup = new Graphgroup( (int)$new_graphgroup_id );
+				$new_graphgroup->addOccurrence( (int)$occ_id, FALSE);
+			}
+		}
+		die(json_encode(array('message' => 'SUCCESS')));
+	} else {
+		die(json_encode(array('message' => 'ERROR')));
+	}
 }
 
 function checkNameValidity ($get, $post) { global $ps;
@@ -629,6 +721,31 @@ function getOccurrenceIDsByGrapheme ($get, $post) { global $ps;
 
 }
 
+function getSurfaceByOccurrenceID ($get, $post) { global $ps;
+/* removes a selection of Occurrences from a Graph */
+
+	// $occ_ids = json_decode($get['occurrenceIDs']);
+	$occ_id = $get["OccurrenceID"];
+	$occ_id = (int)$occ_id;
+
+	$occ = new Occurrence( $occ_id );
+	$surface = $occ->getSurface( );
+	echo json_encode($surface);
+
+}
+
+function getDivByOccurrenceID ($get, $post) { global $ps;
+/* removes a selection of Occurrences from a Graph */
+
+	$occ_id = $get["OccurrenceID"];
+	$occ_id = (int)$occ_id;
+
+	$occ = new Occurrence( $occ_id );
+	$div = $occ->getDiv( );
+	echo json_encode($div);
+
+}
+
 function getOccurrenceIDsByGraphgroup ($get, $post) { global $ps;
 /* returns all OccurrenceIDs assigned to a Graphgroup */
 
@@ -685,7 +802,7 @@ function getGraphgroupsFromGraphID ($get, $post) { global $ps;
 
 function deleteGraphgroup ($get, $post) { global $ps;
 /* deletes a graphgroup and removes all assigned occurrences from its parent graph */
-                                         
+
 	$graph_id = (int)$get['graphID'];
 	$graphgroup_id = (int)$get['graphgroupID'];
 	assert($graph_id);
@@ -1123,6 +1240,16 @@ function updateTextOrderNumber ($get, $post) { global $ps;
 
 }
 
+function isGuest  ($get, $post) { global $ps;
+/* returns TRUE if the user of this session is a guest; FALSE otherwise */
+
+	if ($ps->getNickname() == 'guest') {
+		echo json_encode(TRUE);
+	} else {
+		echo json_encode(FALSE);
+	}
+
+}
 
 
 /// SAVE MODIFIED SESSION

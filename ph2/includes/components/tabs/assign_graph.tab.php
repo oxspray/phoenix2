@@ -35,6 +35,7 @@ var GraphTab = {
 		// main buttons (assign & reset)
 		var reset_all_button = $('#reset_all_button');
 		var assign_button = $('#assign_button');
+		var hide_grouped_occurrences_button = $('#hide_grouped_occurrences_button');
 		var TEST_button = $('#TEST_button');
 
 		// "form elements" to build the components for the final assignment.
@@ -52,8 +53,17 @@ var GraphTab = {
 
 		TEST_button.click( function(e) {
 			e.preventDefault();
-			// console.log("chosen_graph_name_or_id:",chosen_graph_name_or_id, "chosen_descr:", chosen_descr, "chosen_graphgroup_number:", chosen_graphgroup_number, "chosen_graphgroup_name:", chosen_graphgroup_name);
-			addVariant('testvariant1');
+			console.log("chosen_graph_name_or_id:",chosen_graph_name_or_id, "chosen_descr:", chosen_descr, "chosen_graphgroup_number:", chosen_graphgroup_number, "chosen_graphgroup_name:", chosen_graphgroup_name);
+		});
+
+		hide_grouped_occurrences_button.click( function(e) {
+			e.preventDefault();
+			if (chosen_graph_name_or_id != null) {
+				// hide the Occurrences assigned to the selected Grapheme
+				occ_selection_box.hideGroup(chosen_graph_name_or_id);
+			} else {
+				alert("Please choose a Grapheme first, before you hide the assigned Occurrences (ALPHA NOTE: This is not reversible, you have to reload the page if you want the to reappear)");
+			}
 		});
 
 		reset_all_button.click( function(e) {
@@ -83,25 +93,34 @@ var GraphTab = {
 				chosen_graphgroup_number = new_graphgroup_number.val();
 			}
 
-			console.log("graph_name_id:", chosen_graph_name_or_id, "occ:", selected_occurrences, "descr:", chosen_descr, "gg_name:", chosen_graphgroup_name, "ggnum:", chosen_graphgroup_number);
-
 			// medieval validation process checking if every parameter has a value; alerts otherwise
 			if ( selected_occurrences != '[]' ) {
 				if ( chosen_graph_name_or_id != null ) {
 					if ( chosen_graphgroup_number != null ) {
 						if ( chosen_graphgroup_name != null ) {
-							var countAssignedOccurrences = countExistingGraphAssignments(selected_occurrences);
-							if ( countAssignedOccurrences > 0 ) {
-								// display warning if at least one occurrence is already assigned to a Grapheme
-								if ( confirm( countAssignedOccurrences + " of the selected Occurrences are already assigned to a Grapheme. Press OK to overwrite their assignments with the selected Grapheme.") ) {
-									created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
-									created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, selected_occurrences, created_graph_id);
-									console.log("cr_gr_id:", created_graph_id, "cr_gg_id:", created_graphgroup_id);
+							// get OccurrenceIDs assigned to this Grapheme
+							grapheme_occurrences = getOccurrenceIDsByGraphemeID(chosen_graph_name_or_id);
+							selected = JSON.parse(selected_occurrences);
+							relevant_graphgroups = null;
+							// check if any of the selected are already assigned to this Grapheme
+							for ( i = 0; i < selected.length; i++ ) {
+								occ = selected[i];
+								str_occ = occ;
+								occ = parseInt(occ);
+								if (grapheme_occurrences.includes(occ) ) {
+									surface = getSurfaceByOccurrenceID(occ);
+									div = getDivByOccurrenceID(occ);
+									// if there is an Occurrence already assigned, ask to overwrite existing Grapheme-assignment.
+									if ( confirm ("The Occurrence '" + surface + "' in div '" + div + "' has already been assigned to this Grapheme. Press 'OK' to overwrite existing assignment.")) {
+										// overwrite only the assignment of this Occurrence to this Graph. Assignments to other Graphs aren't affected by this procedure.
+										relevant_graphgroups = getGraphgroupsByGraphID(chosen_graph_name_or_id);
+										created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, str_occ, chosen_descr);
+										created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, str_occ, created_graph_id, relevant_graphgroups);
+									}
+								} else {
+									created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, str_occ, chosen_descr);
+									created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, str_occ, created_graph_id, relevant_graphgroups);
 								}
-							} else {
-								created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, selected_occurrences, chosen_descr);
-								created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, selected_occurrences, created_graph_id);
-								console.log("cr_gr_id:", created_graph_id, "cr_gg_id:", created_graphgroup_id);
 							}
 						} else {
 						 alert("You have not given a name of the graphgroup.")
@@ -158,7 +177,7 @@ var GraphTab = {
 		choose_existing_graphgroup_button.click( function(e) {
 			e.preventDefault();
 			chosen_graphgroup_number = existing_graphgroup_selector.val();
-			chosen_graphgroup_name = existing_graphgroup_selector.children('option:selected').text();
+			chosen_graphgroup_name = $('#graphgroup_selector option:selected').attr('name');
 			console.log(selectionIsValid(existing_graphgroup_selector));
 			console.log("num:", chosen_graphgroup_number, "name:", chosen_graphgroup_name)
 			$('#new_graphgroup_field').fadeOut();
@@ -261,19 +280,15 @@ var GraphTab = {
 			return exists;
 		}
 
-		function addOccurrencesToGraphgroup ( graphgroup_number, graphgroup_name, occurrence_ids, graph_identifier ) {
+		function addOccurrencesToGraphgroup ( graphgroup_number, graphgroup_name, occurrence_ids, graph_identifier, relevant_graphgroups ) {
 			// identifier is either a graphgroupID or a Number.
-			if ( graphgroup_number.endsWith('.') ) {
-				console.log("number ends with '.' -- ok");
-			}
 			var created_id = null;
 			$.ajax({
 				url: 'actions/php/ajax.php?action=assignOccurrencesToGraphgroup',
 				type: 'POST',
 				dataType: 'json',
-				data: {graphgroupNumber: graphgroup_number, graphgroupName: graphgroup_name, occurrenceIDs: occurrence_ids, graphIdentifier: graph_identifier},
+				data: {graphgroupNumber: graphgroup_number, graphgroupName: graphgroup_name, occurrenceIDs: occurrence_ids, graphIdentifier: graph_identifier, relevantGraphgroups:relevant_graphgroups},
 				success: function(data) {
-					console.log("graphgroup_number: ", graphgroup_number, "occ_ID: ", occurrence_ids, "graphID", graph_identifier);
 					created_id = data;
 					pushNotification(1, 'Assignment successful: ' + $.parseJSON(occurrence_ids).length + ' Occurrences assigned to Graphgroup «' + graphgroup_number + ' (' + graphgroup_name + ')»');
 					// occ_selection_box.markSelectedAsLemmatized(lemma_identifier);
@@ -324,6 +339,75 @@ var GraphTab = {
       });
 		}
 
+		function getGraphgroupsByGraphID (graphID ) {
+			var graphgroups = null;
+			$.ajax({
+		        url: 'actions/php/ajax.php?action=getGraphgroupsWithID&graphID=' + graphID,
+		        type: 'GET',
+		        dataType: 'json',
+		        success: function(data) {
+					graphgroups = data;
+		        },
+		        error: function(data) {
+		          alert('error: ' + JSON.stringify(data));
+		        },
+		        async: false
+		      });
+			 return graphgroups;
+		}
+
+		function getOccurrenceIDsByGraphemeID (graphID ) {
+			var occurrence_ids = null;
+			$.ajax({
+		        url: 'actions/php/ajax.php?action=getOccurrenceIDsByGrapheme&graphID=' + graphID,
+		        type: 'GET',
+		        dataType: 'json',
+		        success: function(data) {
+		          occurrence_ids = data;
+		          existing_graphgroup_selector.html(data);
+		        },
+		        error: function(data) {
+		          alert('error: ' + JSON.stringify(data));
+		        },
+		        async: false
+		      });
+			return occurrence_ids;
+		}
+
+		function getSurfaceByOccurrenceID ( occurrence_id ) {
+			var surface = null;
+			$.ajax({
+		        url: 'actions/php/ajax.php?action=getSurfaceByOccurrenceID&OccurrenceID=' + occurrence_id,
+		        type: 'GET',
+		        dataType: 'json',
+		        success: function(data) {
+		          surface = data;
+		        },
+		        error: function(data) {
+		          alert('error: ' + JSON.stringify(data));
+		        },
+		        async: false
+		      });
+			return surface;
+		}
+
+		function getDivByOccurrenceID ( occurrence_id ) {
+			var div = null;
+			$.ajax({
+		        url: 'actions/php/ajax.php?action=getDivByOccurrenceID&OccurrenceID=' + occurrence_id,
+		        type: 'GET',
+		        dataType: 'json',
+		        success: function(data) {
+		          div = data;
+		        },
+		        error: function(data) {
+		          alert('error: ' + JSON.stringify(data));
+		        },
+		        async: false
+		      });
+			return div;
+		}
+
 		function countExistingGraphAssignments ( occurrence_ids ) {
 			var count;
 			$.ajax({
@@ -360,22 +444,6 @@ var GraphTab = {
 			return val;
 		}
 
-		function addVariant ( name ) {
-			$.ajax({
-				url: 'actions/php/ajax.php?action=addVariant',
-				type: 'POST',
-				dataType: 'json',
-				data: {name: name },
-				success: function(data) {
-					console.log("blubb:", data);
-				},
-				error: function(data) {
-					alert('error: ' + JSON.stringify(data));
-				}
-			});
-
-		}
-
 		function selectionIsValid ( selector ) {
 			selector_value =  selector.val();
 			selector_text = existing_graph_selector.children('option:selected').text();
@@ -388,11 +456,6 @@ var GraphTab = {
 
 		function resetForm () {
 			/* function to reset the whole assignment form.*/
-			// reset the chosen values
-			chosen_graph_name_or_id = null;
-			chosen_descr = null;
-			chosen_graphgroup_number = null;
-			chosen_graphgroup_name = null;
 			// hide all selection boxes
 			$('#approved_new_graph').hide();
 			$('#approved_new_graphgroup').hide();
@@ -401,6 +464,11 @@ var GraphTab = {
 			$('#new_graphgroup_field').hide();
 			$('#approved_existing_graph').hide();
 			$('#approved_existing_graphgroup').hide();
+			// reset all parameters
+			chosen_graph_name_or_id = null;
+			chosen_descr = null;
+			chosen_graphgroup_number = null;
+			chosen_graphgroup_name = null;
 			// unlock and reset all buttons
 			new_graphgroup_button.removeAttr('disabled');
 			new_graph_button.removeAttr('disabled');
@@ -419,7 +487,6 @@ var GraphTab = {
 			// new_graphgroup_name.removeAttr('disabled');
 			// new_graphgroup_number.removeAttr('disabled');
 			// new_graphgroup_button.removeAttr('disabled');
-
 		}
 
 	}
@@ -487,6 +554,7 @@ var GraphTab = {
 							<!-- ASSIGN & RESET buttons -->
 							<input type="button" id="assign_button" class="button" value="ASSIGN" name="assign" title="Press button to create the new Assignment" style="display: inline; width: 500;" />
 							<input type="button" id="reset_all_button" class="button" value="RESET" name="assign" title="Press button to reset the form" style="display: inline; width: 500;" />
+							<input type="button" id="hide_grouped_occurrences_button" class="button" value="HIDE GROUPED" name="assign" title="Press button to hide already assigned Occurrences" style="display: inline; width: 500;" />
 							<!-- <input type="button" id="TEST_button" class="button" value="TEST" name="assign" title="Press button to reset the form" style="display: block; width: 300;" /> -->
             </div>
 

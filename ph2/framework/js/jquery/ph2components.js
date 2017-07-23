@@ -93,6 +93,7 @@ var PH2Component = {
 		var _sort_by_rd0_button = container.find('#sort_by_rd0');
 		var _export_csv_button = container.find('#export_csv');
 		var _export_xls_button = container.find('#export_xls');
+		var _reassign_occurrences = container.find('#reassign_occurrences');
 		var _number_of_context_chars = 221;
 		var _context_placeholder = '';
 		var _displayed_occurrences = []; //the OccurrenceID of each line that is displayed
@@ -102,6 +103,23 @@ var PH2Component = {
 		var _view_text_url;
 		var _view_text_url_target;
 		var _view_text_rel;
+		var _active_grapheme = function () {
+			// load Grapheme that is active in the current session
+			graph_id = null;
+			$.ajax({
+				url: 'actions/php/ajax.php?action=getActiveGraphemeID',
+				async: false,
+				dataType: 'json',
+				success: function(session_graph_id) {
+					if (session_graph_id == parseInt(session_graph_id,10)) {
+						graph_id = session_graph_id;
+					} else {
+						return;
+					}
+				}
+			});
+			return graph_id;
+		}
 		
 		//Private methods
 		// toggle selected/not selected for a matching occurrence line
@@ -131,7 +149,7 @@ var PH2Component = {
 				rd0Long = rd0;
 				rd0Short = rd0;
 			}
-			occ_matches_meta.append('<tr' + status + '> <td><input type="checkbox" class="occ_selection" name="selected_occ[]" id="checkbox-' + occurrenceID + '" /></td> <td class="txtZitf widest"><a href="#">' + txtZitf + '</a></td> <td class="d0 wider"><a class="tooltipp" href="#">' + d0 + '</a></td> <td class="rd0 widest"> <a class="tooltipp" href="#" title="' + rd0Long + '">' + rd0Short + '</a></td> <td class="divID">' + divID + '</td> </tr>');
+			occ_matches_meta.append('<tr' + status + '> <td><input type="checkbox" class="occ_selection" name="selected_occ[]" id="checkbox-' + occurrenceID + '" /></td> <td class="txtZitf maxwidth"><a href="#">' + txtZitf + '</a></td> <td class="d0 wider"><a class="tooltipp" href="#">' + d0 + '</a></td> <td class="rd0 wider"> <a class="tooltipp" href="#" title="' + rd0Long + '">' + rd0Short + '</a></td> <td class="divID">' + divID + '</td> </tr>');
 		}
 		// add an occurrence-context-line
 		var addOccLine = function(occurrenceID, occurrenceSurface, leftContext, rightContext, pending) {
@@ -178,7 +196,7 @@ var PH2Component = {
 					var current_meta_line = occ_matches_meta.find('input#checkbox-' + occurrence_id).parent().parent();
 					current_meta_line.children('td.corpusID').html(meta.corpusID);
 					current_meta_line.find('td.txtZitf a')
-						.html(meta.zitfShort)
+						.html(meta.zitfFull)
 						.attr('href', _view_text_url + meta.textID + '&occ_order_number=' + meta.order)
 						.attr('title',"Click to view " + meta.zitfFull)
 						.attr('rel', _view_text_rel)
@@ -214,48 +232,68 @@ var PH2Component = {
 			occurrence_match.attr('title', lemma + ' (Lemma)');
 		}
 		
+		var _hideGroup = function (selected_graph_id) {
+			// removes all selected occurrences from this box
+			$.getJSON('actions/php/ajax.php?action=getOccurrenceIDsByGrapheme&graphID=' + selected_graph_id, function(occurrence_ids) {
+				$.each(occurrence_ids, function(i) {
+					_removeOccurrence(this);
+ 				});
+ 			});
+		}
 		
 		// sorts all displayed Lines according to ajax.php?sortOccurrencesByText
-		var _sort_results = function( field ) {
-			// get all currently displayed OccurrenceIDs
-			$.getJSON('actions/php/ajax.php?action=sortOccurrences&field=' + field + '&occurrenceIDs=' + _displayed_occurrences, function(ordered_occ_ids) {
-				// create new (empty) containers
-				//alert(occ_matches_meta.html());
-				//alert(''+_occ_matches_meta_empty_container.html());
-				var new_matches_container = _occ_matches_empty_container.clone();
-				var new_meta_container = _occ_matches_meta_empty_container.clone();
-				//alert(''+new_meta_container.html());
-				// fill in old data ordered according to retreived list
-				for (var i in ordered_occ_ids) {
-						var id = ordered_occ_ids[i];
-						var occ_matches_meta_checkbox = occ_matches_meta.find('input#checkbox-' + id)
-						// find in current listing
-						var current_meta_line = occ_matches_meta_checkbox.parent().parent();
-						var current_context_line = occ_matches.find('pre span.match#' + id).parent();
-						// add to new listing
-						new_meta_container.append(current_meta_line.clone());
-						new_matches_container.append(current_context_line.clone());
-						// check meta checkbox if applicable
-						if (occ_matches_meta_checkbox.attr('checked')) {
-							new_meta_container.find('input#checkbox-' + id).attr('checked', true);
-						}
-				}
-				// replace the old with the new listing
-				occ_matches_meta.hide().html(new_meta_container.html()).fadeIn();
-				occ_matches.hide().html(new_matches_container.html()).fadeIn();
-				// re-bind fancybox text-popups
-				occ_matches_meta.find('td.txtZitf a').each( function() {
-					$(this).fancybox( { 'titleShow':false, 'showNavArrows':false } );
-				});
-				// re-bind checkbox crosslinks
-				for (var i in ordered_occ_ids) {
-						var id = ordered_occ_ids[i];
-						bindCheckboxToOccSpan(id);
-				}
-				// replace _displayed_occurrences with the current order
-				_displayed_occurrences = ordered_occ_ids;
+		var _sort_results = function ( field ) {
+			var ordered_occ_ids = null;
+			$.ajax({
+				url: 'actions/php/ajax.php?action=sortOccurrences',
+				type: 'POST',
+				dataType: 'json',
+				data: {field: field, occurrenceIDs: _displayed_occurrences},
+				success: function(data) {
+					ordered_occ_ids = data;
+					pushNotification(1, 'Occurrences sorted by: ' + field );
+				},
+				error: function(data) {
+					alert('error: ' + JSON.stringify(data));
+				},
+				async: false
 			});
-			// make sure contexts are loaded for matches that are still pending
+			// create new (empty) containers
+			//alert(occ_matches_meta.html());
+			//alert(''+_occ_matches_meta_empty_container.html());
+			var new_matches_container = _occ_matches_empty_container.clone();
+			var new_meta_container = _occ_matches_meta_empty_container.clone();
+			//alert(''+new_meta_container.html());
+			// fill in old data ordered according to retreived list
+			for (var i in ordered_occ_ids) {
+				var id = ordered_occ_ids[i];
+				var occ_matches_meta_checkbox = occ_matches_meta.find('input#checkbox-' + id)
+				// find in current listing
+				var current_meta_line = occ_matches_meta_checkbox.parent().parent();
+				var current_context_line = occ_matches.find('pre span.match#' + id).parent();
+				// add to new listing
+				new_meta_container.append(current_meta_line.clone());
+				new_matches_container.append(current_context_line.clone());
+				// check meta checkbox if applicable
+				if (occ_matches_meta_checkbox.attr('checked')) {
+					new_meta_container.find('input#checkbox-' + id).attr('checked', true);
+				}
+			}
+			// replace the old with the new listing
+			occ_matches_meta.hide().html(new_meta_container.html()).fadeIn();
+			occ_matches.hide().html(new_matches_container.html()).fadeIn();
+			// re-bind fancybox text-popups
+			occ_matches_meta.find('td.txtZitf a').each( function() {
+				$(this).fancybox( { 'titleShow':false, 'showNavArrows':false } );
+			});
+			// re-bind checkbox crosslinks
+			for (var i in ordered_occ_ids) {
+				var id = ordered_occ_ids[i];
+				bindCheckboxToOccSpan(id);
+			}
+			// replace _displayed_occurrences with the current order
+			_displayed_occurrences = ordered_occ_ids;
+		// make sure contexts are loaded for matches that are still pending
 			_load_pending_visible_occurrences();
 		}
 		
@@ -340,6 +378,34 @@ var PH2Component = {
 			}
 		}
 		
+		var _handleReassign = function (selfref, e) {
+			var selected_lines = _getSelected();
+			if (selected_lines != '[]') {
+				new_number = container.find('input[name=new_Number]').val();
+				$.ajax({
+					url: 'actions/php/ajax.php?action=reassignOccurrencesToGraphgroup',
+					type: 'POST',
+					dataType: 'json',
+					data: {newGraphgroupNumber: new_number, occurrenceIDs: selected_lines, activeGraphID: _active_grapheme },
+					success: function(data) {
+						if (data['message'] == 'SUCCESS') {
+							pushNotification(1, 'Occurrences reassigned to: ' + new_number );
+							_removeSelected();
+						} else if (data['message'] == 'ERROR') {
+							pushNotification(4, 'Reassignment failed: ' + new_number + ' doesnt exist' );
+						}
+					},
+					error: function(data) {
+						alert('error: ' + JSON.stringify(data));
+					},
+					async: false
+				});
+			} else {
+				alert('Please select at least one match to be reassigned');
+				e.preventDefault();
+			}
+		}
+
 		var _hide_lemmatized_results = function () {
 			occ_matches.find('pre span.lemmatized').each(function() {
 				$(this).parent().fadeOut();
@@ -398,6 +464,10 @@ var PH2Component = {
 		// bind xls export button
 		_export_xls_button.click( function(e) {
 			_handleExportButton(this, e, 'ExportXLS');
+		});
+		// reassign occurrences
+		_reassign_occurrences.click( function(e) {
+			_handleReassign(this, e);
 		});
 		// bind the resize event of occ_matches to occ_matches_meta
 		occ_matches.resize( function() {
@@ -475,6 +545,9 @@ var PH2Component = {
 				for (var i = 0; i < selected_occurrence_ids.length; i++) {
 					_mark_as_lemmatized(selected_occurrence_ids[i], lemma);
 				}
+			},
+			hideGroup: function(selected_graph_id) {
+				return _hideGroup(selected_graph_id);
 			}
 			
 		}
@@ -660,7 +733,7 @@ var PH2Component = {
 				_result_box.fadeIn();
 			}
 		}
-		
+
 		function _hide_lemmatized_results () {
 			_associatedDisplay.hideLemmatizedResults();
 		}

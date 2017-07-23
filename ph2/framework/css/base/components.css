@@ -403,6 +403,10 @@ a.active-project-selection.current {
 	width: 65px;
 }
 
+.OccContextBox table td.maxwidth, .OccContextBox table th.maxwidth {
+	width: 150px;
+}
+
 .OccContextBox td a.tooltipp {
 	border: none !important;
 }

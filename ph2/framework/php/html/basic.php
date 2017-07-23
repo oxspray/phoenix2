@@ -1,7 +1,7 @@
 <?php
 /*/
 Phoenix2
-Version 0.7 alpha, Build 10
+Version 0.7 alpha, Build 11
 ===
 Project Lead: Prof. Martin-Dietrich Glessgen, University of Zurich
 Code by: Samuel Laeubli, University of Zurich
@@ -224,21 +224,19 @@ Returns a select-box (dropdown selection) listing all lemma types (concepts).
 
 } //htmlLemmaTypeSelectionDropdown
 
-function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='' )
+
+function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id=''  )
 /*/
 Returns a select-box (dropdown
 selection) listing all graphs of a given project.
 ---
 @param project_id: the project from which to select the graphs
 @type  project_id: int
-@param name: the name of the
-form element
+@param name: the name of the form element
 @type  name: string
-@param class: the class of the form
-element
+@param class: the class of the form element
 @type  class: string
-@param id: the id of the form
-element
+@param id: the id of the form element
 @type  id: string
 -
 @return: the html code
@@ -303,6 +301,7 @@ element
 	return $html;
 } //htmlGraphgroupSelectionDropdown
 
+//+
 function htmlTypeSelectionDropdown ( $project_id , $name='token_id' , $class='' , $id='' )
 /*/
 Returns a select-box (dropdown selection) listing all types of a given project.
