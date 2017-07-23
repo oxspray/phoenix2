@@ -736,7 +736,7 @@ class Text
 		#EV-TODO: Move to separate function
 		$dao = new Table('LEMMA');
 		$dao->select = "LemmaIdentifier, Short, `Order`";
-		$dao->from = "LEMMA join CONCEPT on LEMMA.ConceptID=Concept.ConceptID join LEMMA_OCCURRENCE on LEMMA.LemmaID=LEMMA_OCCURRENCE.LemmaID join OCCURRENCE on LEMMA_OCCURRENCE.OccurrenceID=OCCURRENCE.OccurrenceID";
+		$dao->from = "LEMMA join CONCEPT on LEMMA.ConceptID=CONCEPT.ConceptID join LEMMA_OCCURRENCE on LEMMA.LemmaID=LEMMA_OCCURRENCE.LemmaID join OCCURRENCE on LEMMA_OCCURRENCE.OccurrenceID=OCCURRENCE.OccurrenceID";
 		$dao->orderby="`Order` ASC";
 		$rows = $dao->get( array( 'TextID' => $this->getID() ) );
 		if (is_array($rows)) {

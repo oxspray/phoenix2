@@ -149,7 +149,7 @@ var PH2Component = {
 				rd0Long = rd0;
 				rd0Short = rd0;
 			}
-			occ_matches_meta.append('<tr' + status + '> <td><input type="checkbox" class="occ_selection" name="selected_occ[]" id="checkbox-' + occurrenceID + '" /></td> <td class="txtZitf maxwidth"><a href="#">' + txtZitf + '</a></td> <td class="d0 wider"><a class="tooltipp" href="#">' + d0 + '</a></td> <td class="rd0 wider"> <a class="tooltipp" href="#" title="' + rd0Long + '">' + rd0Short + '</a></td> <td class="divID">' + divID + '</td> </tr>');
+			occ_matches_meta.append('<tr' + status + '> <td><input type="checkbox" class="occ_selection" name="selected_occ[]" id="checkbox-' + occurrenceID + '" /></td> <td class="txtZitf maxwidth"><a href="#">' + txtZitf + '</a></td> <td class="d0 wider"><a class="tooltipp" href="#">' + d0 + '</a></td> <td class="rd0 widest"> <a class="tooltipp" href="#" title="' + rd0Long + '">' + rd0Short + '</a></td> <td class="divID">' + divID + '</td> </tr>');
 		}
 		// add an occurrence-context-line
 		var addOccLine = function(occurrenceID, occurrenceSurface, leftContext, rightContext, pending) {
