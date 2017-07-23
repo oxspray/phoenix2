@@ -15,9 +15,13 @@
                         <xsd:element ref="ful"/>
                         <xsd:element ref="lat"/>
                         <xsd:element ref="maj"/>
+                        <xsd:element ref="cif"/>
                         <xsd:element ref="sup"/>
                         <xsd:element ref="zw"/>
                         <xsd:element ref="zwt"/>
+                        <xsd:element ref="fol"/>
+                        <xsd:element ref="lin"/>
+                        <xsd:element ref="cap"/>
                     </xsd:choice>
                 </xsd:extension>
             </xsd:complexContent>
@@ -47,6 +51,13 @@
                             <xsd:element name="div" type="divType" maxOccurs="unbounded"/>
                             <xsd:element maxOccurs="unbounded" ref="par"/>
                             <xsd:element ref="zw"/>
+                            <xsd:element ref="tit"/>
+                            <xsd:element ref="cap"/>
+                            <xsd:element ref="fol"/>
+                            <xsd:element ref="fue"/>
+                            <xsd:element ref="ful"/>
+                            <xsd:element ref="lat"/>
+                            <xsd:element ref="cif"/>
                         </xsd:choice>
                     </xsd:complexType>
                 </xsd:element>
