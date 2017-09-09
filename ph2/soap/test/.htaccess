@@ -1,0 +1,2 @@
+# apche server php off for this dir and subdirs
+php_flag engine off
