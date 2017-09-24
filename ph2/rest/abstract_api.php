@@ -67,7 +67,7 @@ abstract class API {
     }
 
     public function processAPI() {
-        if (strcmp($_SERVER['HTTP_APIKEY'], PH2_APIKEY) !== 0) {
+        if ($_SERVER['HTTP_APIKEY'] !== PH2_APIKEY) {
             return $this->_response('Wrong api key.', 401);
         }
 
@@ -132,5 +132,4 @@ abstract class API {
         return $clean_input;
     }
 }
-
 ?>
