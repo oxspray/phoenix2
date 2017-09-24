@@ -41,7 +41,7 @@ class PH2OccurrenceOld {
 			$this->sigel = $details['meta'][0]['zitfFull'];
 			$this->year = $details['meta'][0]['d0'];
 			$this->date = $details['meta'][0]['d0Full'];
-			$this->type = $details['meta'][0]['type'];
+			$this->type = mb_substr($details['meta'][0]['type'], 0, 255);
 			$this->scripta = $details['meta'][0]['scripta'];
 			$this->scriptorium = $details['meta'][0]['rd0Full'];
 			$this->url = 'http://www.rose.uzh.ch/docling/charte.php?t=' . $details['meta'][0]['textID'] . '&occ_order_number=' . $details['meta'][0]['order'];
@@ -79,7 +79,7 @@ class PH2OccurrenceOld {
 			}
 			$this->year = substr($descriptors['d0'],0,4);
 			$this->date = $descriptors['d0'];
-			$this->type = $descriptors['type'];
+			$this->type = mb_substr($descriptors['type'], 0, 255);
 			$this->scripta = $descriptors['scripta'];
 			$this->scriptorium = $descriptors['rd0'];
 			foreach ($morphvalues as $morphvalue) {

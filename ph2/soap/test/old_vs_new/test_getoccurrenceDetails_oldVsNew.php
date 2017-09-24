@@ -32,6 +32,9 @@ function compare_getOccurrenceDetails($lemma, $withContext) {
     return true;
 }
 
+// mb_substr() operation in ph2_ccurrence_old.class to work correctly (with utf-8)
+mb_internal_encoding("UTF-8");
+
 //$lemma = 'avoir';
 $lemma = 'bien';
 if(!compare_getOccurrenceDetails($lemma, false))
