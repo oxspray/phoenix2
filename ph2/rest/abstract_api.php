@@ -55,10 +55,10 @@ abstract class API {
         }
 
         $this->method = $_SERVER['REQUEST_METHOD'];
-        if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER)) {
-            if ($_SERVER['HTTP_X_HTTP_METHOD'] == 'DELETE') {
+        if ($this->method === 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER)) {
+            if ($_SERVER['HTTP_X_HTTP_METHOD'] === 'DELETE') {
                 $this->method = 'DELETE';
-            } else if ($_SERVER['HTTP_X_HTTP_METHOD'] == 'PUT') {
+            } else if ($_SERVER['HTTP_X_HTTP_METHOD'] === 'PUT') {
                 $this->method = 'PUT';
             } else {
                 throw new Exception("Unexpected Header");

@@ -12,7 +12,7 @@ class MyAPI extends API {
     protected function occurrenceIDs() {
         $mainLemma = $_GET["mainLemma"];
         $lemma = $_GET["lemma"];
-        if ($this->method == 'GET') {
+        if ($this->method === 'GET') {
             return array(getOccurrenceIDs($mainLemma, $lemma), 200);
         } else {
             throw new Exception("GET request expected.");
@@ -23,7 +23,7 @@ class MyAPI extends API {
         $mainLemma = $_GET["mainLemma"];
         $lemma = $_GET["lemma"];
         $withContext = filter_var($_GET["withContext"], FILTER_VALIDATE_BOOLEAN);
-        if ($this->method == 'GET') {
+        if ($this->method === 'GET') {
             $occs = getOccurrences ($mainLemma, $lemma, $withContext);
             return array($occs, 200);
         } else {
@@ -34,7 +34,7 @@ class MyAPI extends API {
     protected function occurrence() {
         $occurrenceID = $_GET["occurrenceID"];
         $withContext = filter_var($_GET["withContext"], FILTER_VALIDATE_BOOLEAN);
-        if ($this->method == 'GET' && ! empty($occurrenceID)) {
+        if ($this->method === 'GET' && ! empty($occurrenceID)) {
             $occs = getOccurrenceDetails($occurrenceID, $withContext);
             return array($occs, 200);
         } else {
@@ -43,7 +43,7 @@ class MyAPI extends API {
     }
 
     protected function allLemmata() {
-        if ($this->method == 'GET') {
+        if ($this->method === 'GET') {
             return array(getAllLemmata(), 200);
         } else {
             throw new Exception("GET request expected.");
@@ -53,7 +53,7 @@ class MyAPI extends API {
     protected function numberOfOccurrenceChunks() {
         $mainLemma = $_GET["mainLemma"];
         $lemma = $_GET["lemma"];
-        if ($this->method == 'GET') {
+        if ($this->method === 'GET') {
             return array(getNumberOfOccurrenceChunks($mainLemma, $lemma), 200);
         } else {
             throw new Exception("GET request expected.");
@@ -65,7 +65,7 @@ class MyAPI extends API {
         $lemma = $_GET["lemma"];
         $withContext = filter_var($_GET["withContext"], FILTER_VALIDATE_BOOLEAN);
         $chunk = $_GET["chunk"];
-        if ($this->method == 'GET') {
+        if ($this->method === 'GET') {
             $occs = getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk);
             return array($occs, 200);
         } else {
@@ -80,7 +80,7 @@ class MyAPI extends API {
         $newLemmaIdentifier = $d['newLemmaIdentifier'];
         $occurrenceIDs = $d['occurrenceIDs'];
 
-        if ($this->method == 'POST' && !empty($newMainLemmaIdentifier) && !empty($newLemmaIdentifier)) {
+        if ($this->method === 'POST' && !empty($newMainLemmaIdentifier) && !empty($newLemmaIdentifier)) {
 
             try {
                 $result = assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newLemmaIdentifier);
