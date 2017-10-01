@@ -9,32 +9,6 @@ class MyAPI extends API {
         parent::__construct($request);
     }
 
-    /*
-     * Example of an Endpoint
-     */
-    protected function example() {
-        error_log("example. method: " . $this->verb);
-        switch ($this->verb) {
-            case "get":
-                if ($this->method == 'GET') {
-                    return array("status" => "success", "endpoint" => $this->endpoint, "verb" => $this->verb, "args" => $this->args, "request" => $this->request);
-                } else {
-                    return "Only accepts GET requests";
-                }
-                break;
-            case "post":
-                if ($this->method == 'POST') {
-                    return array("status" => "success", "endpoint" => $this->endpoint, "verb" => $this->verb, "args" => $this->args, "request" => $this->request);
-                } else {
-                    return "Only accepts POST requests";
-                }
-                break;
-            default:
-                break;
-        }
-
-    }
-
     protected function occurrenceIDs() {
         $mainLemma = $_GET["mainLemma"];
         $lemma = $_GET["lemma"];
