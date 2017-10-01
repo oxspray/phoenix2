@@ -69,10 +69,6 @@ function _getOccurrencesForLemmaOrOccurrenceId ($mainLemma, $lemma, $occurrenceI
     // TODO: maybe move to misc entity functions
 
     $dao = new Table('OCCURRENCE');
-    // TODO extract escaping to function with array arg
-    $mainLemma = mysql_real_escape_string($mainLemma);
-    $lemma = mysql_real_escape_string($lemma);
-    $withContext = mysql_real_escape_string($withContext);
 
 	$contextLeftQueryString = _getContextQueryString($mainLemma, $lemma, $occurrenceId, true);
 	$contextRightQueryString = _getContextQueryString($mainLemma, $lemma, $occurrenceId, false);
@@ -223,7 +219,9 @@ function _getNumberOfOccurrences($mainLemma, $lemma) {
 }
 
 function _esc($unescapedString) {
-    return mysql_escape_string($unescapedString);
+    $dummy = new Table('CONCEPT');
+    $dummy->query(""); // FIXME: workaround: apparently we need a db conn before calling mysql_real_escape_string
+    return mysql_real_escape_string($unescapedString);
 }
 
 /**
@@ -252,6 +250,8 @@ function _filterPrjCpt($whereClause, $and=true) {
  * guarded is true, which is the default value)
  */
 function getOccurrenceIDs($mainLemma = null, $lemma = null) {
+    $mainLemma = _esc($mainLemma);
+    $lemma = _esc($lemma);
 
     $occurrence_ids = array();
     $dao = _guardedOccurrenceIdsForLemma($mainLemma, $lemma, MAX_OCC_IDS);
@@ -285,6 +285,9 @@ function _guardedOccurrenceIdsForLemma($mainLemma, $lemma, $guardValue, $guarded
 }
 
 function getOccurrences ($mainLemma, $lemma, $withContext) {
+    $mainLemma = _esc($mainLemma);
+    $lemma = _esc($lemma);
+    _validate($withContext, is_bool);
 
     _guardedOccurrenceIdsForLemma($mainLemma, $lemma, MAX_OCCS);
 
@@ -292,7 +295,10 @@ function getOccurrences ($mainLemma, $lemma, $withContext) {
 }
 
 function getOccurrenceDetails ($occurrenceID, $withContext) {
-	$occurrences = _getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceID, $withContext);
+    _validate($occurrenceID, is_numeric);
+    _validate($withContext, is_bool);
+
+    $occurrences = _getOccurrencesForLemmaOrOccurrenceId(null, null, $occurrenceID, $withContext);
 	return $occurrences[0];
 }
 
@@ -319,7 +325,10 @@ function getAllLemmata () {
  * @return float
  */
 function getNumberOfOccurrenceChunks($mainLemma, $lemma) {
-	return ceil(_getNumberOfOccurrences($mainLemma, $lemma) / CHUNK_SIZE);
+    $mainLemma = _esc($mainLemma);
+    $lemma = _esc($lemma);
+
+    return ceil(_getNumberOfOccurrences($mainLemma, $lemma) / CHUNK_SIZE);
 }
 
 /**
@@ -336,6 +345,10 @@ function getNumberOfOccurrenceChunks($mainLemma, $lemma) {
  * @return array an array of occurrences.
  */
 function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
+    $mainLemma = _esc($mainLemma);
+    $lemma = _esc($lemma);
+    _validate($withContext, is_bool);
+    _validate($chunk, is_numeric);
 
 	$occurrenceIds = getOccurrenceIDs($mainLemma, $lemma);
 
@@ -367,9 +380,7 @@ function getOccurrencesChunk($mainLemma, $lemma, $withContext, $chunk) {
  * unique, i.e., there exist more than one lemma with this combination.
  */
 function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newLemmaIdentifier) {
-
-    $dummy = new Table('CONCEPT');
-    $dummy->query(""); // FIXME: workaround: apparently we need a db conn before calling mysql_real_escape_string
+    // _esc each $occurrenceIDs in foreach loop below
     $ml = _esc($newMainLemmaIdentifier);
     $l = _esc($newLemmaIdentifier);
     $dao = new Table('LEMMA');
@@ -388,6 +399,7 @@ function assignOccurrencesToLemma($occurrenceIDs, $newMainLemmaIdentifier, $newL
     }
 
     foreach ($occurrenceIDs as $occurrenceID) {
+        _validate($occurrenceID, is_numeric);
         try {
             _assignOccurrenceToLemma($occurrenceID, $lemma);
         } catch (Exception $e) {
@@ -435,6 +447,13 @@ function _retrieveLemmaList($occurrenceID) {
     return $r;
 }
 
+function _validate($arg, $isa) {
+    if(!$isa($arg)){
+        error_log("invalid argument $arg $isa");
+        throw new InvalidArgumentException("$arg is invalid.");
+    }
+}
+
 /**
  * Class: GearmanException
  *
@@ -451,10 +470,7 @@ class Ph2DeafelException extends Exception {
         $this->messageCode = $messageCode;
         parent::__construct($message, $code, $previous);
     }
-
-
 }
-
 
 # SOAP SERVER
 # -----------
