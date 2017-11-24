@@ -15,6 +15,8 @@ Create, edit and delete corpora and edit their assignments.
 /*/
 //! MODULE BODY
 ?>
+<link href="framework/js/tablesorter/css/theme.default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="framework/js/tablesorter/js/jquery.tablesorter.js"></script>
 <script type="text/javascript">
 // functions
 function showCorpusDetailsBox (rowReference, corpusID, fadeIn) {
@@ -101,6 +103,14 @@ $(document).ready( function() {
 	
 	$("input.hybrid.textordernumber").live('focusout', function() {
 		updateTextOrderNumber($(this));
+	});
+	
+	// table sorter on table headers click
+	$("table#corpora").tablesorter({
+		headers : { 0 : { sorter: false }, 2 : { sorter: false }  }
+	});
+	$(".corpus-texts-table").tablesorter({
+		headers : { 0 : { sorter: false }, 1 : { sorter: false }, 2 : { sorter: false }, 4 : { dateFormat : 'yyyy/mm/dd' } }
 	});
 	
 	function updateTextOrderNumber (input_object) {
@@ -311,7 +321,7 @@ $(document).ready( function() {
 					}
 					// print the html
 					$transformer = new ResultSetTransformer($results_with_links);
-					echo $transformer->toSelectableHTMLTable( 'all', 'ID', 'text_id', 'corpus-texts-' . $corpus->getID(), array('hidden'), array(0) );
+					echo $transformer->toSelectableHTMLTable( 'all', 'ID', 'text_id', 'corpus-texts-' . $corpus->getID(), array('hidden','corpus-texts-table'), array(0) );
 					unset($results, $transformer);
 				}
 				?>
