@@ -25,6 +25,7 @@ var LemmaTab = {
 		var new_lemma_ok_button = $('#ok_button_new');
 		var new_lemma_cancel_button = $('#cancel_button_new');
 		var new_lemma_identifier = $('#lemma_identifier');
+		var new_lemma_mainidentifier = $('#lemma_mainidentifier');
 		var new_lemma_type = $('#lemma_type');
 		var new_lemma_pos = $('#lemma_pos');
 		var new_lemma_gen = $('#lemma_gen');
@@ -37,7 +38,7 @@ var LemmaTab = {
 				// check if at least one occurrence has been selected
 				var selected_occurrences = occ_selection_box.getSelected();
 				if (selected_occurrences != '[]') {
-					var countAssignedOccurrences = countExistingLemmaAssignments(selected_occurrences)
+					var countAssignedOccurrences = countExistingLemmaAssignments(selected_occurrences);
 					if ( countAssignedOccurrences > 0) {
 						// display warning if at least one occurrence is already assigned to a Lemma
 						if (confirm( countAssignedOccurrences + " of the selected Occurrences are already assigned to a Lemma. Press OK to overwrite their assignments with the selected Lemma.")) {
@@ -71,8 +72,9 @@ var LemmaTab = {
 			if (selected_occurrences != '[]') {
 				// check if the lemma already exists
 				var new_lemma_identifier_value = new_lemma_identifier.val();
+				var new_lemma_mainidentifier_value = new_lemma_mainidentifier.val();
 				var new_lemma_type_value = new_lemma_type.children('option:selected').text();
-				if (lemmaExists(new_lemma_identifier_value, new_lemma_type_value)) {
+				if (lemmaExists(new_lemma_identifier_value, new_lemma_mainidentifier_value, new_lemma_type_value)) {
 					alert('A lemma with the given identifier and type allready exists. Please select another identifier and/or type.');
 				} else {
 					var new_lemma_pos_value = new_lemma_pos.children('option:selected').text();
@@ -84,11 +86,11 @@ var LemmaTab = {
 						// display warning if at least one occurrence is already assigned to a Lemma
 						if (confirm( countAssignedOccurrences + " of the selected Occurrences are already assigned to a Lemma. Press OK to overwrite their assignments with the selected Lemma.")) {
 							// create new lemma and add selected occurrences
-							addOccurrencesToNewLemma(new_lemma_identifier_value, new_lemma_type_value, new_lemma_pos_value, new_lemma_gen_value, selected_occurrences);
+							addOccurrencesToNewLemma(new_lemma_identifier_value, new_lemma_mainidentifier_value, new_lemma_type_value, new_lemma_pos_value, new_lemma_gen_value, selected_occurrences);
 							resetNewLemmaForm();
 						}
 					} else {
-						addOccurrencesToNewLemma(new_lemma_identifier_value, new_lemma_type_value, new_lemma_pos_value, new_lemma_gen_value, selected_occurrences);
+						addOccurrencesToNewLemma(new_lemma_identifier_value, new_lemma_mainidentifier_value, new_lemma_type_value, new_lemma_pos_value, new_lemma_gen_value, selected_occurrences);
 						resetNewLemmaForm();
 					}
 				}
@@ -118,10 +120,10 @@ var LemmaTab = {
 			}
 		});
 		
-		function lemmaExists ( identifier, concept ) {
+		function lemmaExists ( identifier, mainidentifier, concept ) {
 			var exists = null;
 			$.ajax({
-				url: 'actions/php/ajax.php?action=lemmaExists&identifier=' + identifier + '&concept=' + concept,
+				url: 'actions/php/ajax.php?action=lemmaExists&identifier=' + identifier + '&mainidentifier=' + mainidentifier + '&concept=' + concept,
 				type: 'GET',
 				dataType: 'json',
 				success: function(data) {
@@ -132,6 +134,7 @@ var LemmaTab = {
 				},
 				async: false
 			});
+
 			return exists;			
 		}
 		
@@ -154,7 +157,7 @@ var LemmaTab = {
 			});
 		}
 		
-		function addOccurrencesToNewLemma ( identifier, concept_short, pos, genus, occurrence_ids) {
+		function addOccurrencesToNewLemma ( identifier, mainidentifier, concept_short, pos, genus, occurrence_ids) {
 			var morphvalues = null;
 			if (pos) {
 				morphvalues = new Object();
@@ -167,11 +170,15 @@ var LemmaTab = {
 				url: 'actions/php/ajax.php?action=assignOccurrencesToLemma',
 				type: 'POST',
 				dataType: 'json',
-				data: {lemmaIdentifier: identifier, conceptShort: concept_short, morphvalues: morphvalues, occurrenceIDs: occurrence_ids},
+				data: {lemmaIdentifier: identifier, lemmaMainIdentifier: mainidentifier, conceptShort: concept_short, morphvalues: morphvalues, occurrenceIDs: occurrence_ids},
 				success: function(data) {
 					lemma_identifier = new_lemma_identifier.val();
-					pushNotification(1, 'Assignment successful: ' + $.parseJSON(occurrence_ids).length + ' Occurrences assigned to Lemma «' + lemma_identifier + ' [' + new_lemma_type.children('option:selected').text() + ']»');
-					occ_selection_box.markSelectedAsLemmatized(lemma_identifier);
+					lemma_mainidentifier = new_lemma_mainidentifier.val();
+					if(lemma_mainidentifier == ""){
+						lemma_mainidentifier = "null";
+					}
+					pushNotification(1, 'Assignment successful: ' + $.parseJSON(occurrence_ids).length + ' Occurrences assigned to Lemma «' + lemma_mainidentifier + ", " + lemma_identifier + ' [' + new_lemma_type.children('option:selected').text() + ']»');
+					occ_selection_box.markSelectedAsLemmatized(lemma_mainidentifier + ", " + lemma_identifier);
 					search_controller.refresh_lemmata();
 				},
 				error: function(data) {
@@ -223,6 +230,7 @@ var LemmaTab = {
 		
 		function resetNewLemmaForm () {
 			new_lemma_identifier.val('');
+			new_lemma_mainidentifier.val('');
 			new_lemma_identifier.trigger('input');
 			new_lemma_identifier.focus();
 		}
@@ -242,9 +250,7 @@ var LemmaTab = {
             
                 <fieldset>
                     <legend class="required">Existing Lemma</legend>
-                    
                     <?php echo htmlLemmaSelectionDropdown($ps->getActiveProject(), 'lemma_id', NULL, 'lemma_id'); ?>
-                    
                     <br/><br/>
                     <input type="button" id="ok_button_existing" class="button" value="Assign Existing Lemma" name="assign" />
                 	<input type="button" id="cancel_button_existing" class="button" value="Cancel" name="cancel" />
@@ -259,11 +265,14 @@ var LemmaTab = {
               <div class="inner10">
             
                 <fieldset>
-                    <legend>New Lemma (<a href="http://www.rose.uzh.ch/phoenix/workspace/static/lemma_deaf_tl.html" target="blank">see refrence</a>)</legend>
+                    <legend>New Lemma (<a href="http://www.rose.uzh.ch/phoenix/workspace/static/lemma_deaf_tl.html" target="blank">see reference</a>)</legend>
                     <br/>
                     
                     <label class="inline above">Lemma (Identifier)</label>
                     <input name="lemma_identifier" id="lemma_identifier" type="text" class="text small-normal inline" title="Lemma (Identifier)"/>
+					
+					<label class="inline above">Main Identifier</label>
+                    <input name="lemma_mainidentifier" id="lemma_mainidentifier" type="text" class="text small-normal inline" title="Main Identifier"/>					
                     
                     <label class="inline above">Type</label>
                     <?php echo htmlLemmaTypeSelectionDropdown('lemma_type', NULL, 'lemma_type'); ?>
