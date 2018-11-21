@@ -338,10 +338,11 @@ the given Occurrence
 	
 	$rd0_full = $text_descriptors['rd0'];
 	if (strlen($rd0_full) > 8) {
-		$rd0_short = substr($rd0_full,0,7) . '..';
+		$rd0_short = mb_substr($rd0_full,0,7,"utf-8") . '..';
 	} else {
 		$rd0_short = $rd0_full;
 	}
+	
 	$rd0_short = str_replace(' ', '&nbsp;', $rd0_short); //make spaces non-braking
 	
 	$scripta = $text_descriptors['scripta'];
@@ -356,10 +357,17 @@ the given Occurrence
 				$lemma_morph_string .= " " . array_shift($lemma_morph);
 			}
 		}
-	$lemma_string = $lemma->getIdentifier() . $lemma_morph_string;
+		$mainIdentifier = $lemma->getMainLemmaIdentifier();
+		if($mainIdentifier == ""){
+			$mainIdentifier = "null";
+		}
+		$lemma_string = $mainIdentifier . ", ". $lemma->getIdentifier() . $lemma_morph_string;
 	}
-	
-	$occ_matches_meta[] = array('zitfFull' => $zitf_full, 'zitfShort' => $zitf_short, 'd0' => $d0, 'd0Full' => $d0_full, 'rd0Full' => $rd0_full, 'rd0Short' => $rd0_short, 'rd0Full' => $rd0_full, 'scripta' => $scripta, 'divID' => $occ->getDiv(), 'occurrenceID' => $occ_id, 'textID' => $text->getID(), 'order' => $occ->getOrder(), 'lemma' => $lemma_string, 'lemma_pos' => $lemma_morph_string, 'type' => $text_descriptors['type']);
+	$lang = $occ->getLang();
+	if($lang){
+		$lang_string = $lang->getCode();
+	}
+	$occ_matches_meta[] = array('zitfFull' => $zitf_full, 'zitfShort' => $zitf_short, 'd0' => $d0, 'd0Full' => $d0_full, 'rd0Full' => $rd0_full, 'rd0Short' => $rd0_short, 'rd0Full' => $rd0_full, 'scripta' => $scripta, 'divID' => $occ->getDiv(), 'occurrenceID' => $occ_id, 'textID' => $text->getID(), 'order' => $occ->getOrder(), 'lemma' => $lemma_string, 'lemma_pos' => $lemma_morph_string, 'type' => $text_descriptors['type'], 'lang_code' => $lang_string);
 	// write match section (context line)
 	$context = $occ->getContext();
 	$left_context = $context[0];
