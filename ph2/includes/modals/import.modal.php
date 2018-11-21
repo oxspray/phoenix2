@@ -355,15 +355,17 @@ echo('<input type="hidden" name="import_corpus_id" id="import_corpus_id" value="
           
     </fieldset>
     <fieldset>
-    	<span class="hidden text corpus entry edit">
+    	<span class="hidden text corpus entry">
         	<legend>Options:</legend>
         </span>
         <span class="hidden text corpus entry">
         	<input type="checkbox" name="option_tokenize" /> <a href="#" class="tooltipp" title="Check this option to automatically tokenize the &lt;txt&gt; section.">Tokenize text</a><br />
         </span>
+		<!-- Remove overwrite option as it is too dangerous and not really necessary at this point
     	<span class="hidden text corpus edit">
         	<input type="checkbox" name="option_overwrite" /> <a href="#" class="tooltipp" title="If this option is selected, all existing annotations are overwritten for tokens who were edited externally.">Overwrite existing annotations</a>
         </span>
+		-->
     </fieldset>
     <br />
     <input type="submit" class="button" value="Continue" name="start" />
