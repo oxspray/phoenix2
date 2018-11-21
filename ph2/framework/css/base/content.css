@@ -376,6 +376,7 @@ a.file.icon	     { background-position: -32px -96px; }
 a.download.icon  { background-position: -224px -32px; }
 a.abc.icon  { background-position: -112px -80px; }
 a.def.icon   { background-position: -112px -96px; }
+a.checkout-full-data.icon   { background-position: -224px -48px; }
 
 a.icon div {
 	padding-top: 3px;
@@ -499,4 +500,7 @@ a#header_hide {
 	margin: 0px;
 	position: fixed;
 	z-index: 20;
+}
+.ui-menu-item{
+	font-size: 14px !important;
 }
