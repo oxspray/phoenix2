@@ -66,7 +66,7 @@ function ann_gra_grp_variants_load ($get, $post) { global $ps;
 	
 	$graphgroup = new Graphgroup($graphgroup_id);
 	
-	$fields = array( 'Name'=>$graphgroup->getName(), 'Number'=>$graphgroup->getNumber() );
+	$fields = array( 'Name'=>$graphgroup->getName(), 'Number'=>$graphgroup->getNumber(), 'Descr'=>$graphgroup->getDescr() );
 	echo expand_array_to_fields($fields);
 
 }
@@ -80,6 +80,7 @@ function ann_gra_grp_variants_save ($get, $post) { global $ps;
 	
 	$graphgroup->setName($post['Name']);
 	$graphgroup->setNumber($post['Number']);
+	$graphgroup->setDescr($post['Descr']);
 	
 	echo 'Variant details saved successfully.';
 
