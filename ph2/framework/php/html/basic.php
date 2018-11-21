@@ -172,13 +172,16 @@ element
 /*/
 {
 	$tb_LEMMA = new Table('LEMMA');
-	$tb_LEMMA->select = "LemmaID, LemmaIdentifier, Short as ConceptShort";
+	$tb_LEMMA->select = "LemmaID, LemmaIdentifier, MainLemmaIdentifier, Short as ConceptShort";
 	$tb_LEMMA->from =  'LEMMA join CONCEPT on LEMMA.ConceptID=CONCEPT.ConceptID';
 	$tb_LEMMA->where = array('ProjectID' => $project_id);
 	$tb_LEMMA = $tb_LEMMA->get();
 	// modify resultset: token surface is enriched with concept type of lemma
 	foreach ($tb_LEMMA as $key => $value) {
-		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
+		if(is_null($tb_LEMMA[$key]['MainLemmaIdentifier']) || $tb_LEMMA[$key]['MainLemmaIdentifier'] == ""){
+			$tb_LEMMA[$key]['MainLemmaIdentifier'] = "null";
+		}
+		$tb_LEMMA[$key]['LemmaIdentifier'] = $tb_LEMMA[$key]['MainLemmaIdentifier'] . ', ' . $tb_LEMMA[$key]['LemmaIdentifier'] . ' [' . $tb_LEMMA[$key]['ConceptShort'] . ']';
 	}
 	$resultset = new ResultSetTransformer($tb_LEMMA);
 
@@ -191,6 +194,7 @@ element
 
 	return $html;
 } //htmlLemmaSelectionDropdown
+
 
 //+
 function htmlLemmaTypeSelectionDropdown ( $name='lemma_type' , $class='' , $id='' )
@@ -224,8 +228,53 @@ Returns a select-box (dropdown selection) listing all lemma types (concepts).
 
 } //htmlLemmaTypeSelectionDropdown
 
+//+
+function htmlLangSelectionDropdown ( $name='lang_id' , $class='' , $id='', $all_option = false )
+/*/
+Returns a select-box (dropdown
+selection) listing all lang
+---
+@param name: the name of the
+form element
+@type  name: string
+@param class: the class of the form
+element
+@type  class: string
+@param id: the id of the form
+element
+@type  id: string
+-
+@return: the html code
+@rtype:  string
+/*/
+{
+	$tb_LANG = new Table('LANG');
+	$aLangs = $tb_LANG->get();
+	// modify resultset: token surface is enriched with concept type of lemma
+	foreach ($aLangs as $key => $value) {
+		$aLangs[$key]['Code'] = $aLangs[$key]['Code'] . " (" . $aLangs[$key]['Name'] . ")";
+	}
+	if($all_option){
+		array_unshift($aLangs ,  array (
+			'LangID' => '',
+			'Code' => 'All',
+			'Name' => '',
+			'Description' => NULL,
+		  ));
+	}
+	$resultset = new ResultSetTransformer($aLangs);
+	
+	$class = toHtmlClass($class);
+	$id = toHtmlId($id);
 
-function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id=''  )
+	$html  = "<select name=\"$name\"$class$id>\n";
+    $html .= $resultset->toDropdownSelection('Code', 'LangID');
+	$html .= "</select>";
+
+	return $html;
+} //htmlLangSelectionDropdown
+
+function htmlGraphSelectionDropdown ( $project_id , $name='graph_id' , $class='' , $id='', $selected_id = false  )
 /*/
 Returns a select-box (dropdown
 selection) listing all graphs of a given project.
@@ -247,14 +296,13 @@ selection) listing all graphs of a given project.
 	$tb_GRAPH->select = "GraphID, Name";
 	$tb_GRAPH->from =  'GRAPH';
 	$tb_GRAPH->where = array('ProjectID' => $project_id);
+	$tb_GRAPH->orderby = "Name";
 	$tb_GRAPH = $tb_GRAPH->get();
 	$resultset = new ResultSetTransformer($tb_GRAPH);
-
 	$class = toHtmlClass($class);
 	$id = toHtmlId($id);
-
 	$html  = "<select name=\"$name\"$class$id>\n";
-    $html .= $resultset->toDropdownSelection('Name', 'GraphID');
+    $html .= $resultset->toDropdownSelection('Name', 'GraphID', (int) $selected_id);
 	$html .= "</select>";
 
 	return $html;
