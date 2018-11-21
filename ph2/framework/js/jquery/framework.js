@@ -15,7 +15,8 @@ $(document).ready(function() {
 	
   $('a[rel*=facebox]').fancybox({
 	titleShow : false,
-	showNavArrows: false 
+	showNavArrows: false,
+	centerOnScroll: true
   });
   /*{
 	loadingImage : 'framework/js/facebox/loading.gif',
