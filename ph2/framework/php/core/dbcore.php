@@ -26,6 +26,7 @@ class Table
 	public $having;
 	public $orderby;
 	public $limit;
+	public $lastQuery;
 	private $_dbconnector;
 	private $_dbhost;
 	private $_dbusername;
@@ -141,6 +142,7 @@ class Table
 				$this->_cache[$query] = $data;
 				$this->_latestCacheKey = $query;
 			}
+			$this->lastQuery = $query;
 			// finally, release db-ressource and return data if applicable
 			//echo $query;
 			return $data;
