@@ -78,7 +78,6 @@ var PH2Component = {
 	// ****************
 	OccContextBox : function(HTMLObjectID) {
 	/* Adds functionality to an OccContextBox HTML skeleton. */
-		
 		//PRIVATE
 		//Object references
 		var container = $('#' + HTMLObjectID);
@@ -91,6 +90,7 @@ var PH2Component = {
 		var _sort_by_text_button = container.find('#sort_by_text');
 		var _sort_by_d0_button = container.find('#sort_by_d0');
 		var _sort_by_rd0_button = container.find('#sort_by_rd0');
+		var _sort_by_context_button = container.find('#sort_by_context');
 		var _export_csv_button = container.find('#export_csv');
 		var _export_xls_button = container.find('#export_xls');
 		var _reassign_occurrences = container.find('#reassign_occurrences');
@@ -100,9 +100,10 @@ var PH2Component = {
 		var _occ_matches_meta_empty_container = occ_matches_meta.clone();
 		var _occ_matches_empty_container = occ_matches.clone();
 		var _show_lemmatized_occurrences = true;
-		var _view_text_url;
-		var _view_text_url_target;
-		var _view_text_rel;
+		var _show_langified_occurrences = true;
+		var _view_text_url = 'http://www.rose.uzh.ch/phoenix/workspace/web/charte.php?t=';
+		var _view_text_url_target = '_blank';
+		var _view_text_rel = '';
 		var _active_grapheme = function () {
 			// load Grapheme that is active in the current session
 			graph_id = null;
@@ -218,18 +219,65 @@ var PH2Component = {
 							current_meta_line.hide();
 						}
 					}
+					if (meta.lang_code != null) {
+						// mark occurrence as langified if applicable
+						_mark_as_langified(occurrence_id, meta.lang_code);
+						if (_show_langified_occurrences == false && meta.lang_code != null) {
+							// hide occurrence if it is assigned to a lang and langified forms are currently excluded from the search results
+							current_context_line.hide();
+							current_meta_line.hide();
+						}
+					}
 				});
 		}
 		
 		// mark an occurrence as lemmatized
-		var _mark_as_lemmatized = function (occurrence_id, lemma) {
+		var _mark_as_lemmatized = function (occurrence_id, lemmas) {
 			// select relevant HTML containers
 			var occurrence_match = occ_matches.find('span.match#' + occurrence_id);
 			// add lemmatized class
 			occ_matches_meta.find('input#checkbox-' + occurrence_id).parent().parent().addClass('lemmatized');
 			occurrence_match.parent().addClass('lemmatized');
+			if(occurrence_match.hasClass('langified')){
+				occurrence_match.addClass('lemmatized_langified');
+			}
 			occurrence_match.addClass('lemmatized');
-			occurrence_match.attr('title', lemma + ' (Lemma)');
+			
+			var lemma_title = "";
+			if($.isArray(lemmas)){
+				lemma_title = lemmas.join(", ");
+			}else{
+				lemma_title = lemmas;
+			}
+			var title = occurrence_match.attr('title');
+			if(typeof title !== 'undefined' && title != ""){
+				title = lemma_title + " | " + title;
+			}else{
+				title = lemma_title;
+			}
+			
+			occurrence_match.attr('title', title);
+		}
+		// mark an occurrence as langified
+		var _mark_as_langified = function (occurrence_id, lang_code) {
+			// select relevant HTML containers
+			var occurrence_match = occ_matches.find('span.match#' + occurrence_id);
+			var lang_class = 'lang_'+lang_code;
+			// add langified class
+			occ_matches_meta.find('input#checkbox-' + occurrence_id).parent().parent().addClass('langified ' + lang_class);
+			occurrence_match.parent().addClass('langified ' + lang_class);
+			if(occurrence_match.hasClass('lemmatized')){
+				occurrence_match.addClass('lemmatized_langified');
+			}
+			occurrence_match.addClass('langified ' + lang_class);
+			
+			var title = occurrence_match.attr('title');
+			if(typeof title !== 'undefined' && title != ""){
+				title += " | " + lang_code;
+			}else{
+				title = lang_code;
+			}
+			occurrence_match.attr('title', title);
 		}
 		
 		var _hideGroup = function (selected_graph_id) {
@@ -417,10 +465,70 @@ var PH2Component = {
 		
 		var _show_lemmatized_results = function () {
 			occ_matches.find('pre span.lemmatized').each(function() {
-				$(this).parent().fadeIn();
+				if(_show_langified_occurrences == false && $(this).hasClass("langified")){
+					
+				}else{
+					$(this).parent().fadeIn();
+				}				
 			});
 			occ_matches_meta.find('tr.lemmatized').each(function() {
-				$(this).fadeIn();
+				if(_show_langified_occurrences == false && $(this).hasClass("langified")){
+					
+				}else{
+					$(this).fadeIn();
+				}				
+			});
+		}
+		
+		var _hide_langified_results = function () {
+			occ_matches.find('pre span.langified').each(function() {
+				$(this).parent().fadeOut();
+			});
+			occ_matches_meta.find('tr.langified').each(function() {
+				$(this).fadeOut();
+			});
+		}
+		
+		var _show_langified_results = function () {
+			occ_matches.find('pre span.langified').each(function() {
+				if(_show_lemmatized_occurrences == false && $(this).hasClass("lemmatized")){
+					
+				}else{
+					$(this).parent().fadeIn();
+				}
+			});
+			occ_matches_meta.find('tr.langified').each(function() {
+				if(_show_lemmatized_occurrences == false && $(this).hasClass("lemmatized")){
+					
+				}else{
+					$(this).fadeIn();
+				}
+			});
+		}
+		
+		var _show_selectedlang_results = function () {
+			var lang_id = $("#browser_lang_id").val();
+			var selected = false;
+			var selected_langcode = false;
+			var selected_langclass = false
+			if(lang_id != ""){
+				selected = true;
+				selected_langcode = $("#browser_lang_id option:selected").text().replace(/ *\([^)]*\) */g, "");
+				selected_langclass = "lang_" + selected_langcode;
+			}
+			occ_matches.find('pre span.match').each(function() {
+				if(!selected || (selected && $(this).hasClass(selected_langclass))){
+					$(this).parent().fadeIn();
+				}else if(selected){
+					$(this).parent().fadeOut();
+				}
+			});
+			occ_matches_meta.find('tr').each(function() {
+				if(!selected || (selected && $(this).hasClass(selected_langclass))){
+					$(this).fadeIn();
+				}else if(selected){
+					$(this).fadeOut();
+				}
 			});
 		}
 		
@@ -444,6 +552,9 @@ var PH2Component = {
 		});
 		_sort_by_rd0_button.click( function() {
 			_sort_results( 'rd0' );
+		});
+		_sort_by_context_button.click( function() {
+			_sort_results( 'context' );
 		});
 		// loads occurrences if they are visible in the container's viewport
 		occ_matches.bind('scrollstop', function() {
@@ -474,6 +585,7 @@ var PH2Component = {
 			$("#occ_matches_meta").height( occ_matches.height() );
 		});		
 		// determine the url for displaying whole texts
+		/*
 		$.get("actions/php/ajax.php?action=isGuest", function(isGuest) {
 			if (isGuest == 'true') {
 				_view_text_url = 'http://www.rose.uzh.ch/phoenix/workspace/web/charte.php?t=';
@@ -485,12 +597,13 @@ var PH2Component = {
 				_view_text_rel = 'facebox';
 			}
 		});
-		
+		*/
 		//PUBLIC
 		return {
 			// takes an ID of an Occurrence stored in the database and shows it among its content
 			add : function (occurrence_id) {
 				_add(occurrence_id);
+				
 			},
 			addMultiple : function (json_list_of_occ_ids) {
 			// takes an collection of OccurrenceIDs and loads them via this.add()
@@ -509,6 +622,55 @@ var PH2Component = {
 				// hide the progress div
 				occ_progress.hide();
 				centerView();
+			},
+			addOccurrences : function (occurrences){
+				for(var occurrence_id in occurrences){
+					_add(occurrence_id);
+					var meta = occurrences[occurrence_id].meta[0];
+					var match = occurrences[occurrence_id].match[0];
+					// update context
+					current_context_line = $("pre.pending");
+					current_context_line.children('span.match').html(match.surface);
+					current_context_line.children('span.leftContext').html(match.leftContext);
+					current_context_line.children('span.rightContext').html(match.rightContext);
+					current_context_line.removeClass('pending');
+					// update meta information
+					var current_meta_line = $("#occ_matches_meta").find('input#checkbox-' + occurrence_id).parent().parent();
+					current_meta_line.children('td.corpusID').html(meta.corpusID);
+					current_meta_line.find('td.txtZitf a')
+						.html(meta.zitfFull)
+						.attr('href', _view_text_url + meta.textID + '&occ_order_number=' + meta.order)
+						.attr('title',"Click to view " + meta.zitfFull)
+						.attr('rel', _view_text_rel)
+						.attr('target', _view_text_url_target)
+					if (_view_text_rel == 'facebox') {
+						current_meta_line.find('td.txtZitf a').fancybox( { 'titleShow':false, 'showNavArrows':false } );
+					}
+					current_meta_line.find('td.rd0 a').attr('title', meta.rd0Full).html(meta.rd0Short);
+					current_meta_line.children('td.divID').html(meta.divID);
+					current_meta_line.children('td.d0').html(meta.d0);
+					current_meta_line.children('td.rd0').html(meta.rd0);
+					// options for lemmatized forms
+					if (meta.lemma != null) {
+						// mark occurrence as lemmatized if applicable
+						_mark_as_lemmatized(occurrence_id, meta.lemma);
+						if (_show_lemmatized_occurrences == false && meta.lemma != null) {
+							// hide occurrence if it is assigned to a lemma and lemmatized forms are currently excluded from the search results
+							current_context_line.hide();
+							current_meta_line.hide();
+						}
+					}
+					if (meta.lang_code != null) {
+						// mark occurrence as langified if applicable
+						_mark_as_langified(occurrence_id, meta.lang_code);
+						if (_show_langified_occurrences == false && meta.lang_code != null) {
+							// hide occurrence if it is assigned to a lang and langified forms are currently excluded from the search results
+							current_context_line.hide();
+							current_meta_line.hide();
+						}
+					}
+					centerView();
+				}
 			},
 			clear : function () {
 			// empties this OccContextBox, i.e. all displayed occurrences and their contexts are cleared
@@ -546,6 +708,24 @@ var PH2Component = {
 					_mark_as_lemmatized(selected_occurrence_ids[i], lemma);
 				}
 			},
+			hideLangifiedResults : function () {
+				_show_langified_occurrences = false;
+				_hide_langified_results();
+			},
+			showLangifiedResults : function () {
+				_show_langified_occurrences = true;
+				_show_langified_results();
+			},
+			showSelectedlangResults : function () {
+				_show_selectedlang_results();
+			},
+			markSelectedAsLangified : function (lang_code) {
+				// changes the color of selected occurrences (adds the langified class)
+				selected_occurrence_ids = JSON.parse(_getSelected())
+				for (var i = 0; i < selected_occurrence_ids.length; i++) {
+					_mark_as_langified(selected_occurrence_ids[i], lang_code);
+				}
+			},
 			hideGroup: function(selected_graph_id) {
 				return _hideGroup(selected_graph_id);
 			}
@@ -580,6 +760,7 @@ var PH2Component = {
 		var _mode_selector_types = _container.find('#mode_selector_types');
 		var _mode_selector_lemmata = _container.find('#mode_selector_lemmata');
 		var _show_lemmatized_occurrences = true; //by default
+		var _show_langified_occurrences = true; //by default
 		
 		//Private methods
 		// disable search functions (status 0)
@@ -656,7 +837,8 @@ var PH2Component = {
 				item_ids.push($(this).attr('id').trim('token-'));
 			});
 			var type;
-			var exclude_lemmatized = false;
+			var exclude_lemmatized  = false;
+			var exclude_langified = false;
 			if (_MODE == 'TYPE') {
 				type = 'token';
 				if (_show_lemmatized_occurrences == false) {
@@ -665,12 +847,15 @@ var PH2Component = {
 			} else if (_MODE == 'LEMMA') {
 				type = 'lemma';
 			}
+			if (_show_langified_occurrences == false) {
+				exclude_langified = true;
+			}
 			_current_counting_request = $.ajax({
 					url: 'actions/php/ajax.php?action=getNumberOfOccurrencesByEntityList',
 					type: 'POST',
 					async: true,
 					dataType: 'json',
-					data: {'type': type, 'ids': item_ids, 'exclude_lemmatized': exclude_lemmatized},
+					data: {'type': type, 'ids': item_ids, 'exclude_lemmatized': exclude_lemmatized, 'exclude_langified': exclude_langified, 'lang_id': $('#browser_lang_id').val()},
 					cache: true,
 					success: function (data) {
 						$.each(data, function() {
@@ -696,6 +881,7 @@ var PH2Component = {
 				_result_box.html('');
 				_select_all_box.hide();
 			} else {
+				
 				var results = _associatedController.find( _MODE, query, _get_selected_types() )
 				// clear previous results
 				_result_box.html('').hide();
@@ -741,6 +927,16 @@ var PH2Component = {
 		function _show_lemmatized_results () {
 			_associatedDisplay.showLemmatizedResults();
 		}
+		function _hide_langified_results () {
+			_associatedDisplay.hideLangifiedResults();
+		}
+		
+		function _show_langified_results () {
+			_associatedDisplay.showLangifiedResults();
+		}
+		function _show_selectedlang_results () {
+			_associatedDisplay.showSelectedlangResults();
+		}
 		
 		// bind loading of occurrences to specific link (= single search result)
 		/*function _bindActionToSearchResult (token_id) {
@@ -767,7 +963,6 @@ var PH2Component = {
 			var token_id = $(this).attr('id').trim('token-');
 			_toggleCheckbox(token_id, true);
 		});
-		
 		$('#include_lemmatized_occ').live('click', function() {
 			if (_show_lemmatized_occurrences == true) {
 				_show_lemmatized_occurrences = false;
@@ -776,6 +971,26 @@ var PH2Component = {
 				_show_lemmatized_occurrences = true;
 				_show_lemmatized_results();
 			}
+			$('a.matching_token').parent().each(function() {
+				$(this).find('.count').html('');
+			});
+			_load_counts(); // refresh token counts
+		});
+		$('#include_langified_occ').live('click', function() {
+			if (_show_langified_occurrences == true) {
+				_show_langified_occurrences = false;
+				_hide_langified_results();
+			} else {
+				_show_langified_occurrences = true;
+				_show_langified_results();
+			}
+			$('a.matching_token').parent().each(function() {
+				$(this).find('.count').html('');
+			});
+			_load_counts(); // refresh token counts
+		});
+		$('#browser_lang_id').live('change', function(){
+			_show_selectedlang_results();
 			$('a.matching_token').parent().each(function() {
 				$(this).find('.count').html('');
 			});
@@ -812,8 +1027,37 @@ var PH2Component = {
 			}
 		}
 		
-		// load occurrences into associatedDisplay (i.e. OccContextBox)
+		// load and display all occurrences contexts into associatedDisplay (i.e. OccContextBox)
 		function _loadAssociatedOccurrences (item_id, clearExistingItems) {
+			var param;
+			if (_MODE == 'TYPE') {
+				param = 'tokenID';
+			} else if (_MODE == 'LEMMA') {
+				param = 'lemmaID';
+			}
+			$('.occurrences_loading').show();
+			$.ajax({
+					url: 'actions/php/ajax.php?action=getAllOccurrencesContextsAJAX&' + param + '=' + item_id,
+					type: 'POST',
+					async: true,
+					dataType: 'json',
+					cache: true,
+					success: function(result) {
+						if (clearExistingItems) {
+							_associatedDisplay.clear();
+						}
+						$(".occurrences_loading").hide();
+						_associatedDisplay.addOccurrences(result);
+						
+						
+						// pass the list of OccurrenceIDs to the display
+						//_associatedDisplay.addMultiple(list_of_occurrence_ids);
+					}
+			});
+		}
+		
+		// load occurrences into associatedDisplay (i.e. OccContextBox)
+		function _loadAssociatedOccurrencesOld (item_id, clearExistingItems) {
 			var param;
 			if (_MODE == 'TYPE') {
 				param = 'tokenID';
@@ -939,13 +1183,15 @@ var PH2Component = {
 				success: function(session_graph_id) {
 					if (session_graph_id == parseInt(session_graph_id,10)) {
 						_graph_id = session_graph_id;
-						_loadAll();
+						//Do not load all variants on page load
+						//_loadAll();
 						_load(reload=false,'all');
 					} else {
 						return; // break if no LemmaID is invalid or no Lemma is Active in the Session
 					}
 				}
 			});
+	
 		}
 		// load all variants and counts from the database
 		var _load = function( reload, active_variant_id ) {
@@ -972,7 +1218,7 @@ var PH2Component = {
 						// mark active variant as selected (CSS)
 						_tbody.find('tr').removeClass('selected');
 						if (active_variant_id == 'all') {
-							_tbody.find('#all').addClass('selected');
+							//_tbody.find('#all').addClass('selected');
 						} else {
 							_tbody.find('#group-' + active_variant_id).addClass('selected');
 						}
@@ -1051,7 +1297,24 @@ var PH2Component = {
 		}
 		
 		// adds a new variant to the database (add_variant_form)
-		var _addVariant = function (new_variant_number, new_variant_name) {
+		var _addVariant = function (new_variant_number, new_variant_name, new_variant_descr) {
+			$.ajax({
+				url: 'actions/php/ajax.php?action=createGraphgroup',
+				type: 'POST',
+				dataType: 'json',
+				data: {graphID: _graph_id, graphgroupNumber: new_variant_number, graphgroupVariantName: new_variant_name, graphgroupVariantDescr: new_variant_descr},
+				success: function(data){
+					if (data=='number_exists') {
+						// graphgroup with given number allready exists for this graph; abort
+						pushNotification(2, 'The given variant\'s number conflicts with an existing variant. Please provide another number.');
+						_add_variant_form.find('input[name=new_Number]').addClass('invalid');
+					} else {
+						pushNotification(1, 'Graphgroup ' + new_variant_name + ' (' + new_variant_number + ') created successfully.');
+						_load(reload='new_variant', data.graphgroupID);
+					}
+				}
+			});
+			/*
 			$.getJSON('actions/php/ajax.php?action=createGraphgroup&graphID=' + _graph_id + '&graphgroupNumber=' + new_variant_number + '&graphgroupVariantName=' + new_variant_name, function(data) {
 				if (data=='number_exists') {
 					// graphgroup with given number allready exists for this graph; abort
@@ -1062,6 +1325,7 @@ var PH2Component = {
 					_load(reload='new_variant', data.graphgroupID);
 				}
 			});
+			*/
 		}
 		
 		// deletes a variant (delete_variant_form)
@@ -1106,8 +1370,9 @@ var PH2Component = {
 				// get values for new variant
 				new_variant_number = _add_variant_form.find('input[name=new_Number]').val();
 				new_variant_name = _add_variant_form.find('input[name=new_Name]').val();
+				new_variant_descr = _add_variant_form.find('textarea[name="new_Descr"]').val();
 				// create variant
-				_addVariant(new_variant_number, new_variant_name);
+				_addVariant(new_variant_number, new_variant_name, new_variant_descr);
 			} else {
 				pushNotification(2, 'Invalid form input. Please check the highlighted fields.');
 			}
