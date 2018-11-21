@@ -313,7 +313,199 @@ $(document).ready( function () {
 
             </div>
             <div id="stats">
-            	<p>The statistics overview for texts is not implemented yet. (#lemmata, #graph, ...)</p>
+				<script language="javascript">
+					$(document).ready( function() {
+						$('.stats_button').click(function() {
+							var id = $(this).parent().parent().attr('id');
+							if ($(this).parent().parent().find('.stats-details').hasClass('hidden')) {
+								show_stats_content(id);
+							} else {
+								hide_stats_content(id);
+							}
+						});
+						
+						function show_stats_content ( id ) {
+							var container = $('#' + id);
+							container.find('.stats_button .loading').addClass('hidden');
+							container.find('.stats_button .text').removeClass('hidden');
+							container.find('.stats_button .text').html('Close');
+							container.find('.stats-details').slideDown().removeClass('hidden');
+							$.fancybox.center;
+						}
+						function hide_stats_content ( id ) {
+							var container = $('#' + id);
+							container.find('.stats_button .text').html('Open details');
+							container.find('.stats-details').slideUp().addClass('hidden');
+						}
+					});
+				</script>
+				<style>
+					.tablesorter-default .group td{
+						border-collapse: collapse;
+						border-top: #717171 1px solid !important;
+						border-bottom: #717171 1px solid !important;
+						background-color: #bfbfbf !important;
+					}
+					.tablesorter-default .subgroup td{
+						border-collapse: collapse;
+						border-top: #717171 1px solid !important;
+						border-bottom: #717171 1px solid !important;
+						background-color: #f0f0f0 !important;
+					}
+					.tablesorter-default .token td{
+						border: none !important;
+						background-color: #fff !important;
+					}
+				</style>
+				<div class="modulebox" id="lemmata-stats">
+					<div class="title">Lemmata</div>
+					<div class="title_extension">
+						<span class="stats_button" title="">Open details</span>
+					</div>
+					<div class="body">
+						<div class="stats-overview">
+							<?php
+				
+								$dao = new Table('LEMMA_OCCURRENCE');
+								$sql = "SELECT l.LemmaIdentifier, l.MainLemmaIdentifier, tok.Surface FROM LEMMA_OCCURRENCE lo INNER JOIN LEMMA l ON l.LemmaID = lo.LemmaID "
+										. "INNER JOIN OCCURRENCE o ON lo.OccurrenceID = o.OccurrenceID INNER JOIN TOKEN tok ON o.TokenID = tok.TokenID WHERE o.TextID=".$text->getID(). " ORDER BY l.LemmaIdentifier ASC";
+								$rows = $dao->query( $sql );
+								$count = count($rows);
+								echo "<h5 style='margin-bottom: 10px;'>{$count} lemmatas assigned</h5>";
+							?>
+						</div>
+						<div class="stats-details hidden">
+							<div class="values h400 scrollbox">
+								<?php
+									if($count > 0){
+										$aData = array();
+										foreach($rows as $row){
+											if(is_null($row["MainLemmaIdentifier"])){
+												$row["MainLemmaIdentifier"] = "null";
+											}
+											if(!intval($aData[$row["LemmaIdentifier"]][$row["MainLemmaIdentifier"]][$row["Surface"]]) > 0){
+												$aData[$row["LemmaIdentifier"]][$row["MainLemmaIdentifier"]][$row["Surface"]] = 0;
+											}
+											$aData[$row["LemmaIdentifier"]][$row["MainLemmaIdentifier"]][$row["Surface"]]++;
+										}
+										echo "<table class='tablesorter-default'>";
+										echo "<tr><th>Lemmata</th><th>Sublemmata</th><th>Token</th></tr>";
+										foreach ($aData as $lemmata => $tmp1) {
+											echo "<tr class='group'><td colspan='3'><b>{$lemmata}</b> (".count($tmp1).")</td></tr>";
+											foreach ($tmp1 as $mainlemmata => $aToken) {
+												echo "<tr class='subgroup'><td>&nbsp;</td><td colspan='2'><b>{$mainlemmata}</b> (".count($aToken).")</td></tr>";
+												foreach ($aToken as $token => $count) {
+													echo "<tr class='token'><td>&nbsp;</td><td>&nbsp;</td><td>{$token} ({$count})</td></tr>";
+												}
+											}
+										}
+										echo "</table>";
+									}else{
+										echo "<h4>No lemmata assigned</h4>";
+									}
+								?>
+							</div>
+						</div>
+
+					</div>
+				</div>
+				
+				<div class="modulebox" id="graph-stats">
+					<div class="title">Graphemes</div>
+					<div class="title_extension">
+						<span class="stats_button" title="">Open details</span>
+					</div>
+					<div class="body">
+						<div class="stats-overview">
+							<?php
+				
+								$dao = new Table('GRAPHGROUP_OCCURRENCE');
+								$sql = "SELECT gg.Name as graphgroup_name, g.Name as graph_name, tok.Surface FROM GRAPHGROUP_OCCURRENCE go INNER JOIN GRAPHGROUP gg ON gg.GraphgroupID = go.GraphgroupID INNER JOIN GRAPH g ON gg.GraphID=g.GraphID "
+										. "INNER JOIN OCCURRENCE o ON go.OccurrenceID = o.OccurrenceID INNER JOIN TOKEN tok ON o.TokenID = tok.TokenID WHERE o.TextID=".$text->getID() . " ORDER BY g.Name ASC";
+								$rows = $dao->query( $sql );
+								$count = count($rows);
+								echo "<h5 style='margin-bottom: 10px;'>{$count} graphemes assigned</h5>";
+							?>
+						</div>
+						<div class="stats-details hidden">
+							<div class="values h400 scrollbox">
+								<?php
+									if($count > 0){
+										$aData = array();
+										foreach ($rows as $row) {
+											if(!intval($aData[$row["graph_name"]][$row["graphgroup_name"]][$row["Surface"]]) > 0){
+												$aData[$row["graph_name"]][$row["graphgroup_name"]][$row["Surface"]] = 0;
+											}
+											$aData[$row["graph_name"]][$row["graphgroup_name"]][$row["Surface"]]++;
+											/*
+											if(!intval($aData[$row["graphgroup_name"]]["count"] > 0)){
+												$aData[$row["graphgroup_name"]]["count"] = 0;
+												$aData[$row["graphgroup_name"]]["graph"] = $row["graph_name"];
+												$aData[$row["graphgroup_name"]]["token"] = $row["Surface"];
+											}
+											$aData[$row["graphgroup_name"]]["count"]++;
+											 * 
+											 */
+										}
+			
+										echo "<table class='tablesorter-default'>";
+										echo "<tr><th>Group</th><th>Grapheme</th><th>Token</th></tr>";
+										foreach ($aData as $graph => $tmp1) {
+											echo "<tr class='group'><td colspan='3'><b>{$graph}</b> (".count($tmp1).")</td></tr>";
+											foreach ($tmp1 as $grapheme => $aToken) {
+												echo "<tr class='subgroup'><td>&nbsp;</td><td colspan='2'><b>{$grapheme}</b> (".count($aToken).")</td></tr>";
+												foreach ($aToken as $token => $count) {
+													echo "<tr class='token'><td>&nbsp;</td><td>&nbsp;</td><td>{$token} ({$count})</td></tr>";
+												}
+											}
+										}
+										echo "</table>";
+									}else{
+										echo "<h4>No grapheme assigned</h4>";
+									}
+								?>
+							</div>
+						</div>
+
+					</div>
+				</div>
+				
+				<div class="modulebox" id="morph-stats">
+					<div class="title">Morphemes</div>
+					<div class="title_extension">
+						<span class="stats_button" title="">Open details</span>
+					</div>
+					<div class="body">
+						<div class="stats-overview">
+							<?php
+				
+								$dao = new Table('OCCURRENCE_MORPHVALUE');
+								$sql = "SELECT m.Value, tok.Surface FROM OCCURRENCE_MORPHVALUE om INNER JOIN MORPHVALUE m ON m.MorphvalueID = om.MorphvalueID "
+										. "INNER JOIN OCCURRENCE o ON om.OccurrenceID = o.OccurrenceID INNER JOIN TOKEN tok ON o.TokenID = tok.TokenID WHERE o.TextID=".$text->getID(). " ORDER BY o.Order ASC";
+								$rows = $dao->query( $sql );
+								$count = count($rows);
+								echo "<h5 style='margin-bottom: 10px;'>{$count} lemmatas assigned</h5>";
+							?>
+						</div>
+						<div class="stats-details hidden">
+							<div class="values h400 scrollbox">
+								<?php
+									if($count > 0){
+										echo "<table class='tablesorter-default'>";
+										echo "<tr><th>Token</th><th>Morpheme</th></tr>";
+										foreach ($rows as $row) {
+											echo "<tr><td>{$row["Surface"]}</td><td>{$row["Value"]}</td></tr>";
+										}
+										echo "</table>";
+									}else{
+										echo "<h4>No morpheme assigned</h4>";
+									}
+								?>
+							</div>
+						</div>
+
+					</div>
+				</div>
             </div>
         </div>
     </div>
