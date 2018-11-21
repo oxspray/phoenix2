@@ -248,7 +248,7 @@ class Text
 	} //isCheckedOut
 	
 	//+ 
-	function getXML ( $as_DOM=0 )
+	function getXML ( $as_DOM=0, $annotations_data=false )
 	/*/
 	Returns the XML representation of the text (STORRAGE format).
 	---
@@ -271,12 +271,65 @@ class Text
 		if ($as_DOM) {
 			$DOM = new DOMDocument();
 			$DOM->loadXML($xml_string);
+			if($annotations_data){
+				$this->addAnnotationsData($DOM);
+			}
 			return $DOM;
 		} else {
 			return $xml_string;
 		}
 		
 	} //getXML
+	
+	function addAnnotationsData(&$dom){
+		$aToken = $dom->getElementsByTagName('token');
+		if($aToken->length > 0){
+			//Get Lemmata / Graphemes from DB and add values according to occurrence order
+			$aLemmata = $aGraphemes = $aLangs = array();
+			$sql = "SELECT o.Order, l.LemmaIdentifier, l.MainLemmaIdentifier FROM LEMMA_OCCURRENCE lo INNER JOIN OCCURRENCE o ON lo.OccurrenceID = o.OccurrenceID INNER JOIN LEMMA l ON lo.LemmaID = l.LemmaID AND o.TextID = " . $this->getID();
+			$dao = new Table('LEMMA_OCCURRENCE');
+			$rows = $dao->query( $sql );
+			if(count($rows) > 0){
+				foreach($rows as $aData){
+					if(is_null($aData["MainLemmaIdentifier"])){
+						$aData["MainLemmaIdentifier"] = "null";
+					}
+					$aLemmata[$aData["Order"]] = $aData["LemmaIdentifier"] . ", " . $aData["MainLemmaIdentifier"];
+				}
+			}
+			$sql = "SELECT o.Order, gg.Name as graphgroup_name, g.Name as graph_name FROM GRAPHGROUP_OCCURRENCE go INNER JOIN GRAPHGROUP gg ON gg.GraphgroupID = go.GraphgroupID INNER JOIN GRAPH g ON gg.GraphID=g.GraphID "
+										. "INNER JOIN OCCURRENCE o ON go.OccurrenceID = o.OccurrenceID WHERE o.TextID=".$this->getID() ;
+			$dao = new Table('GRAPHGROUP_OCCURRENCE');
+			$rows = $dao->query( $sql );
+			if(count($rows) > 0){
+				foreach($rows as $aData){
+					$aGraphemes[$aData["Order"]]["graph_name"] = $aData["graph_name"];
+					$aGraphemes[$aData["Order"]]["graphgroup_name"] = $aData["graphgroup_name"];;
+				}
+			}
+			$sql = "SELECT o.Order, l.Code FROM LANG_OCCURRENCE lo INNER JOIN OCCURRENCE o ON lo.OccurrenceID = o.OccurrenceID INNER JOIN LANG l ON lo.LangID = l.LangID AND o.TextID = " . $this->getID();
+			$dao = new Table('LANG_OCCURRENCE');
+			$rows = $dao->query( $sql );
+			if(count($rows) > 0){
+				foreach($rows as $aData){
+					$aLangs[$aData["Order"]] = $aData["Code"];
+				}
+			}
+			foreach($aToken as $tokenNode){
+				$order = $tokenNode->getAttribute("n");
+				if(isset($aLemmata[$order])){
+					$tokenNode->setAttribute("lemmata", $aLemmata[$order]);
+				}
+				if(isset($aGraphemes[$order])){
+					$tokenNode->setAttribute("graph", $aGraphemes[$order]["graph_name"]);
+					$tokenNode->setAttribute("graphgroup", $aGraphemes[$order]["graphgroup_name"]);
+				}
+				if(isset($aLangs[$order])){
+					$tokenNode->setAttribute("lang", $aLangs[$order]);
+				}
+			}
+		}
+	}
 	
 	//+ 
 	function getTextDescriptors ( $filter=NULL )
@@ -352,7 +405,7 @@ class Text
 	} //getNumberOfLemmata
 	
 	//+ 
-	function checkout ( $user_id=NULL )
+	function checkout ( $user_id=NULL, $annotations_data=false )
 	/*/
 	Returns a DOMNode representation of the Text according to the PH2 EDIT XSD and marks the 
 	text as checked out.
@@ -366,7 +419,7 @@ class Text
 	{
 		
 		// get the text's XML in EDIT format
-		$edit_xml = $this->_getEditXML();
+		$edit_xml = $this->_getEditXML($annotations_data);
 		// checkout the text; generate its checkout identifier
 		$identifier = checkoutTextOrCorpus('text', $this->getID(), $edit_xml, $user_id);
 		// add checkout identifier to XML
@@ -774,7 +827,7 @@ class Text
 	} //_getCheckoutAnnotations
 	
 	//+ 
-	private function _getEditXML ( )
+	private function _getEditXML ( $annotations_data = false )
 	/*/
 	Creates a DOMDocument representation with all export annotations (via 
 	Text->_getCheckoutAnnotations()) of this Text.
@@ -783,7 +836,7 @@ class Text
 	@rtype:  DOMDocument
 	/*/
 	{
-		$dom = $this->getXML($as_DOM=TRUE);
+		$dom = $this->getXML($as_DOM=TRUE, $annotations_data);
 		
 		// remove the STORAGE namespace
 		$dom->documentElement->removeAttributeNS($dom->documentElement->getAttributeNode("xmlns")->nodeValue,"");
