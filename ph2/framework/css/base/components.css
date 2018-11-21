@@ -177,7 +177,7 @@ CSS definitions for components to be loaded into modules, such as search fields 
 	vertical-align: middle;
 }
 
-.modulebox > .title_extension a {
+.modulebox > .title_extension a, .modulebox > .title_extension span {
 	display: block;
 	float: left;
 	height: 16px;
@@ -186,6 +186,7 @@ CSS definitions for components to be loaded into modules, such as search fields 
 	border-left: 2px solid #FAFAFA;
 	text-decoration: none;
 	color: #22314e;
+	cursor: pointer;
 }
 
 .modulebox > .title_extension .loading {
@@ -193,24 +194,24 @@ CSS definitions for components to be loaded into modules, such as search fields 
 	margin-right: 10px;
 }
 
-.modulebox > .title_extension a:hover {
+.modulebox > .title_extension a:hover, .modulebox > .title_extension span:hover {
 	background-color: #e8ebeb;
 }
 
-.modulebox > .title_extension a.active {
+.modulebox > .title_extension a.active, .modulebox > .title_extension span.active {
 	background-color: #FAFAFA;
 }
 
-.modulebox > .title_extension a.disabled {
+.modulebox > .title_extension a.disabled, .modulebox > .title_extension span.disabled {
 	cursor: default;
 	color: #CCC;
 }
 
-.modulebox > .title_extension a.disabled:hover {
+.modulebox > .title_extension a.disabled:hover, .modulebox > .title_extension span.disabled:hover {
 	background-color: none;
 }
 
-.modulebox > .title_extension a.active {
+.modulebox > .title_extension a.active, .modulebox > .title_extension span.active {
 	background-color: none;
 }
 
@@ -348,6 +349,12 @@ a.active-project-selection.current {
 
 .OccContextBox pre.occ_line .match.lemmatized {
 	color: #C63 !important;
+}
+.OccContextBox pre.occ_line .match.langified {
+	color: #268C00 !important;
+}
+.OccContextBox pre.occ_line .match.lemmatized_langified {
+	color: #C800B7 !important;
 }
 
 .OccContextBox pre.occ_line .match:hover {
