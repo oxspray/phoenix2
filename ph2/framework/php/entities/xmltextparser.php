@@ -38,9 +38,14 @@ class XMLTextParser
 	stores which token number (Order) of the old text (key) corresponds to 
 	which token number of the new text (value)
 	/*/
+	protected $_input_xml; /*/
+	the DOM Document containing the xml to parse
+	_input_xml
+	/*/
+	protected $_input_xpath;
+	
 	protected $_output_xml; /*/
 	the DOM Document containing the new xml representation out of 
-	_input_xml
 	/*/
 	protected $_xsd_path; /*/
 	the path pointing to the XSD file on the filesystem. If specified, the 
@@ -195,10 +200,11 @@ class XMLTextParser
 	/*/
 	{
 		// convert xml input string to DOMDocument
-		$dom_input_xml = $this->_prepare_input_xml();
+		$this->_input_xml = $this->_prepare_input_xml();
+		$this->_input_xpath = new DOMXpath($this->_input_xml);
 		
 		// parse the xml
-		$this->_parse_loop($dom_input_xml, $this->_output_xml);
+		$this->_parse_loop($this->_input_xml, $this->_output_xml);
 		
 		// (re-) add the default namespace to the root node
 		$this->_output_xml->documentElement->setAttribute('xmlns', PH2_URI_STORAGE);
@@ -226,10 +232,11 @@ class XMLTextParser
 		// get the old
 
 		// convert xml input string to DOMDocument
-		$dom_input_xml = $this->_prepare_input_xml();
+		$this->_input_xml = $this->_prepare_input_xml();
+		$this->_input_xpath = new DOMXpath($this->_input_xml);
 
 		// parse the xml
-		$this->_parse_loop($dom_input_xml, $this->_output_xml);
+		$this->_parse_loop($this->_input_xml, $this->_output_xml);
 
 		// (re-) add the default namespace to the root node
 		$this->_output_xml->documentElement->setAttribute('xmlns', PH2_URI_STORAGE);
@@ -244,6 +251,19 @@ class XMLTextParser
 		$affected_occ_ids = array();
 		foreach ($rows as $row) {
 			$mappings_order_lemma[ $row['Order'] ] = $row['LemmaID'];
+			$affected_occ_ids[] = $row['OccurrenceID'];
+		}
+		if (count($affected_occ_ids) > 0) {
+			$dao->delete( "OccurrenceID in (" . expandArray( $affected_occ_ids, ',' ) . ")" );
+		}
+		unset($dao);
+		
+		$dao = new Table('LANG_OCCURRENCE');
+		$rows = $dao->query( "select l.OccurrenceID, o.Order, l.LangID from TEXT as t join OCCURRENCE as o on t.TextID=o.TextID join LANG_OCCURRENCE as l on o.OccurrenceID=l.OccurrenceID where t.TextID=" . $this->_created_text_entity->getID() );
+		$mappings_order_lang = array();
+		$affected_occ_ids = array();
+		foreach ($rows as $row) {
+			$mappings_order_lang[ $row['Order'] ] = $row['LangID'];
 			$affected_occ_ids[] = $row['OccurrenceID'];
 		}
 		if (count($affected_occ_ids) > 0) {
@@ -316,17 +336,14 @@ class XMLTextParser
 		// create the new Occurrence in the database
 		// - overrides the Occurrence object for performance reasons
 		// - uses existing OccurrenceIDs for tokens that have not changed; lowest available OccurrenceID otherwise
-		$mappings_new_order_old_order = array_flip($this->_import_token_order_mappings);
-		$new_order_numbers_with_old_order_number = array_keys($mappings_new_order_old_order); //for performance
+		
 		$new_occurrences = array(); // the Occurrences that have been inserted or updated externally
+		
 		foreach ( $this->_import_db_entries['Occurrences'] as $new_occurrence ) {
-			if ( in_array($new_occurrence['Order'], $new_order_numbers_with_old_order_number) ) {
-				// echo $new_occurrence['Order'] . " in " . $new_order_numbers_with_old_order_number[$new_occurrence['Order']];
+			if(intval($new_occurrence['Old_order']) > 0 && isset($mappings_old_order_occ_id[$new_occurrence['Old_order']])){
 				// Occurrence is EXISTING: It has not been changed in the Text
-				$old_order_nr = $mappings_new_order_old_order[ $new_occurrence['Order'] ];
-				$old_occurrence_id = $mappings_old_order_occ_id[ $old_order_nr ];
-				$new_occurrence['OccurrenceID'] = $old_occurrence_id; // i.e., the Occurrence ID will be preserved for Occurrences that have not been changed externally
-
+				$new_occurrence['OccurrenceID'] = $mappings_old_order_occ_id[$new_occurrence['Old_order']]; // i.e., the Occurrence ID will be preserved for Occurrences that have not been changed externally
+				unset($new_occurrence['Old_order']);
 				// insert existing tokens
 				$dao->insert($new_occurrence);
 			} else {
@@ -386,6 +403,33 @@ class XMLTextParser
 			$dao = new Table('LEMMA_OCCURRENCE');
 			foreach ($mappings_new_order_lemma as $new_order => $lemma_id) {
 				$dao->insert( array( 'OccurrenceID' => $mappings_new_order_new_occ_id[ $new_order ], 'LemmaID' => $lemma_id) );
+			}
+			unset($dao);
+		}
+		
+		// Lang
+		$mappings_new_order_lang = array();
+		foreach ($mappings_order_lang as $old_order => $lang) {
+			if ($this->_import_token_order_mappings[$old_order]) {
+				$mappings_new_order_lang[ $this->_import_token_order_mappings[$old_order] ] = $lang;
+			}
+		}
+		if(!empty($this->_import_db_entries['Langs'])){
+			foreach($this->_import_db_entries['Langs'] as $order => $lang){
+				$mappings_new_order_lang[$order] = $lang;
+			}
+		}
+		if (count($mappings_new_order_lang) > 0 ) {
+			// get the OccurrenceIDs that are associated with the new OrderIDs
+			$rows = $dao_occ->query( "select OccurrenceID, `Order` from OCCURRENCE where `Order` in (" . expandArray( array_keys($mappings_new_order_lang), ',' ) . ") and TextID=" . $this->_created_text_entity->getID() );
+			$mappings_new_order_new_occ_id_lang = array();
+			foreach ($rows as $row) {
+				$mappings_new_order_new_occ_id_lang[ $row['Order'] ] = $row['OccurrenceID'];
+			}
+			// insert
+			$dao = new Table('LANG_OCCURRENCE');
+			foreach ($mappings_new_order_lang as $new_order => $lang_id) {
+				$dao->insert( array( 'OccurrenceID' => $mappings_new_order_new_occ_id[ $new_order ], 'LangID' => $lang_id) );
 			}
 			unset($dao);
 		}
@@ -551,6 +595,7 @@ class XMLTextParser
 			$parser_name = $this->_parse_function_prefix . $child->nodeName;
 			// try to call a parser associated with the node's name
 			if (method_exists($this, $parser_name)) {
+				print "<br>Parser: ".$parser_name."<br>";
 				$root->appendChild($this->{$parser_name}($child));
 			} else if ( in_array($child->nodeName, $this->_STATIC_textsection_starters) ) {
 				// MILESTONES: int, exp, ...
@@ -890,6 +935,18 @@ class XMLTextParser
 	@rtype:  DOMNode
 	/*/
 	{
+		//Check for <lat> parent. If found, we assign lat lang to the occurrence and add the lang attribute to the token.
+		$lang_code = false;
+		$ancestors = $this->_input_xpath->query("ancestor::*" , $input_node);
+		foreach($ancestors as $ancestor){
+			if($ancestor->nodeName == "lat"){
+				$lang_code = "lat";
+			}
+		}		
+		//Check for <lat> children. If found, it overrides the parent one if exists. Then we assign lat lang to the occurrence and add the lang attribute to the token.
+		if($input_node->getElementsByTagName('lat')->length > 0){
+			$lang_code = 'lat';
+		}
 		// SURFACE ADJUSTMENT: ][-Parantheses -> Masking, e.g. abr[eviation => abr[eviation] (includes following words)
 		#$token_surface = $input_node->textContent; //changed on 2012-10-04: inner tags get lost in this way; do not strip tags inside
 		$occ_surface = $input_node->textContent; // for the new token in the database
@@ -922,22 +979,28 @@ class XMLTextParser
 		$occ_surface = trim($occ_surface); // so trailing whitespaces and linebreaks are deleted
 		$occ_type = $input_node->getAttribute('type');
 		$token_id = checkAddToken($occ_surface, $occ_type, $this->_cached_dao_TOKEN, $this->_cached_dao_TOKENTYPE);
+		
+		//check for lang attribute
+		if(!$lang_code && $input_node->hasAttribute('lang')){
+			$lang_code = $input_node->getAttribute('lang');
+		}
 
 		if ($this->_mode == 'update') {
 			$annotations = array();
 			$annotations['Order'] = $occ_order;
 			$annotations['Lemma_like_object'] = array();
 			$annotations['Morph'] = array();
-			// store the values for the new occurrences to be created later on
-			$this->_import_db_entries['Occurrences'][] = array( 'TokenID' => $token_id, 'TextID' => $this->_created_text_entity->getID(), 'Order' => $occ_order, 'Div' => $this->__div, 'SectionIDs' => $this->__sectionIDs );
+	
 			// iterate over attributes of token
 			for ($i = $input_node->attributes->length - 1; $i >= 0; --$i) {
+				$old_order = false;
 				switch ($input_node->attributes->item($i)->nodeName) {
 					// token number (and mapping)
 					case 'n':
 						// map the old occurrence number to the new occurrence number
 						$old_occ_order = $input_node->attributes->item($i)->nodeValue;
 						$this->_import_token_order_mappings[$old_occ_order] = $occ_order;
+						$old_order = $old_occ_order;
 						break;
 					case 'type':
 						break;
@@ -948,12 +1011,21 @@ class XMLTextParser
 						break;
 				}
 			}
+			// store the values for the new occurrences to be created later on
+			$this->_import_db_entries['Occurrences'][] = array( 'TokenID' => $token_id, 'TextID' => $this->_created_text_entity->getID(), 'Order' => $occ_order, 'Old_order' => $old_order, 'Div' => $this->__div, 'SectionIDs' => $this->__sectionIDs );
 			$this->_import_db_entries['Annotations'][] = $annotations;
+			if($lang_code){
+				$this->_import_db_entries['Langs'][$occ_order] = $lang_code;
+			}			
 
 		} else {
 			// write to db
 			$occ = new Occurrence($token_id, $this->_created_text_entity->getID(), $occ_order, $this->__div, NULL, $this->__sectionIDs);
-		}
+			if($lang_code){
+				$lang = new Lang($lang_code);
+				$lang->assignOccurrenceID($occ->getID());
+			}			
+		}		
 
 		// XML: copy <token> and adjust its attributes
 		$new_token_node = $this->_copy_node($input_node, TRUE);
@@ -970,6 +1042,9 @@ class XMLTextParser
 
 		// the new Occurrence order number inside the document
 		$new_token_node->setAttribute('n', $occ_order);
+		if($lang){
+			$new_token_node->setAttribute('lang', $lang_code);
+		}
 
 		return $new_token_node;
 
