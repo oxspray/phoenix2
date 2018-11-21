@@ -84,6 +84,7 @@ class PH2Session
 				$this->setActiveCorpus(1); // TEMP
 				$this->setActiveLemma(NULL); // TEMP
 				$this->setActiveGrapheme(NULL); // TEMP
+				//$this->backupDatabase();
 				// simple identifier for guest
 				session_start();
 				if ($this->getNickname() == 'guest') {
@@ -458,8 +459,11 @@ class PH2Session
 			}
 			// delete old entries
 			$this->_filters[$filter_name] = array();
-			foreach ($dao->get() as $row) {
-				$this->_filters[$filter_name][$filter_value][] = $row['TextID'];
+			$rows = $dao->get();
+			if(!empty($rows) && is_array($rows)){
+				foreach ($rows as $row) {
+					$this->_filters[$filter_name][$filter_value][] = $row['TextID'];
+				}
 			}
 		
 		} else if (array_key_exists($filter_name, $available_descriptors)) {
@@ -505,6 +509,7 @@ class PH2Session
 			// remove a subfilter
 			unset($this->_filters[$filter_name][$filter_value]);		
 		}
+		
 	} //removeFilter
 	
 	//+ 
@@ -575,6 +580,10 @@ class PH2Session
 		}
 	} //getFilterValues
 	
+	function getFilters(){
+		return $this->_filters;
+	}
+	
 	//+ 
 	function filterIsActive ( )
 	/*/
@@ -599,8 +608,25 @@ class PH2Session
 		$this->_filter_is_active = $active;
 	} //setFilterIsActive
 	
+	function backupDatabase (  )
+	/*/
+	Backup database once a day
+	---
+	/*/
+	{
+		$filename = date('d-m-Y').".sql.gz";
+		$filepath = BK_FP . "/" . $filename;
+		//print $filepath;
+		//die();
+		$cmd = "mysqldump -u".PH2_DB_USER." -p".PH2_DB_PASSWORD." ".PH2_DB_NAME." --no-create-info --no-create-db | gzip > ".$filepath;
+		shell_exec($cmd);
+		chmod($filepath, 0777);
+	}
+	
+	
 	// PRIVATE FUNCTIONS
 	// -----------------
+	
 	
 }
 
