@@ -114,11 +114,11 @@ var GraphTab = {
 									if ( confirm ("The Occurrence '" + surface + "' in div '" + div + "' has already been assigned to this Grapheme. Press 'OK' to overwrite existing assignment.")) {
 										// overwrite only the assignment of this Occurrence to this Graph. Assignments to other Graphs aren't affected by this procedure.
 										relevant_graphgroups = getGraphgroupsByGraphID(chosen_graph_name_or_id);
-										created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, str_occ, chosen_descr);
+										created_graph_id = addGraph(chosen_graph_name_or_id, chosen_descr);
 										created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, str_occ, created_graph_id, relevant_graphgroups);
 									}
 								} else {
-									created_graph_id = addOccurrencesToGraph(chosen_graph_name_or_id, str_occ, chosen_descr);
+									created_graph_id = addGraph(chosen_graph_name_or_id, chosen_descr);
 									created_graphgroup_id = addOccurrencesToGraphgroup(chosen_graphgroup_number, chosen_graphgroup_name, str_occ, created_graph_id, relevant_graphgroups);
 								}
 							}
@@ -302,16 +302,16 @@ var GraphTab = {
 			return created_id;
 		}
 
-		function addOccurrencesToGraph ( identifier, occurrence_ids, description="undefined") {
+		function addGraph ( identifier, description) {
 			var created_id = null;
 			$.ajax({
-				url: 'actions/php/ajax.php?action=assignOccurrencesToGraph',
+				url: 'actions/php/ajax.php?action=addGraph',
 				type: 'POST',
 				dataType: 'json',
-				data: {graphIdentifier: identifier, occurrenceIDs: occurrence_ids, descr: description},
+				data: {graphIdentifier: identifier, descr: description},
 				success: function(data) {
 					graph_identifier = new_graph_identifier.val();
-					pushNotification(1, 'Assignment successful: ' + $.parseJSON(occurrence_ids).length + ' Occurrences assigned to Graph «' + graph_identifier + '»');
+					//pushNotification(1, 'Assignment successful: ' + $.parseJSON(occurrence_ids).length + ' Occurrences assigned to Graph «' + graph_identifier + '»');
 					created_id = data;
 					// search_controller.refresh_lemmata();
 				},
