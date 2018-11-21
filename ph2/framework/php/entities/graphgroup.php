@@ -22,11 +22,12 @@ class Graphgroup
 	protected $_id; /// The ID of the Graphgroup
 	protected $_number; /// The Number of the Graphgroup (unique for each Graph)
 	protected $_name; /// The Name of the Graphgroup
+	protected $_descr; /// The Description of the Graphgroup
 	
 	// CONSTRUCTOR
 	// -----------
 	//+ 
-	function __construct ( $id_or_number , $name=NULL )
+	function __construct ( $id_or_number , $name=NULL, $descr = NULL )
 	/*/
 	---
 	@param id_or_number: If a Graphgroup is constructed with an ID, it is loaded from the DB. 
@@ -44,7 +45,7 @@ class Graphgroup
 		} else {
 			assert(endsWith($id_or_number, '.'));
 			$dao = new Table('GRAPHGROUP');
-			$this->_id = $dao->checkAdd( array('Number' => $id_or_number, 'Name' => $name) );
+			$this->_id = $dao->checkAdd( array('Number' => $id_or_number, 'Name' => $name, 'Descr' => $descr) );
 			$this->_loadFromDB();
 		}
 	} //__construct
@@ -76,7 +77,7 @@ class Graphgroup
 				// delete all existing assignments
 				$dao->delete("OccurrenceID=$id");
 			}
-			if ($graphgroupsToOverwrite != null) {
+			if ($graphgroupsToOverwrite != null && $graphgroupsToOverwrite != "null") {
 				foreach ($graphgroupsToOverwrite as $gg_id) {
 					$relevant_db_entry = array('GraphgroupID' => $gg_id, 'OccurrenceID' => $id);
 					$dao->delete($relevant_db_entry);
@@ -162,6 +163,18 @@ class Graphgroup
 	} //getNumber
 	
 	//+ 
+	function getDescr ( )
+	/*/
+	getter
+	-
+	@return: this Graphgroup's description
+	@rtype:  string
+	/*/
+	{
+		return $this->_descr;
+	} //getDescr
+	
+	//+ 
 	function setName ( $name )
 	/*/
 	setter
@@ -187,6 +200,20 @@ class Graphgroup
 		$this->_writeToDB();
 	} //setNumber
 	
+	//+ 
+	function setDescr ( $descr )
+	/*/
+	setter
+	---
+	@param descr: the new descr of the Graphgroup
+	@type  descr: string
+	/*/
+	{
+		$this->_descr = $descr;
+		$this->_writeToDB();
+	} //setDescr
+	
+	
 	// PRIVATE FUNCTIONS
 	// -----------------
 	//+ 
@@ -203,6 +230,7 @@ class Graphgroup
 		// fill in the data
 		$this->_number = $data['Number'];
 		$this->_name = $data['Name'];
+		$this->_descr = $data['Descr'];
 	} //_loadFromDB
 	
 	//+ 
@@ -217,7 +245,7 @@ class Graphgroup
 	{
 		$dao = new Table('GRAPHGROUP');
 		$dao->where = array('GraphgroupID' => $this->_id);
-		$dao->update( array('Number' => $this->_number, 'Name' => $this->_name) );
+		$dao->update( array('Number' => $this->_number, 'Name' => $this->_name, 'Descr' => $this->_descr) );
 	} //_writeToDB
 	
 	

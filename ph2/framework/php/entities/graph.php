@@ -149,13 +149,14 @@ class Graph
 	@type  number: string
 	@param name: the name of the Graphgroup to be created
 	@type  name: string
+	@param descr: the description of the Graphgroup to be created
+	@type  descr: string
 	-
 	@return: the ID of the newly created Graphgroup
 	@rtype:  int
 	/*/
 	{
 		global $ps;
-		assert(!$this->graphgroupExists($number));
 		
 		$dao = new Table('GRAPHGROUP');
 		$new_graphgroup_id = (int) $dao->checkAdd( array ('GraphID' => $this->_id, 'Number' => $number, 'Name' => $name) );
