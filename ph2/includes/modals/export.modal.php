@@ -11,8 +11,12 @@ if ($_GET['type'] == 'corpus') {
 	$action_url = '?action=CheckoutXMLCorpus&corpus_id=' . $_GET['id'];
 } else {
 	$type = 'text';
+	$annotations_included = 0;
+	if(isset($_GET["annotations_included"]) && $_GET["annotations_included"] == "1"){
+		$annotations_included = 1;
+	}
 	$description = '<h4>Exporting Corpora</h4><p>By exporting a single text, you can download it in an XML format for external editing. This file can be opened in an XML editor of your choice. Once the desired changes have been applied, the text can be re-imported into Phoenix2 by selecting the respective option in Projects &amp; Corpus management – just click the suitcase symbol next to an exported text to re-import it.</p>';
-	$action_url = '?action=CheckoutXMLText&text_id=' . $_GET['id'];
+	$action_url = '?action=CheckoutXMLText&text_id=' . $_GET['id'] . "&annotations_included=".$annotations_included;
 }
 
 ?>
@@ -43,8 +47,8 @@ $(document).ready( function() {
 });
 </script>
 
-<h1>Export <?php echo ucwords($type); ?></h1>
-<p>Do you want to export <b><?php echo $_GET['name']; ?></b> for external editing?</p>
+<h1>Export <?php echo ucwords($type) . ( $annotations_included ? " with annotations included":""); ?></h1>
+<p>Do you want to export <b><?php echo $_GET['name']; ?></b> <?php echo ucwords($type) . ( $annotations_included ? "":" for external editing"); ?>?</p>
 <p id="learn_more"><a href="#" title="Click to learn more about editing texts outside of Phoenix2">Learn more...</a></p>
 <div id="more_info" class="hidden">
 	<br />
