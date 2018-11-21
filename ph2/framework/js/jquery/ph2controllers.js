@@ -107,29 +107,30 @@ var PH2Controller = {
 			// @param tokentypes (array) defines which token types are taken into account
 			find : function (mode, regex, typeIDs) {
 				var items;
-				var surfaceIdx = 1;
+				var surfaceIdx = [1];
 				if (mode == 'TYPE') {
 					items = _tokens
 				} else if (mode == 'LEMMA') {
 					items = _lemmata;
-					surfaceIdx = 2;
+					surfaceIdx = [1,2];
 				}
-				
 				try {
 					regex = new RegExp(regex);
 					var result = [];
 					for (var i in typeIDs) {
 						var id = typeIDs[i];
 						for (var k in items[id]) {
-							var tokenID = items[id][k][0];
-							var surface = items[id][k][surfaceIdx];
-							//alert(tokenID + ' -> ' + surface);
-							if (regex.test(surface)) {
-								if (mode == 'TYPE') {
-									result.push([tokenID, surface]);
-								} else if (mode == 'LEMMA') {
-									var mainLemmaLemma = items[id][k][1] + ", " + items[id][k][2];
-									result.push([tokenID, mainLemmaLemma]);
+							for(var l in surfaceIdx){
+								var tokenID = items[id][k][0];
+								var surface = items[id][k][surfaceIdx[l]];
+								//alert(tokenID + ' -> ' + surface);
+								if (regex.test(surface)) {
+									if (mode == 'TYPE') {
+										result.push([tokenID, surface]);
+									} else if (mode == 'LEMMA') {
+										var mainLemmaLemma = items[id][k][1] + ", " + items[id][k][2];
+										result.push([tokenID, mainLemmaLemma]);
+									}
 								}
 							}
 						}
