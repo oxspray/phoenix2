@@ -29,6 +29,7 @@ if ($ps->getNickname() == 'guest') {
 }
 
 ?>
+
 <script type="text/javascript">
 	$(document).ready( function() {
 		
@@ -40,6 +41,7 @@ if ($ps->getNickname() == 'guest') {
 		// graph assigner
 		var lemmaAssigner = LemmaTab.LemmaAssigner(matchingOccurrences, searchController);
 		var graphAssigner = GraphTab.GraphAssigner(matchingOccurrences);
+		var langAssigner = LangTab.LangAssigner(matchingOccurrences, searchController);
 		
 		function init () {
 			searchController.init();
@@ -106,10 +108,13 @@ if ($ps->getNickname() == 'guest') {
             	<a href="#" class="tablink invisible_for_guests" rel="tab1" id="assign_button-lemma" title="Assign Lemma to Selected Occurrences">+Lemma</a>
                 <a href="#" class="tablink invisible_for_guests" rel="tab2" id="assign_button-morph" title="Assign PoS/Morphology to Selected Occurrences">+Morph</a>
                 <a href="#" class="tablink invisible_for_guests" rel="tab3" id="assign_button-graph" title="Assign Graph to Selected Occurrences">+Graph</a>
-                <a href="#" class="tablink" rel="tab4" id="export_button" title="Export selected Occurrences">Export</a>
+				<a href="#" class="tablink invisible_for_guests" rel="tab4" id="assign_button-lang" title="Assign Lang to Selected Occurrences">+Lang</a>
+                <a href="#" class="tablink" rel="tab5" id="export_button" title="Export selected Occurrences">Export</a>
                 <a href="#" id="clear_button" title="Clear Occurrence Selection">Clear Results</a>
             </div>
-
+			<div class="controls">
+				<div class="occurrences_loading" style="text-align: center; display: none;"><img src="ressources/icons/processing_small.gif" alt="loading" /></div>
+			</div>
             <div class="body">
             	<!-- tabs -->
                 <div id="tab1" class="tab hidden">
@@ -121,7 +126,10 @@ if ($ps->getNickname() == 'guest') {
                 <div id="tab3" class="tab hidden">
                 	<?php include('includes/components/tabs/assign_graph.tab.php'); ?>
                 </div>
-                <div id="tab4" class="tab hidden">
+				<div id="tab4" class="tab hidden">
+                	<?php include('includes/components/tabs/assign_lang.tab.php'); ?>
+                </div>
+                <div id="tab5" class="tab hidden">
                 	<?php include('includes/components/tabs/export_search_results.tab.php'); ?>
                 </div>
                 <!-- end tabs -->
@@ -131,12 +139,12 @@ if ($ps->getNickname() == 'guest') {
                     <thead>
                       <tr>
                         <td><input type="checkbox" class="select_all" rel="occ_selection" name=""/></td>
-                        <th class="widest"><a href="#" class="sort" id="sort_by_text" title="Click to sort results by Cite Form (zitf).">CiteF</a></th>
+                        <th class="widest maxwidth"><a href="#" class="sort" id="sort_by_text" title="Click to sort results by Cite Form (zitf).">CiteF</a></th>
                         <th class="wider"><a href="#" class="sort" id="sort_by_d0" title="Click to sort results by date &lt;d0&gt;.">Date</a></th>
                         <th class="widest"><a href="#" class="sort" id="sort_by_rd0" title="Click to sort results by editor &lt;rd0&gt;.">Red.</a></th>
                         <th><a href="#" class="tooltipp" title="Involved text division.">Div</a></th>
                         <!--<th class="widest"><a href="#" class="tooltipp" title="Text Section. Hover to display the corresponding description.">Sct</a></th>-->
-                        <th class="padded">Context</th>
+                        <th class="padded"><a href="#" class="sort" id="sort_by_context" title="Click to sort results by the context searched item.">Context</a></th>
                       </tr>
                     </thead>
                     <tbody></tbody>
@@ -169,9 +177,16 @@ if ($ps->getNickname() == 'guest') {
             
                 <form id="typebrowser_form">
                     <p>Query (REGEX):</p>
+					<div>
                     <input type="text" title="Enter your search query (REGEX)" name="typeSearchBox" id="typebrowser_searchfield" class="text w65" style="float: left !important;" />
                     <input title="Search" type="submit" value="OK" name="typeSearchButton" id="typebrowser_searchbutton" class="button" style="margin-top: -1px;" />
+					</div>
                     <div id="select_type" style="clear:left;"></div>
+					<div style="clear: left;">
+						Lang:
+						<?php echo htmlLangSelectionDropdown('browser_lang_id', NULL, 'browser_lang_id', true); ?>&nbsp;
+						<input type="checkbox" checked="checked" name="include_langified_occ" id="include_langified_occ" value=""><a href="#" class="tooltipp" title="If this option is selected, search results will include occurrences that have already been assigned a lang.">show langified occ.</a>
+					</div>
                 </form>
                 <br />
                 <div class="hidden" style="height:25px;" id="checkall">
