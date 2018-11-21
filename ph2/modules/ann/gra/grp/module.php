@@ -91,7 +91,7 @@ Define grapheme variants (groups) and assign occurrences.
   						<th class="wider"><a href="#" class="sort" id="sort_by_d0" title="Click to sort results by date <d0>.">Date</a></th>
   						<th class="widest"><a href="#" class="sort" id="sort_by_rd0" title="Click to sort results by editor <rd0>.">Red.</a></th>
   						<th><a href="#" class="tooltipp" title="Involved text division.">Div</a></th>
-  						<th class="padded">Context</th>
+  						<th class="padded"><a href="#" class="sort" id="sort_by_context" title="Click to sort results by the context searched item.">Context</a></th>
                       </tr>
                     </thead>
                     <tbody></tbody>
@@ -113,7 +113,7 @@ Define grapheme variants (groups) and assign occurrences.
 
     <div class="w33">
         <div class="modulebox GroupSelector Graphvariants" id="groupselector1">
-            <div class="title">Variants</div>
+            <div class="title">Variants (please select all or one variant)</div>
             <div class="title_extension">
             	<a href="#" class="tablink" rel="tab3" id="add_variant_tab_button" title="Add variant">Add</a>
                 <a href="#" class="tablink" rel="tab4" id="delete_variant_tab_button" title="Delete selected variant">Delete</a>
@@ -124,10 +124,12 @@ Define grapheme variants (groups) and assign occurrences.
             	<div id="tab3" class="tab hidden">
                 	<form id="add_variant_form">
                         <fieldset>
-                            <label class="inline" for="f1">Bezeichnung:</label>
-                            <input type="text" class="text small required" name="new_Name" value="" />
-                            <label class="inline" for="f2">Nummer:</label>
+							<label class="inline" for="f2">Number:</label>
                             <input type="text" class="text tiny required digits_and_points_only" name="new_Number" value="" />
+                            <label class="inline" for="f1">Name:</label>
+                            <input type="text" class="text small required" name="new_Name" value="" /><br />
+							<label class="inline" for="f3">Description:</label>
+							<textarea name="new_Descr" class="w98"></textarea>
                             <br />
                             <input type="button" id="submit_button" class="button" value="Add" />
                             <input type="button" id="cancel_button" class="button" value="Cancel" />
@@ -174,10 +176,12 @@ Define grapheme variants (groups) and assign occurrences.
             <div class="body">
                 <form class="mainform" action="" method="post">
                     <fieldset>
-                        <label for="f1">Bezeichnung</label>
-                        <input type="text" class="text small required" name="Name" value="" />
-                        <label class="inline" for="f2">Nummer:</label>
+                        <label class="inline" for="f2">Number:</label>
                         <input type="text" class="text tiny required" name="Number" value="" />
+						<label for="f1">Name:</label>
+                        <input type="text" class="text small required" name="Name" value="" /><br />
+						<label class="inline" for="f3">Description:</label>
+						<textarea name="Descr" class="w98"></textarea>
                     </fieldset>
                     <!-- <fieldset>
                     <legend>Weitere Felder</legend>
