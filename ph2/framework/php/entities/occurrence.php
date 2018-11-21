@@ -241,6 +241,31 @@ class Occurrence
 	} //getMorphAttributes
 	
 	//+ 
+	function getLangID ( )
+	/// Returns the ID of the Lang this Occurrence is assigned to
+	{
+		$dao = new Table('LANG_OCCURRENCE');
+		$rows = $dao->get( array( 'OccurrenceID' => $this->getID() ) );
+		if (count($rows) > 0) {
+			return (int)$rows[0]['LangID'];
+		} else {
+			return FALSE;
+		}
+	} //getLangID
+	
+	//+ 
+	function getLang ( )
+	/// Returns the Lang object that this Occurrence is assigned to
+	{
+		$lang_id = $this->getLangID();
+		if ($lang_id) {
+			return new Lang($lang_id);
+		} else {
+			return FALSE;
+		}
+	} //getLang
+	
+	//+ 
 	function setComment ( $comment )
 	/*/
 	setter
