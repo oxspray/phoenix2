@@ -720,9 +720,13 @@ function CheckoutXMLText ( $get, $post ) { global $ps;
 	assert( !empty( $get['text_id'] ) );
 	
 	$text = new Text( (int)$get['text_id'] );
-	
-	$get['xml_string'] = $text->checkout( $ps->getUserID() )->saveXML();
-	$get['filename'] = $text->getCiteID() . '.xml';
+	if(isset($get["annotations_included"]) && $get["annotations_included"] == "1"){
+		$get['xml_string'] = $text->checkout( $ps->getUserID(), true )->saveXML();
+		$get['filename'] = $text->getCiteID() . '_annotations.xml';
+	}else{
+		$get['xml_string'] = $text->checkout( $ps->getUserID() )->saveXML();
+		$get['filename'] = $text->getCiteID() . '.xml';
+	}
 	
 	DownloadXML($get, $post);
 }
