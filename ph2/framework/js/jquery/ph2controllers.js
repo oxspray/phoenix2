@@ -117,6 +117,7 @@ var PH2Controller = {
 				try {
 					regex = new RegExp(regex);
 					var result = [];
+					var foundTokenIds = [];
 					for (var i in typeIDs) {
 						var id = typeIDs[i];
 						for (var k in items[id]) {
@@ -128,14 +129,16 @@ var PH2Controller = {
 									if (mode == 'TYPE') {
 										result.push([tokenID, surface]);
 									} else if (mode == 'LEMMA') {
-										var mainLemmaLemma = items[id][k][1] + ", " + items[id][k][2];
-										result.push([tokenID, mainLemmaLemma]);
+										if($.inArray(tokenID,foundTokenIds) === -1){
+											var mainLemmaLemma = items[id][k][1] + ", " + items[id][k][2];
+											result.push([tokenID, mainLemmaLemma]);
+											foundTokenIds.push(tokenID);
+										}
 									}
 								}
 							}
 						}
 					}
-					//alert(result);
 					return(result);
 				}
 				catch (err) {
