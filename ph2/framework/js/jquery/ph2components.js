@@ -250,8 +250,13 @@ var PH2Component = {
 				lemma_title = lemmas;
 			}
 			var title = occurrence_match.attr('title');
-			if(typeof title !== 'undefined' && title != ""){
-				title = lemma_title + " | " + title;
+			if(typeof title !== 'undefined' && title != "" && occurrence_match.hasClass('langified')){
+				var titleToken = title.split(' | ');
+				if(titleToken.length === 1){
+					title = lemma_title + " | " + titleToken[0];
+				}else{
+					title = lemma_title + " | " + titleToken[1];
+				}
 			}else{
 				title = lemma_title;
 			}
@@ -272,8 +277,9 @@ var PH2Component = {
 			occurrence_match.addClass('langified ' + lang_class);
 			
 			var title = occurrence_match.attr('title');
-			if(typeof title !== 'undefined' && title != ""){
-				title += " | " + lang_code;
+			if(typeof title !== 'undefined' && title != "" && occurrence_match.hasClass('lemmatized')){
+				var titleToken = title.split(' | ');
+				title = titleToken[0] + " | " + lang_code;
 			}else{
 				title = lang_code;
 			}
