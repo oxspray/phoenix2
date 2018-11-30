@@ -935,14 +935,16 @@ class XMLTextParser
 	@rtype:  DOMNode
 	/*/
 	{
+		$lang_code = "fr"; //Default lang is "fr". Should be removed with the possibility to choose the lang from an interface option (import processes)
+		
 		//Check for <lat> parent. If found, we assign lat lang to the occurrence and add the lang attribute to the token.
-		$lang_code = false;
 		$ancestors = $this->_input_xpath->query("ancestor::*" , $input_node);
 		foreach($ancestors as $ancestor){
 			if($ancestor->nodeName == "lat"){
 				$lang_code = "lat";
 			}
 		}		
+		
 		//Check for <lat> children. If found, it overrides the parent one if exists. Then we assign lat lang to the occurrence and add the lang attribute to the token.
 		if($input_node->getElementsByTagName('lat')->length > 0){
 			$lang_code = 'lat';
@@ -980,8 +982,8 @@ class XMLTextParser
 		$occ_type = $input_node->getAttribute('type');
 		$token_id = checkAddToken($occ_surface, $occ_type, $this->_cached_dao_TOKEN, $this->_cached_dao_TOKENTYPE);
 		
-		//check for lang attribute
-		if(!$lang_code && $input_node->hasAttribute('lang')){
+		//check for lang attribute.We consider it only if lang is not already set as "lat"
+		if($lang_code != "lat" && $input_node->hasAttribute('lang')){
 			$lang_code = $input_node->getAttribute('lang');
 		}
 
